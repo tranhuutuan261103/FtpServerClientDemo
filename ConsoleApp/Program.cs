@@ -3,6 +3,7 @@ using ConsoleApp;
 using MyClassLibrary;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
+Console.InputEncoding = System.Text.Encoding.UTF8;
 FileManager fileManager = new FileManager();
 //FtpClient ftpClient2 = new FtpClient("127.0.0.1", 1234);
 //ftpClient2.Connect();
@@ -31,7 +32,17 @@ while (true)
             fileManager.CDCommand(folderPath);
             break;
         case 3:
-            fileManager.CreateDirectory();
+            Console.Write("Nhập tên thư mục: ");
+            string? folder = Console.ReadLine();
+            if (folder == null)
+            {
+                Console.WriteLine("Tên thư mục không được để trống!");
+                break;
+            }
+            else
+            {
+                fileManager.CreateDirectory(folder);
+            }
             break;
         case 4:
             Console.Write("Nhập tên file: ");
@@ -41,7 +52,7 @@ while (true)
                 Console.WriteLine("Tên file không được để trống!");
                 break;
             }
-            string filePath = $"{fileManager.GetPath()}/{file}";
+            string filePath = @$"{fileManager.GetPath()}\{file}";
             FtpClient ftpClient = new FtpClient("127.0.0.1", 1234);
             ftpClient.Connect();
             try
