@@ -51,7 +51,6 @@ namespace ConsoleApp
 
         private void SendFileName(string filePath)
         {
-            string fileName = filePath.Split('\\').Last();
             byte[] fileNameData = Encoding.UTF8.GetBytes(fileName);
             byte[] fileNameLengthData = BitConverter.GetBytes(fileNameData.Length);
 
