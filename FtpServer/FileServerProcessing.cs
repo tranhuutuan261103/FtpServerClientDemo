@@ -19,6 +19,22 @@ namespace MyFtpServer
             _rootPath = rootPath;
         }
 
+        private void ProcessCommand(Socket socket, string command)
+        {
+            FileServerProcessing processing = new FileServerProcessing(socket, _rootPath);
+            switch (command)
+            {
+                case "get":
+                    processing.SendFile();
+                    break;
+                case "post":
+                    processing.ReceiveFile();
+                    break;
+                default:
+                    throw new Exception("Lệnh không hợp lệ");
+            }
+        }
+
         public void ReceiveFile()
         {
             byte[] fileNameLengthData = new byte[4];
@@ -91,6 +107,26 @@ namespace MyFtpServer
             return File.Exists(filePath);
         }
 
-        
+        public void Execute()
+        {
+            Thread thread = new Thread(ExecuteSample);
+            thread.Start();
+            
+        }
+
+        public void ExecuteSample()
+        {
+            // Nhận lệnh
+            byte[] lengthCommand = new byte[4];
+            _socket.Receive(lengthCommand);
+
+            int command = BitConverter.ToInt32(lengthCommand, 0);
+            byte[] commandData = new byte[command];
+            _socket.Receive(commandData);
+
+            ProcessCommand(_socket, Encoding.UTF8.GetString(commandData));
+
+            _socket.Close();
+        }
     }
 }

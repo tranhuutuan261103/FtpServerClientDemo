@@ -22,22 +22,6 @@ namespace MyFtpServer
             _socket.Bind(new System.Net.IPEndPoint(System.Net.IPAddress.Parse(_host), _port));
         }
 
-        private void ProcessCommand(Socket socket, string command)
-        {
-            FileServerProcessing processing = new FileServerProcessing(socket, _rootPath);
-            switch (command)
-            {
-                case "get":
-                    processing.SendFile();
-                    break;
-                case "post":
-                    processing.ReceiveFile();
-                    break;
-                default:
-                    throw new Exception("Lệnh không hợp lệ");
-            }
-        }
-
         public void Start()
         {
             Console.WriteLine($"FTP Server đang chạy trên {_host}:{_port}");
@@ -49,17 +33,8 @@ namespace MyFtpServer
                     Socket clientSocket = _socket.Accept();
                     Console.WriteLine($"Đã kết nối với {clientSocket.RemoteEndPoint}");
 
-                    // Nhận lệnh
-                    byte[] lengthCommand = new byte[4];
-                    clientSocket.Receive(lengthCommand);
-
-                    int command = BitConverter.ToInt32(lengthCommand, 0);
-                    byte[] commandData = new byte[command];
-                    clientSocket.Receive(commandData);
-
-                    ProcessCommand(clientSocket, Encoding.UTF8.GetString(commandData));
-
-                    clientSocket.Close();
+                    FileServerProcessing fileServerProcessing = new FileServerProcessing(clientSocket, _rootPath); 
+                    fileServerProcessing.Execute();
                 }
             }
             catch (Exception ex)
