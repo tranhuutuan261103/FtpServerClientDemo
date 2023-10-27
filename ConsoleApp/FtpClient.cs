@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyClassLibrary;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -36,7 +37,7 @@ namespace ConsoleApp
             {
                 throw new Exception("Đường dẫn tệp tin không tồn tại");
             }
-            SendAction("put");
+            SendAction("post");
             SendFileName(filePath);
             SendFileData(filePath);
         }
@@ -70,6 +71,7 @@ namespace ConsoleApp
                     _socket.Send(data, length, SocketFlags.None);
                 }
             }
+            Console.WriteLine("Đã gửi tệp tin thành công");
         }
 
         private bool IsExistFilePath(string filePath)
@@ -77,12 +79,16 @@ namespace ConsoleApp
             return File.Exists(filePath);
         }
 
-        public void ReceiveFile(string filePath)
+        public void ReceiveFile(string fileName)
         {
             SendAction("get");
-            SendFileName(filePath);
-            string fileName = filePath.Split('\\').Last();
-            ReceiveFileData(@$"C:\Users\TUAN\OneDrive\Máy tính\FileClient\{fileName}");
+            SendFileName(fileName);
+
+            // Kiểm tra xem có tệp tin nào trùng tên không
+            FileManager fileManager = new FileManager(@$"C:\Users\TUAN\OneDrive\Máy tính\FileClient\");
+            string destinationFilePath = fileManager.HandleDuplicatedFileName($"{fileName}");
+
+            ReceiveFileData(destinationFilePath);
         }
 
         private void ReceiveFileData(string filePath)
