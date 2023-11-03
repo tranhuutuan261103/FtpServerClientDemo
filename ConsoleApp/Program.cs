@@ -4,11 +4,13 @@ using MyClassLibrary;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 Console.InputEncoding = System.Text.Encoding.UTF8;
-FileManager fileManager = new FileManager();
-//FtpClient ftpClient2 = new FtpClient("127.0.0.1", 1234);
-//ftpClient2.Connect();
-//ftpClient2.SendFile("C:\\Users\\TUAN\\OneDrive\\Máy tính\\F12.txt");
-//ftpClient2.Disconnect();
+
+FtpClient ftpClient = new FtpClient("127.0.0.1", 1234);
+
+string localFolderPath = @"D:\FileClient";
+string remoteFolderPath = @"";
+FileManager fileManager = new FileManager(localFolderPath);
+
 while (true)
 {
     Console.WriteLine("----- FTP Client -----");
@@ -28,63 +30,39 @@ while (true)
             break;
         case 2:
             Console.Write("Nhập đường dẫn thư mục: ");
-            string folderPath = Console.ReadLine();
+            string folderPath = Console.ReadLine() ?? "";
+            if (folderPath == "")
+            {
+                Console.WriteLine("Đường dẫn thư mục không được để trống!");
+                break;
+            }
             fileManager.CDCommand(folderPath);
             break;
         case 3:
             Console.Write("Nhập tên thư mục: ");
-            string? folder = Console.ReadLine();
-            if (folder == null)
+            string folder = Console.ReadLine() ?? "";
+            if (folder == "")
             {
                 Console.WriteLine("Tên thư mục không được để trống!");
                 break;
             }
-            else
-            {
-                fileManager.CreateDirectory(folder);
-            }
+            fileManager.CreateDirectory(folder);
             break;
         case 4:
-            Console.Write("Nhập tên file: ");
-            string? file = Console.ReadLine();
-            if (file == null)
-            {
-                Console.WriteLine("Tên file không được để trống!");
-                break;
-            }
-            string filePath = @$"{fileManager.GetPath()}\{file}";
-            FtpClient ftpClient = new FtpClient("127.0.0.1", 1234);
-            ftpClient.Connect();
-            try
-            {
-                ftpClient.SendFile(filePath);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Lỗi: {ex.Message}");
-            }
-            ftpClient.Disconnect();
+            
             break;
         case 5:
-            Console.Write("Nhập tên file: ");
-            string? file2 = Console.ReadLine();
-            if (file2 == null)
+            Console.Write("Nhập tên thư mục: ");
+            string? fileName = Console.ReadLine();
+            if (fileName == null)
             {
                 Console.WriteLine("Tên file không được để trống!");
                 break;
             }
-            string filePath2 = file2;
-            FtpClient ftpClient2 = new FtpClient("127.0.0.1", 1234);
-            ftpClient2.Connect();
-            try
+            else
             {
-                ftpClient2.ReceiveFile(filePath2);
+                ftpClient.ReceiveFile(remoteFolderPath, fileName, fileManager.GetCurrentFolderPath());
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Lỗi: {ex.Message}");
-            }
-            ftpClient2.Disconnect();
             break;
         case 10:
             Environment.Exit(0);
