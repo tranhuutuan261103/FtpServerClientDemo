@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,97 +13,90 @@ namespace ConsoleApp
     {
         private string _host;
         private int _port;
-        private Socket _socket;
+        private TcpClient _client;
+        private StreamWriter _writer;
+        private StreamReader _reader;
+        private string Command;
+        private string Response;
+        private string remoteFolderPath = @"D:\FileServer\";
         public FtpClient(string host, int port)
         {
             _host = host;
             _port = port;
-            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        }
-        public void Connect()
-        {
-            _socket.Connect(_host, _port);
-            Console.WriteLine($"Đã kết nối tới {_host}:{_port}");
+            _client = new TcpClient();
+            
+            _client.Connect(_host, _port);
+            _writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
+            _reader = new StreamReader(_client.GetStream());
+
+            Command = "";
+            Response = "";
         }
 
-        public void Disconnect()
+        public void ReceiveFile(string remoteFolderPath, string remoteFileName, string localFolderPath)
         {
-            _socket.Close();
-            Console.WriteLine($"Đã ngắt kết nối tới {_host}:{_port}");
-        }
-
-        public void SendFile(string filePath)
-        {
-            if (IsExistFilePath(filePath) == false)
+            Command = "PASV";
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            Console.WriteLine(Response); // Console command line
+            if (Response.StartsWith("227 ") == true)
             {
-                throw new Exception("Đường dẫn tệp tin không tồn tại");
-            }
-            SendAction("post");
-            SendFileName(filePath);
-            SendFileData(filePath);
-        }
-
-        private void SendAction(string action)
-        {
-            byte[] actionData = Encoding.UTF8.GetBytes(action);
-
-            _socket.Send(BitConverter.GetBytes(actionData.Length));
-            _socket.Send(actionData);
-        }
-
-        private void SendFileName(string filePath)
-        {
-            string fileName = filePath.Split('\\').Last();
-            byte[] fileNameData = Encoding.UTF8.GetBytes(fileName);
-            byte[] fileNameLengthData = BitConverter.GetBytes(fileNameData.Length);
-
-            _socket.Send(fileNameLengthData); // Gửi độ dài của tên tệp
-            _socket.Send(fileNameData); // Gửi dữ liệu tên tệp
-        }
-
-        private void SendFileData(string filePath)
-        {
-            byte[] data = new byte[1024];
-            int length;
-            using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            {
-                while ((length = fs.Read(data, 0, data.Length)) > 0)
+                IPEndPoint server_data_endpoint = GetServerEndpoint(Response);
+                Command = string.Format("CWD {0}", remoteFolderPath.Replace("\\", "/"));
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("250 "))
                 {
-                    _socket.Send(data, length, SocketFlags.None);
+                    Console.WriteLine(Response); // Console command line
+                    Command = string.Format("RETR {0}", remoteFileName);
+                    _writer.WriteLine(Command);
+
+                    TcpClient data_channel = new TcpClient();
+                    data_channel.Connect(server_data_endpoint);
+
+                    Response = _reader.ReadLine() ?? "";
+                    Console.WriteLine(Response); // Console command line
+                    if (Response.StartsWith("150 "))
+                    {
+                        NetworkStream ns = data_channel.GetStream();
+                        int blocksize = 1024;
+                        byte[] buffer = new byte[blocksize];
+                        int byteread = 0;
+                        lock (this)
+                        {
+                            FileStream fs = new FileStream(localFolderPath + @"\" + remoteFileName, FileMode.OpenOrCreate, FileAccess.Write);
+                            while (true)
+                            {
+                                byteread = ns.Read(buffer, 0, blocksize);
+                                fs.Write(buffer, 0, byteread);
+                                if (byteread == 0)
+                                {
+                                    break;
+                                }
+                            }
+                            fs.Flush();
+                            fs.Close();
+                        }
+                        Response = _reader.ReadLine() ?? "";
+                        if (Response.StartsWith("226 "))
+                        {
+                            Console.WriteLine(Response); // Console command line
+                            data_channel.Close();
+                        }
+                    }
                 }
             }
-            Console.WriteLine("Đã gửi tệp tin thành công");
         }
 
-        private bool IsExistFilePath(string filePath)
+        private IPEndPoint GetServerEndpoint(string response)
         {
-            return File.Exists(filePath);
-        }
-
-        public void ReceiveFile(string fileName)
-        {
-            SendAction("get");
-            SendFileName(fileName);
-
-            // Kiểm tra xem có tệp tin nào trùng tên không
-            FileManager fileManager = new FileManager(@$"C:\Users\TUAN\OneDrive\Máy tính\FileClient\");
-            string destinationFilePath = fileManager.HandleDuplicatedFileName($"{fileName}");
-
-            ReceiveFileData(destinationFilePath);
-        }
-
-        private void ReceiveFileData(string filePath)
-        {
-            byte[] data = new byte[1024];
-            int length;
-            using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-            {
-                while ((length = _socket.Receive(data)) > 0)
-                {
-                    fs.Write(data, 0, length);
-                }
-            }
-            Console.WriteLine("Đã nhận tệp tin thành công");
+            int start = response.IndexOf('(');
+            int end = response.IndexOf(')');
+            string substr = response.Substring(start + 1, end - start - 1);
+            string[] octets = substr.Split(',');
+            int port = int.Parse(octets[4]) * 256 + int.Parse(octets[5]);
+            IPAddress address = new IPAddress(new byte[] { byte.Parse(octets[0]), byte.Parse(octets[1]), byte.Parse(octets[2]), byte.Parse(octets[3]) });
+            return new IPEndPoint(address, port);
         }
     }
 }

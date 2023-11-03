@@ -15,6 +15,11 @@ namespace MyClassLibrary
             _folderPath = @"D:\";
         }
 
+        public string GetCurrentFolderPath()
+        {
+            return _folderPath;
+        }
+
         public void CreateDirectory(string folderName)
         {
             try
