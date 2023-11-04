@@ -45,6 +45,33 @@ namespace MyFtpServer
             }
         }
 
+        public void ReceiveFile(string filePath)
+        {
+            if (IsExistFilePath(filePath) == true)
+            {
+                throw new Exception("Đường dẫn tệp tin đã tồn tại");
+            }
+            NetworkStream ns = _socket.GetStream();
+            int blocksize = 1024;
+            byte[] buffer = new byte[blocksize];
+            int byteread = 0;
+            lock (this)
+            {
+                FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write);
+                while (true)
+                {
+                    byteread = ns.Read(buffer, 0, blocksize);
+                    fs.Write(buffer, 0, byteread);
+                    if (byteread == 0)
+                    {
+                        break;
+                    }
+                }
+                fs.Flush();
+                fs.Close();
+            }
+        }
+
         private bool IsExistFilePath(string filePath)
         {
             return System.IO.File.Exists(filePath);
