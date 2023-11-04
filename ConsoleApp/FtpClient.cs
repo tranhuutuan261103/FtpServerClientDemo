@@ -18,7 +18,7 @@ namespace ConsoleApp
         private StreamReader _reader;
         private string Command;
         private string Response;
-        private string remoteFolderPath = @"D:\FileServer\";
+        //private string remoteFolderPath = @"D:\FileServer\";
         public FtpClient(string host, int port)
         {
             _host = host;
@@ -33,6 +33,27 @@ namespace ConsoleApp
             Response = "";
         }
 
+        public string GetRemoteFolderPath()
+        {
+            Command = "PWD";
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("257 ") == true)
+            {
+                string[] tokens = Response.Split('"');
+                return tokens[1];
+            }
+            return "";
+        }
+
+        public void SetRemoteFolderPath(string remoteFolderPath)
+        {
+            Command = string.Format("CWD {0}", remoteFolderPath.Replace("\\", "/"));
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            Console.WriteLine(Response); // Console command line
+        }
+
         public void ReceiveFile(string remoteFolderPath, string remoteFileName, string localFolderPath)
         {
             Command = "PASV";
@@ -45,9 +66,9 @@ namespace ConsoleApp
                 Command = string.Format("CWD {0}", remoteFolderPath.Replace("\\", "/"));
                 _writer.WriteLine(Command);
                 Response = _reader.ReadLine() ?? "";
+                Console.WriteLine(Response); // Console command line
                 if (Response.StartsWith("250 "))
                 {
-                    Console.WriteLine(Response); // Console command line
                     Command = string.Format("RETR {0}", remoteFileName);
                     _writer.WriteLine(Command);
 
@@ -76,6 +97,59 @@ namespace ConsoleApp
                             }
                             fs.Flush();
                             fs.Close();
+                        }
+                        Response = _reader.ReadLine() ?? "";
+                        if (Response.StartsWith("226 "))
+                        {
+                            Console.WriteLine(Response); // Console command line
+                            data_channel.Close();
+                        }
+                    }
+                }
+            }
+        }
+
+        public void SendFile(string remoteFolderPath, string remoteFileName, string localFolderPath)
+        {
+            Command = "PASV";
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            Console.WriteLine(Response); // Console command line
+            if (Response.StartsWith("227 ") == true)
+            {
+                IPEndPoint server_data_endpoint = GetServerEndpoint(Response);
+                Command = string.Format("CWD {0}", remoteFolderPath.Replace("\\", "/"));
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("250 "))
+                {
+                    Console.WriteLine(Response); // Console command line
+                    Command = string.Format("STOR {0}", remoteFileName);
+                    _writer.WriteLine(Command);
+                    TcpClient data_channel = new TcpClient();
+                    data_channel.Connect(server_data_endpoint);
+                    Response = _reader.ReadLine() ?? "";
+                    Console.WriteLine(Response); // Console command line
+                    if (Response.StartsWith("150 "))
+                    {
+                        NetworkStream ns = data_channel.GetStream();
+                        int blocksize = 1024;
+                        byte[] buffer = new byte[blocksize];
+                        int byteread = 0;
+                        lock (this)
+                        {
+                            FileStream fs = new FileStream(localFolderPath + @"\" + remoteFileName, FileMode.Open, FileAccess.Read);
+                            while (true)
+                            {
+                                byteread = fs.Read(buffer, 0, blocksize);
+                                ns.Write(buffer, 0, byteread);
+                                if (byteread == 0)
+                                {
+                                    break;
+                                }
+                            }
+                            ns.Flush();
+                            ns.Close();
                         }
                         Response = _reader.ReadLine() ?? "";
                         if (Response.StartsWith("226 "))

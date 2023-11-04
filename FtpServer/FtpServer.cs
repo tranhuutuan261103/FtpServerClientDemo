@@ -72,7 +72,7 @@ namespace MyFtpServer
 
             Console.WriteLine($"Đã kết nối tới {iPEndPoint.Address} có cổng {iPEndPoint.Port}");
             int passivePort = GetPassivePort();
-            string remoteFolderPath = "";
+            string remoteFolderPath = @"\";
             try
             {
                 while (true)
@@ -95,8 +95,22 @@ namespace MyFtpServer
                     else if (command == "CWD")
                     {
                         string folderPath = part[1];
-                        remoteFolderPath += @"\" + folderPath;
-                        writer.WriteLine("250 Change directory successful");
+                        if (folderPath == null)
+                        {
+                            writer.WriteLine("501 Syntax error in parameters or arguments"); 
+                            continue;
+                        }
+                        if (Directory.Exists(_rootPath + folderPath) == false)
+                        {
+                            writer.WriteLine("550 Couldn't open the file or directory");
+                            continue;
+                        }
+                        remoteFolderPath = folderPath;
+                        writer.WriteLine("250 CWD command successful");
+                    }
+                    else if (command == "PWD")
+                    {
+                        writer.WriteLine($"257 \"{remoteFolderPath}\" is current directory.");
                     }
                     else if (command == "RETR")
                     {
@@ -116,15 +130,48 @@ namespace MyFtpServer
                         writer.WriteLine("226 Transfer complete");
                         tcpClient1.Close();
                     }
+                    else if (command == "STOR")
+                    {
+                        string filePath = part[1];
+                        string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
+                        TcpClient tcpClient1 = _passiveSocket[passivePort - 30000].AcceptTcpClient();
+                        FileServerProcessing processing = new FileServerProcessing(tcpClient1, fullPath);
+                        writer.WriteLine("150 Opening data connection");
+                        processing.ReceiveFile(fullPath);
+                        writer.WriteLine("226 Transfer complete");
+                        tcpClient1.Close();
+                    }
+                    else if (command == "LIST")
+                    {
+                        /*
+                        string fullPath = _rootPath + remoteFolderPath;
+                        TcpClient tcpClient1 = _passiveSocket[passivePort - 30000].AcceptTcpClient();
+                        FileServerProcessing processing = new FileServerProcessing(tcpClient1, fullPath);
+                        writer.WriteLine("150 Opening data connection");
+                        processing.SendListFile(fullPath);
+                        writer.WriteLine("226 Transfer complete");
+                        tcpClient1.Close();
+                        */
+                    }
+                    else if (command == "QUIT")
+                    {
+                        writer.WriteLine("221 Goodbye");
+                        break;
+                    }
+                    else
+                    {
+                        writer.WriteLine("500 Syntax error, command unrecognized");
+                    }
                 }
             }
-            catch (IOException ex)
+            catch (IOException)
             {
-                Console.WriteLine("Error: " + ex.ToString());
+                //Console.WriteLine("Error: " + ex.ToString());
             }
             finally
             {
                 tcpClient.Close();
+                Console.WriteLine($"Đã ngắt kết nối với {iPEndPoint.Address} có cổng {iPEndPoint.Port}");
             }
         }
 
