@@ -41,7 +41,7 @@ namespace ConsoleApp
             thread.Start();
         }
 
-        public void ExecuteClientCommand(string clientCommand)
+        public object? ExecuteClientCommand(string clientCommand)
         {
             string command = clientCommand.Split(' ')[0].ToUpper();
             string[] args = clientCommand.Split(' ').Skip(1).ToArray();
@@ -51,14 +51,21 @@ namespace ConsoleApp
                     Thread thread = new Thread(() => ListRemoteFolderAndFiles());
                     thread.Start();
                     break;
+                case "MLSD":
+                    return ListRemoteFolderAndFiles();
                 case "CWD":
+                    /*
                     Thread threadcwd = new Thread(() => SetRemoteFolderPath(args[0]));
                     threadcwd.Start();
+                    */
+                    SetRemoteFolderPath(args[0]);
                     break;
                 case "PWD":
+                    /*
                     Thread threadpwd = new Thread(() => GetRemoteFolderPath());
                     threadpwd.Start();
-                    break;
+                    */
+                    return GetRemoteFolderPath();
                 case "STOR":
                     ftpClientSession.PushQueueCommand(clientCommand);
                     break;
@@ -71,6 +78,7 @@ namespace ConsoleApp
                 default:
                     break;
             }
+            return null;
         }
 
         public void ExecuteSessionCommand(string sessionCommand, TcpClient tcpSessionClient)
@@ -105,12 +113,16 @@ namespace ConsoleApp
             return "";
         }
 
-        public void SetRemoteFolderPath(string remoteFolderPath)
+        public bool SetRemoteFolderPath(string remoteFolderPath)
         {
             Command = string.Format("CWD {0}", remoteFolderPath.Replace("\\", "/"));
             _writer.WriteLine(Command);
             Response = _reader.ReadLine() ?? "";
-            Console.WriteLine(Response); // Console command line
+            if (Response.StartsWith("250 ") == true)
+            {
+                return true;
+            }
+            return false;
         }
 
         public List<FileInfor> ListRemoteFolderAndFiles()
@@ -226,33 +238,34 @@ namespace ConsoleApp
                 }
             }
         }
-        /*
+        
         public void ReceiveFolder(string remoteFolderPath, string localFolderPath)
         {
-            if (IsDirectory(remoteFolderPath))
+            bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
+            if (currentRemoteFolderPath == true)
             {
-                // 1. Tạo thư mục server nếu nó không tồn tại.
-                if (!Directory.Exists(localFolderPath))
+                List<FileInfor> fileInfors = ListRemoteFolderAndFiles();
+                foreach (FileInfor fileInfor in fileInfors)
                 {
-                    Directory.CreateDirectory(localFolderPath);
+                    if (fileInfor.IsDirectory == true)
+                    {
+                        string newRemoteFolderPath = remoteFolderPath + @"\" + fileInfor.Name;
+                        string newLocalFolderPath = localFolderPath + @"\" + fileInfor.Name;
+                        if (Directory.Exists(newLocalFolderPath) == false)
+                        {
+                            Directory.CreateDirectory(newLocalFolderPath);
+                        }
+                        ReceiveFolder(newRemoteFolderPath, newLocalFolderPath);
+                    }
+                    else
+                    {
+                        string command = $"RETR {remoteFolderPath} {fileInfor.Name} {localFolderPath}";
+                        ftpClientSession.PushQueueCommand(command);
+                    }
                 }
-
-                //List<string> fileList = ListFilesAndFolders(remoteFolderPath);
-                List<FileInfor> fileList = ListRemoteFolderAndFiles();
-
-                for (int i = 0; i < fileList.Count(); i++)
-                {
-                    string remoteItemPath = remoteFolderPath + "\\" + fileList[i].Name;
-                    string localItemPath = localFolderPath + "\\" + fileList[i].Name;
-                    ReceiveFolder(remoteItemPath, localItemPath);
-                }
-            }
-            else
-            {
-                ReceiveFile(remoteFolderPath, localFolderPath);
             }
         }
-        */
+        
         private IPEndPoint GetServerEndpoint(string response)
         {
             int start = response.IndexOf('(');
