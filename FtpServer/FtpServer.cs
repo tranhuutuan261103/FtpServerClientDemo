@@ -1,9 +1,11 @@
-﻿using System;
+﻿using MyClassLibrary.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection.PortableExecutable;
+using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,6 +18,7 @@ namespace MyFtpServer
         private TcpListener _controlSocket;
         private TcpListener[] _passiveSocket;
         private readonly string _rootPath = @"D:\FileServer";
+        int _sessionID = 2;
 
         public FtpServer(string host, int port)
         {
@@ -63,6 +66,8 @@ namespace MyFtpServer
             if (client == null)
                 return;
 
+            int sessionID = GetSessionID();
+
             TcpClient tcpClient = (TcpClient)client;
             NetworkStream ns = tcpClient.GetStream();
             StreamReader reader = new StreamReader(ns);
@@ -83,6 +88,7 @@ namespace MyFtpServer
                     string? request = reader.ReadLine();
                     if (request == null)
                         break;
+                    Console.WriteLine($"C> Session{sessionID} {request}");
 
                     string[] part = request.Split(' ');
                     string command = part[0];
@@ -91,6 +97,7 @@ namespace MyFtpServer
                         int newPassivePort = GetPassivePort();
                         passivePort = newPassivePort;
                         writer.WriteLine($"227 Entering Passive Mode (127,0,0,1,{passivePort / 256},{passivePort % 256})");
+                        Console.WriteLine($"S> Session{sessionID} 227 Entering Passive Mode (127,0,0,1,{passivePort / 256},{passivePort % 256})");
                     }
                     else if (command == "CWD")
                     {
@@ -107,10 +114,47 @@ namespace MyFtpServer
                         }
                         remoteFolderPath = folderPath;
                         writer.WriteLine("250 CWD command successful");
+                        Console.WriteLine($"S> Session{sessionID} 250 CWD command successful");
                     }
                     else if (command == "PWD")
                     {
                         writer.WriteLine($"257 \"{remoteFolderPath}\" is current directory.");
+                    }
+                    else if (command == "LIST")
+                    {
+                        List<FileInfor> list = new List<FileInfor>();
+                        string[] directories = Directory.GetDirectories(_rootPath + remoteFolderPath);
+                        foreach (var directory in directories)
+                        {
+                            DirectoryInfo dirInfo = new DirectoryInfo(directory);
+                            list.Add(new FileInfor()
+                            {
+                                Name = dirInfo.Name,
+                                Length = 0,
+                                LastWriteTime = dirInfo.LastWriteTime,
+                                IsDirectory = true
+                            });
+                        }
+                        string[] files = Directory.GetFiles(_rootPath + remoteFolderPath);
+
+                        foreach (var file in files)
+                        {
+                            FileInfo fileInfo = new FileInfo(file);
+                            list.Add(new FileInfor()
+                            {
+                                Name = fileInfo.Name,
+                                Length = fileInfo.Length,
+                                LastWriteTime = fileInfo.LastWriteTime,
+                                IsDirectory = false
+                            });
+                        }
+
+                        TcpClient tcpClient1 = _passiveSocket[passivePort - 30000].AcceptTcpClient();
+                        FileServerProcessing processing = new FileServerProcessing(tcpClient1, "");
+                        writer.WriteLine("150 Opening data connection");
+                        processing.SendList(list);
+
+                        writer.WriteLine("226 Transfer complete");
                     }
                     else if (command == "RETR")
                     {
@@ -126,8 +170,10 @@ namespace MyFtpServer
                         TcpClient tcpClient1 = _passiveSocket[passivePort - 30000].AcceptTcpClient();
                         FileServerProcessing processing = new FileServerProcessing(tcpClient1, fullPath);
                         writer.WriteLine("150 Opening data connection");
+                        Console.WriteLine($"S> Session{sessionID} 150 Opening data connection");
                         processing.SendFile(fullPath);
                         writer.WriteLine("226 Transfer complete");
+                        Console.WriteLine($"S> Session{sessionID} 226 Transfer complete");
                         tcpClient1.Close();
                     }
                     else if (command == "STOR")
@@ -137,8 +183,10 @@ namespace MyFtpServer
                         TcpClient tcpClient1 = _passiveSocket[passivePort - 30000].AcceptTcpClient();
                         FileServerProcessing processing = new FileServerProcessing(tcpClient1, fullPath);
                         writer.WriteLine("150 Opening data connection");
+                        Console.WriteLine($"S> Session{sessionID} 150 Opening data connection");
                         processing.ReceiveFile(fullPath);
                         writer.WriteLine("226 Transfer complete");
+                        Console.WriteLine($"S> Session{sessionID} 226 Transfer complete");
                         tcpClient1.Close();
                     }
                     else if (command == "LIST")
@@ -180,6 +228,11 @@ namespace MyFtpServer
             Random random = new Random();
             int port = random.Next(30000, 31000);
             return port;
+        }
+
+        private int GetSessionID()
+        {
+            return _sessionID++;
         }
     }
 }

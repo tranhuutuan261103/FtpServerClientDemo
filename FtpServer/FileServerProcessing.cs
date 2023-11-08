@@ -1,4 +1,5 @@
 ﻿using MyClassLibrary;
+using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,6 +71,16 @@ namespace MyFtpServer
                 fs.Flush();
                 fs.Close();
             }
+        }
+
+        public void SendList(List<FileInfor> fileInfors)
+        {
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(fileInfors);
+            var bytes = Encoding.UTF8.GetBytes(json);
+            NetworkStream ns = _socket.GetStream();
+            ns.Write(bytes, 0, bytes.Length);
+            ns.Flush();
+            ns.Close();
         }
 
         private bool IsExistFilePath(string filePath)

@@ -46,7 +46,7 @@ while (true)
             Console.WriteLine($"Bạn đang ở đây: {ftpClient.GetRemoteFolderPath()}");
             break;
         case 4:
-            //fileManager.ListDirectoryContents();
+            ftpClient.ExecuteClientCommand("LIST");
             break;
         case 5:
             Console.Write("Nhập đường dẫn thư mục: ");
@@ -78,7 +78,8 @@ while (true)
             }
             else
             {
-                ftpClient.SendFile(remoteFolderPath, fileName4, fileManager.GetCurrentFolderPath());
+                ftpClient.ExecuteClientCommand($"stor {remoteFolderPath} {fileName4} {fileManager.GetCurrentFolderPath()}");
+                //ftpClient.SendFile(remoteFolderPath, fileName4, fileManager.GetCurrentFolderPath());
             }
             break;
         case 8:
@@ -91,8 +92,13 @@ while (true)
             }
             else
             {
-                ftpClient.ReceiveFile(remoteFolderPath, fileName, fileManager.GetCurrentFolderPath());
+                ftpClient.ExecuteClientCommand($"retr {remoteFolderPath} {fileName} {fileManager.GetCurrentFolderPath()}");
+                //ftpClient.ReceiveFile(remoteFolderPath, fileName, fileManager.GetCurrentFolderPath());
             }
+            break;
+        case 9:
+            ftpClient.ExecuteClientCommand($"stor {remoteFolderPath} xampp.rar {fileManager.GetCurrentFolderPath()}");
+            ftpClient.ExecuteClientCommand($"retr {remoteFolderPath} xamppCopy.rar {fileManager.GetCurrentFolderPath()}");
             break;
         case 0:
             Environment.Exit(0);
