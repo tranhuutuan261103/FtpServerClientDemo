@@ -1,9 +1,11 @@
 ﻿using MyClassLibrary;
+using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,6 +16,8 @@ namespace ConsoleApp
         private string _host;
         private int _port;
         private TcpClient _client;
+        //       private TcpClient[] _subClient = new TcpClient[2];
+        private FtpClientSession ftpClientSession;
         private StreamWriter _writer;
         private StreamReader _reader;
         private string Command;
@@ -31,6 +35,61 @@ namespace ConsoleApp
 
             Command = "";
             Response = "";
+
+            ftpClientSession = new FtpClientSession(this);
+            Thread thread = new Thread(() => ftpClientSession.Process());
+            thread.Start();
+        }
+
+        public void ExecuteClientCommand(string clientCommand)
+        {
+            string command = clientCommand.Split(' ')[0].ToUpper();
+            string[] args = clientCommand.Split(' ').Skip(1).ToArray();
+            switch (command)
+            {
+                case "LIST":
+                    Thread thread = new Thread(() => ListRemoteFolderAndFiles());
+                    thread.Start();
+                    break;
+                case "CWD":
+                    Thread threadcwd = new Thread(() => SetRemoteFolderPath(args[0]));
+                    threadcwd.Start();
+                    break;
+                case "PWD":
+                    Thread threadpwd = new Thread(() => GetRemoteFolderPath());
+                    threadpwd.Start();
+                    break;
+                case "STOR":
+                    ftpClientSession.PushQueueCommand(clientCommand);
+                    break;
+                case "RETR":
+                    ftpClientSession.PushQueueCommand(clientCommand);
+                    break;
+                case "quit":
+                    //Quit();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public void ExecuteSessionCommand(string sessionCommand, TcpClient tcpSessionClient)
+        {
+            string command = sessionCommand.Split(" ")[0].ToUpper();
+            string[] args = sessionCommand.Split(" ").Skip(1).ToArray();
+            switch (command)
+            {
+                case "STOR":
+                    Thread thread = new Thread(() => SendFile(args[0], args[1], args[2], tcpSessionClient));
+                    thread.Start();
+                    break;
+                case "RETR":
+                    Thread thread1 = new Thread(() => ReceiveFile(args[0], args[1], args[2], tcpSessionClient));
+                    thread1.Start();
+                    break;
+                default:
+                    break;
+            }
         }
 
         public string GetRemoteFolderPath()
@@ -54,54 +113,73 @@ namespace ConsoleApp
             Console.WriteLine(Response); // Console command line
         }
 
-        public void ReceiveFile(string remoteFolderPath, string remoteFileName, string localFolderPath)
+        public List<FileInfor> ListRemoteFolderAndFiles()
         {
+            List<FileInfor> list = new List<FileInfor>();
             Command = "PASV";
             _writer.WriteLine(Command);
             Response = _reader.ReadLine() ?? "";
-            Console.WriteLine(Response); // Console command line
+            //Console.WriteLine(Response); // Console command line
+            if (Response.StartsWith("227 ") == true)
+            {
+                IPEndPoint server_data_endpoint = GetServerEndpoint(Response);
+                Command = "LIST";
+                _writer.WriteLine(Command);
+                TcpClient data_channel = new TcpClient();
+                data_channel.Connect(server_data_endpoint);
+                Response = _reader.ReadLine() ?? "";
+                //Console.WriteLine(Response); // Console command line
+                if (Response.StartsWith("150 "))
+                {
+                    FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel);
+                    list = fileClientProcessing.ReceiveListRemoteFiles();
+
+                    Response = _reader.ReadLine() ?? "";
+                    if (Response.StartsWith("226 "))
+                    {
+                        //Console.WriteLine(Response); // Console command line
+                        data_channel.Close();
+                    }
+                }
+            }
+            return list;
+        }
+
+        public void ReceiveFile(string remoteFolderPath, string remoteFileName, string localFolderPath, TcpClient tcpSessionClient)
+        {
+            StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
+            StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
+
+            Command = "PASV";
+            streamWriter.WriteLine(Command);
+            Response = streamReader.ReadLine() ?? "";
+            //Console.WriteLine(Response); // Console command line
             if (Response.StartsWith("227 ") == true)
             {
                 IPEndPoint server_data_endpoint = GetServerEndpoint(Response);
                 Command = string.Format("CWD {0}", remoteFolderPath.Replace("\\", "/"));
-                _writer.WriteLine(Command);
-                Response = _reader.ReadLine() ?? "";
-                Console.WriteLine(Response); // Console command line
+                streamWriter.WriteLine(Command);
+                Response = streamReader.ReadLine() ?? "";
+                //Console.WriteLine(Response); // Console command line
                 if (Response.StartsWith("250 "))
                 {
                     Command = string.Format("RETR {0}", remoteFileName);
-                    _writer.WriteLine(Command);
+                    streamWriter.WriteLine(Command);
 
                     TcpClient data_channel = new TcpClient();
                     data_channel.Connect(server_data_endpoint);
 
-                    Response = _reader.ReadLine() ?? "";
-                    Console.WriteLine(Response); // Console command line
+                    Response = streamReader.ReadLine() ?? "";
+                    //Console.WriteLine(Response); // Console command line
                     if (Response.StartsWith("150 "))
                     {
-                        NetworkStream ns = data_channel.GetStream();
-                        int blocksize = 1024;
-                        byte[] buffer = new byte[blocksize];
-                        int byteread = 0;
-                        lock (this)
-                        {
-                            FileStream fs = new FileStream(localFolderPath + @"\" + remoteFileName, FileMode.OpenOrCreate, FileAccess.Write);
-                            while (true)
-                            {
-                                byteread = ns.Read(buffer, 0, blocksize);
-                                fs.Write(buffer, 0, byteread);
-                                if (byteread == 0)
-                                {
-                                    break;
-                                }
-                            }
-                            fs.Flush();
-                            fs.Close();
-                        }
-                        Response = _reader.ReadLine() ?? "";
+                        FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel);
+                        fileClientProcessing.ReceiveFile(localFolderPath + @"\" + remoteFileName);
+
+                        Response = streamReader.ReadLine() ?? "";
                         if (Response.StartsWith("226 "))
                         {
-                            Console.WriteLine(Response); // Console command line
+                            //Console.WriteLine(Response); // Console command line
                             data_channel.Close();
                         }
                     }
@@ -109,59 +187,72 @@ namespace ConsoleApp
             }
         }
 
-        public void SendFile(string remoteFolderPath, string remoteFileName, string localFolderPath)
+        public void SendFile(string remoteFolderPath, string remoteFileName, string localFolderPath, TcpClient tcpSessionClient)
         {
+            StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
+            StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
+
             Command = "PASV";
-            _writer.WriteLine(Command);
-            Response = _reader.ReadLine() ?? "";
-            Console.WriteLine(Response); // Console command line
+            streamWriter.WriteLine(Command);
+            Response = streamReader.ReadLine() ?? "";
+            //Console.WriteLine(Response); // Console command line
             if (Response.StartsWith("227 ") == true)
             {
                 IPEndPoint server_data_endpoint = GetServerEndpoint(Response);
                 Command = string.Format("CWD {0}", remoteFolderPath.Replace("\\", "/"));
-                _writer.WriteLine(Command);
-                Response = _reader.ReadLine() ?? "";
+                streamWriter.WriteLine(Command);
+                Response = streamReader.ReadLine() ?? "";
                 if (Response.StartsWith("250 "))
                 {
-                    Console.WriteLine(Response); // Console command line
+                    //Console.WriteLine(Response); // Console command line
                     Command = string.Format("STOR {0}", remoteFileName);
-                    _writer.WriteLine(Command);
+                    streamWriter.WriteLine(Command);
                     TcpClient data_channel = new TcpClient();
                     data_channel.Connect(server_data_endpoint);
-                    Response = _reader.ReadLine() ?? "";
-                    Console.WriteLine(Response); // Console command line
+                    Response = streamReader.ReadLine() ?? "";
+                    //Console.WriteLine(Response); // Console command line
                     if (Response.StartsWith("150 "))
                     {
-                        NetworkStream ns = data_channel.GetStream();
-                        int blocksize = 1024;
-                        byte[] buffer = new byte[blocksize];
-                        int byteread = 0;
-                        lock (this)
-                        {
-                            FileStream fs = new FileStream(localFolderPath + @"\" + remoteFileName, FileMode.Open, FileAccess.Read);
-                            while (true)
-                            {
-                                byteread = fs.Read(buffer, 0, blocksize);
-                                ns.Write(buffer, 0, byteread);
-                                if (byteread == 0)
-                                {
-                                    break;
-                                }
-                            }
-                            ns.Flush();
-                            ns.Close();
-                        }
-                        Response = _reader.ReadLine() ?? "";
+                        FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel);
+                        fileClientProcessing.SendFile(localFolderPath + @"\" + remoteFileName);
+
+                        Response = streamReader.ReadLine() ?? "";
                         if (Response.StartsWith("226 "))
                         {
-                            Console.WriteLine(Response); // Console command line
+                            //Console.WriteLine(Response); // Console command line
                             data_channel.Close();
                         }
                     }
                 }
             }
         }
+        /*
+        public void ReceiveFolder(string remoteFolderPath, string localFolderPath)
+        {
+            if (IsDirectory(remoteFolderPath))
+            {
+                // 1. Tạo thư mục server nếu nó không tồn tại.
+                if (!Directory.Exists(localFolderPath))
+                {
+                    Directory.CreateDirectory(localFolderPath);
+                }
 
+                //List<string> fileList = ListFilesAndFolders(remoteFolderPath);
+                List<FileInfor> fileList = ListRemoteFolderAndFiles();
+
+                for (int i = 0; i < fileList.Count(); i++)
+                {
+                    string remoteItemPath = remoteFolderPath + "\\" + fileList[i].Name;
+                    string localItemPath = localFolderPath + "\\" + fileList[i].Name;
+                    ReceiveFolder(remoteItemPath, localItemPath);
+                }
+            }
+            else
+            {
+                ReceiveFile(remoteFolderPath, localFolderPath);
+            }
+        }
+        */
         private IPEndPoint GetServerEndpoint(string response)
         {
             int start = response.IndexOf('(');
@@ -171,6 +262,20 @@ namespace ConsoleApp
             int port = int.Parse(octets[4]) * 256 + int.Parse(octets[5]);
             IPAddress address = new IPAddress(new byte[] { byte.Parse(octets[0]), byte.Parse(octets[1]), byte.Parse(octets[2]), byte.Parse(octets[3]) });
             return new IPEndPoint(address, port);
+        }
+
+        private bool IsDirectory(string remoteFolderPath)
+        {   Command = string.Format("CWD {0}", remoteFolderPath.Replace("\\", "/"));
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("250 "))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
