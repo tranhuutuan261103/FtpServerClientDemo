@@ -1,12 +1,88 @@
-﻿using System;
+﻿using MyClassLibrary.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ConsoleApp
 {
-    internal class FileClientProcessing
+    public class FileClientProcessing
     {
+        private TcpClient _tcpClient;
+        private StreamWriter _writer;
+        private StreamReader _reader;
+
+        public FileClientProcessing(TcpClient tcpClient)
+        {
+            _tcpClient = tcpClient;
+            _writer = new StreamWriter(_tcpClient.GetStream()) { AutoFlush = true };
+            _reader = new StreamReader(_tcpClient.GetStream());
+        }
+
+        public List<FileInfor> ReceiveListRemoteFiles()
+        {
+            NetworkStream ns = _tcpClient.GetStream();
+            byte[] buffer = new byte[1024];
+            int byteread = 0;
+            string data = "";
+            while (true)
+            {
+                byteread = ns.Read(buffer, 0, 1024);
+                data += Encoding.ASCII.GetString(buffer, 0, byteread);
+                if (byteread == 0)
+                {
+                    break;
+                }
+            }
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileInfor>>(data) ?? new List<FileInfor>();
+        }
+
+        public void ReceiveFile(string fullFilePath)
+        {
+            NetworkStream ns = _tcpClient.GetStream();
+            int blocksize = 1024;
+            byte[] buffer = new byte[blocksize];
+            int byteread = 0;
+            lock (this)
+            {
+                FileStream fs = new FileStream(fullFilePath, FileMode.OpenOrCreate, FileAccess.Write);
+                while (true)
+                {
+                    byteread = ns.Read(buffer, 0, blocksize);
+                    fs.Write(buffer, 0, byteread);
+                    if (byteread == 0)
+                    {
+                        break;
+                    }
+                }
+                fs.Flush();
+                fs.Close();
+            }
+        }
+
+        public void SendFile(string fullFilePath)
+        {
+            NetworkStream ns = _tcpClient.GetStream();
+            int blocksize = 1024;
+            byte[] buffer = new byte[blocksize];
+            int byteread = 0;
+            lock (this)
+            {
+                FileStream fs = new FileStream(fullFilePath, FileMode.Open, FileAccess.Read);
+                while (true)
+                {
+                    byteread = fs.Read(buffer, 0, blocksize);
+                    ns.Write(buffer, 0, byteread);
+                    if (byteread == 0)
+                    {
+                        break;
+                    }
+                }
+                ns.Flush();
+                ns.Close();
+            }
+        }
     }
 }
