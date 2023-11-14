@@ -25,7 +25,7 @@ while (true)
     Console.WriteLine("6. Tạo thư mục");
     Console.WriteLine("7. Gửi file");
     Console.WriteLine("8. Nhận file");
-    Console.WriteLine("8. Test gửi và nhận file đồng thời");
+    Console.WriteLine("9. Gửi folder");
     Console.WriteLine("10. Nhận folder");
     Console.WriteLine("0. Thoát");
     Console.Write("Chọn chức năng: ");
@@ -112,8 +112,14 @@ while (true)
             }
             break;
         case 9:
-            ftpClient.ExecuteClientCommand($"stor {remoteFolderPath} xampp.rar {fileManager.GetCurrentFolderPath()}");
-            ftpClient.ExecuteClientCommand($"retr {remoteFolderPath} xamppCopy.rar {fileManager.GetCurrentFolderPath()}");
+            Console.Write("Enter folder name: ");
+            string? folderName9 = Console.ReadLine();
+            if (folderName9 == null)
+            {
+                Console.WriteLine("Tên thư mục không được để trống!");
+                break;
+            }
+            ftpClient.SendFolder(folderName9, fileManager.GetCurrentFolderPath());
             break;
         case 10:
             Console.Write("Enter folder name: ");
