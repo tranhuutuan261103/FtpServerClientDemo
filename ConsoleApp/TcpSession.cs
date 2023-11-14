@@ -19,6 +19,7 @@ namespace ConsoleApp
             _clientSesstion = new TcpClient();
             _host = host;
             _port = port;
+            _status = TcpSessionStatus.Closed;
         }
 
         public TcpClient GetTcpClient()

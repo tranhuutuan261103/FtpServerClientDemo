@@ -18,7 +18,7 @@ namespace ConsoleApp
             _client = client;
             for (int i = 0; i < _subClient.Length ; i++)
             {
-                _subClient[i] = new TcpSession("127.0.0.1", 1234);
+                _subClient[i] = new TcpSession(_client.GetHost(), _client.GetPort());
             }
         }
 
