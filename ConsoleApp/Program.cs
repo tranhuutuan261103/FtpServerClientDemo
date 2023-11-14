@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using ConsoleApp;
 using MyClassLibrary;
+using MyClassLibrary.Common;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 Console.InputEncoding = System.Text.Encoding.UTF8;
@@ -24,6 +25,8 @@ while (true)
     Console.WriteLine("6. Tạo thư mục");
     Console.WriteLine("7. Gửi file");
     Console.WriteLine("8. Nhận file");
+    Console.WriteLine("9. Gửi folder");
+    Console.WriteLine("10. Nhận folder");
     Console.WriteLine("0. Thoát");
     Console.Write("Chọn chức năng: ");
     int choice = int.Parse(Console.ReadLine() ?? "0");
@@ -43,10 +46,21 @@ while (true)
             fileManager.CDCommand(folderPath);
             break;
         case 3:
-            Console.WriteLine($"Bạn đang ở đây: {ftpClient.GetRemoteFolderPath()}");
+            Console.WriteLine($"Bạn đang ở đây: {ftpClient.ExecuteClientCommand("PWD")}");
             break;
         case 4:
-            ftpClient.ExecuteClientCommand("LIST");
+            object? obj = ftpClient.ExecuteClientCommand("MLSD");
+            if (obj == null)
+            {
+                Console.WriteLine("Lỗi!");
+                break;
+            }
+            
+            List<FileInfor> fileInfors = (List<FileInfor>)obj;
+            foreach (var fileInfor in fileInfors)
+            {
+                Console.WriteLine(fileInfor.ToString());
+            }
             break;
         case 5:
             Console.Write("Nhập đường dẫn thư mục: ");
@@ -56,7 +70,8 @@ while (true)
                 Console.WriteLine("Đường dẫn thư mục không được để trống!");
                 break;
             }
-            ftpClient.SetRemoteFolderPath(folderPath4);
+            //ftpClient.SetRemoteFolderPath(folderPath4);
+            ftpClient.ExecuteClientCommand($"CWD {folderPath4}");
             break;
         case 6:
             Console.Write("Enter folder name: ");
@@ -97,8 +112,25 @@ while (true)
             }
             break;
         case 9:
-            ftpClient.ExecuteClientCommand($"stor {remoteFolderPath} xampp.rar {fileManager.GetCurrentFolderPath()}");
-            ftpClient.ExecuteClientCommand($"retr {remoteFolderPath} xamppCopy.rar {fileManager.GetCurrentFolderPath()}");
+            Console.Write("Enter folder name: ");
+            string? folderName9 = Console.ReadLine();
+            if (folderName9 == null)
+            {
+                Console.WriteLine("Tên thư mục không được để trống!");
+                break;
+            }
+            ftpClient.SendFolder(folderName9, fileManager.GetCurrentFolderPath());
+            break;
+        case 10:
+            Console.Write("Enter folder name: ");
+            string? folderName = Console.ReadLine();
+            if(folderName == null)
+            {
+                Console.WriteLine("Tên thư mục không được để trống!");
+                break;
+            }
+            Directory.CreateDirectory(fileManager.GetCurrentFolderPath() + folderName);
+            ftpClient.ReceiveFolder(folderName, fileManager.GetCurrentFolderPath() + folderName);
             break;
         case 0:
             Environment.Exit(0);

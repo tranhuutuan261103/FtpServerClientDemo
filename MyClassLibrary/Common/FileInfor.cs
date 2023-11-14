@@ -15,5 +15,27 @@ namespace MyClassLibrary.Common
          */
         public long Length { get; set; }
         public bool IsDirectory { get; set; }
+
+        public FileInfor()
+        {
+        }
+
+        public FileInfor(string name, DateTime lastWriteTime, long length, bool isDirectory)
+        {
+            Name = name;
+            LastWriteTime = lastWriteTime;
+            Length = length;
+            IsDirectory = isDirectory;
+        }
+
+        public override string ToString()
+        {
+            if (IsDirectory == true)
+            {
+                return $"{LastWriteTime}\t{"<DIR>", 24}\t{Name}";
+            }
+
+            return $"{LastWriteTime}\t{Length, 24}\t{Name}";
+        }
     }
 }

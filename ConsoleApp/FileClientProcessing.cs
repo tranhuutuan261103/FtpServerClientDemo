@@ -45,21 +45,18 @@ namespace ConsoleApp
             int blocksize = 1024;
             byte[] buffer = new byte[blocksize];
             int byteread = 0;
-            lock (this)
+            FileStream fs = new FileStream(fullFilePath, FileMode.OpenOrCreate, FileAccess.Write);
+            while (true)
             {
-                FileStream fs = new FileStream(fullFilePath, FileMode.OpenOrCreate, FileAccess.Write);
-                while (true)
+                byteread = ns.Read(buffer, 0, blocksize);
+                fs.Write(buffer, 0, byteread);
+                if (byteread == 0)
                 {
-                    byteread = ns.Read(buffer, 0, blocksize);
-                    fs.Write(buffer, 0, byteread);
-                    if (byteread == 0)
-                    {
-                        break;
-                    }
+                    break;
                 }
-                fs.Flush();
-                fs.Close();
             }
+            fs.Flush();
+            fs.Close();
         }
 
         public void SendFile(string fullFilePath)
@@ -68,21 +65,18 @@ namespace ConsoleApp
             int blocksize = 1024;
             byte[] buffer = new byte[blocksize];
             int byteread = 0;
-            lock (this)
+            FileStream fs = new FileStream(fullFilePath, FileMode.Open, FileAccess.Read);
+            while (true)
             {
-                FileStream fs = new FileStream(fullFilePath, FileMode.Open, FileAccess.Read);
-                while (true)
+                byteread = fs.Read(buffer, 0, blocksize);
+                ns.Write(buffer, 0, byteread);
+                if (byteread == 0)
                 {
-                    byteread = fs.Read(buffer, 0, blocksize);
-                    ns.Write(buffer, 0, byteread);
-                    if (byteread == 0)
-                    {
-                        break;
-                    }
+                    break;
                 }
-                ns.Flush();
-                ns.Close();
             }
+            ns.Flush();
+            ns.Close();
         }
     }
 }
