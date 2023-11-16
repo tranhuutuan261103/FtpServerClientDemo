@@ -43,7 +43,7 @@ namespace MyFtpServer
             catch (Exception ex)
             {
                 _controlSocket.Stop();
-                Console.WriteLine($"Lỗi: {ex.Message}");
+                Console.WriteLine($"Server error: {ex.Message}");
             }
         }
 
@@ -64,8 +64,8 @@ namespace MyFtpServer
             ResponseStatus(sessionID, $"220 FTP Server already for {iPEndPoint.Address}:{iPEndPoint.Port}");
             
             TcpListener tcpListener = new TcpListener(IPAddress.Parse(_host), _passivePort);
-            int passivePort = 0;
-            TcpClient data_channel = new TcpClient();
+            int passivePort;
+            TcpClient data_channel;
 
             string remoteFolderPath = @"\";
             try
@@ -135,7 +135,7 @@ namespace MyFtpServer
                         writer.WriteLine("257 Directory created");
                         ResponseStatus(sessionID, $"257 Directory created");
                     }
-                    else if (command == "LIST")
+                    else if (command == "MLSD")
                     {
                         List<FileInfor> list = new List<FileInfor>();
                         string[] directories = Directory.GetDirectories(_rootPath + remoteFolderPath);
@@ -293,7 +293,7 @@ namespace MyFtpServer
         private int GetSessionID()
         {
             lock (lockObject) {
-                return _sessionID++;
+                return _sessionID+=2;
             }
         }
 

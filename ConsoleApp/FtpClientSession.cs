@@ -11,7 +11,7 @@ namespace ConsoleApp
     {
         private TcpSession[] _subClient = new TcpSession[2];
         private FtpClient _client;
-        private List<string> queueCommand = new List<string>();
+        private List<TaskSession> queueCommand = new List<TaskSession>();
 
         public FtpClientSession(FtpClient client)
         {
@@ -22,7 +22,7 @@ namespace ConsoleApp
             }
         }
 
-        public void PushQueueCommand(string command)
+        public void PushQueueCommand(TaskSession command)
         {
             queueCommand.Add(command);
         }
@@ -37,7 +37,7 @@ namespace ConsoleApp
             return false;
         }
 
-        private string? GetFirstQueueCommand()
+        private TaskSession? GetFirstQueueCommand()
         {
             if (queueCommand.Count > 0)
             {
@@ -50,7 +50,7 @@ namespace ConsoleApp
         {
             while(true)
             {
-                string? command = GetFirstQueueCommand();
+                TaskSession? command = GetFirstQueueCommand();
                 if (command != null)
                 {
                     foreach(TcpSession tcpSession in _subClient)
@@ -77,7 +77,7 @@ namespace ConsoleApp
             }
         }
 
-        private void HandleCommand(string command, TcpSession tcpSession)
+        private void HandleCommand(TaskSession command, TcpSession tcpSession)
         {
             _client.ExecuteSessionCommand(command, tcpSession.GetTcpClient());
             tcpSession.SetStatus(TcpSessionStatus.Connected);
