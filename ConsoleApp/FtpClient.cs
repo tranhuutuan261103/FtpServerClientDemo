@@ -16,11 +16,9 @@ namespace ConsoleApp
         private string _host;
         private int _port;
         private TcpClient _client;
-        //       private TcpClient[] _subClient = new TcpClient[2];
         private FtpClientSession ftpClientSession;
         private StreamWriter _writer;
         private StreamReader _reader;
-        //private string remoteFolderPath = @"D:\FileServer\";
         public FtpClient(string host, int port)
         {
             _host = host;
@@ -46,49 +44,67 @@ namespace ConsoleApp
             return _port;
         }
 
-        public object? ExecuteClientCommand(string clientCommand)
+        public void Mlsd()
         {
-            string command = clientCommand.Split(' ')[0].ToUpper();
-            string[] args = clientCommand.Split(' ').Skip(1).ToArray();
-            switch (command)
+            var list = ListRemoteFolderAndFiles();
+            foreach (var file in list)
             {
-                case "LIST":
-                    Thread thread = new Thread(() => ListRemoteFolderAndFiles());
-                    thread.Start();
-                    break;
-                case "MLSD":
-                    return ListRemoteFolderAndFiles();
-                case "CWD":
-                    SetRemoteFolderPath(args[0]);
-                    break;
-                case "PWD":
-                    return GetRemoteFolderPath();
-                case "STOR":
-                    ftpClientSession.PushQueueCommand(clientCommand);
-                    break;
-                case "RETR":
-                    ftpClientSession.PushQueueCommand(clientCommand);
-                    break;
-                case "quit":
-                    //Quit();
-                    break;
-                default:
-                    break;
+                Console.WriteLine(file.ToString());
             }
-            return null;
         }
 
-        public void ExecuteSessionCommand(string sessionCommand, TcpClient tcpSessionClient)
+        public string Pwd()
         {
-            string command = sessionCommand.Split(" ")[0].ToUpper();
-            string[] args = sessionCommand.Split(" ").Skip(1).ToArray();
+            return GetRemoteFolderPath();
+        }
+
+        public bool Cwd(string request)
+        {
+            request = request.Trim();
+            string[] parts = request.Split(' ');
+            if (parts.Length < 2)
+            {
+                return false;
+            }
+
+            string folderName = request.Substring(parts[0].Length + 1).Trim();
+            return SetRemoteFolderPath(folderName);
+        }
+
+        public bool Mkd(string request)
+        {
+            request = request.Trim();
+            string[] parts = request.Split(' ');
+            if (parts.Length < 2)
+            {
+                return false;
+            }
+            string folderName = request.Substring(parts[0].Length + 1).Trim();
+            return CreateNewRemoteFolder(folderName);
+        }
+
+        public void Download(string remotePath, string localPath)
+        {
+            TaskSession taskSession = new TaskSession("RETR", remotePath, localPath);
+            ftpClientSession.PushQueueCommand(taskSession);
+        }
+
+        public void Upload(string remotePath, string localPath)
+        {
+            TaskSession taskSession = new TaskSession("STOR", remotePath, localPath);
+            ftpClientSession.PushQueueCommand(taskSession);
+        }
+
+        public void ExecuteSessionCommand(TaskSession request, TcpClient tcpSessionClient)
+        {
+            string command = request.Type;
             switch (command)
             {
                 case "STOR":
-                    SendFile(args[0], args[1], args[2], tcpSessionClient);
+                    SendFile(request.RemotePath, Path.GetFileName(request.LocalPath) ?? "\\undefine", Path.GetDirectoryName(request.LocalPath) ?? "\\undefine", tcpSessionClient);
                     break;
                 case "RETR":
-                    ReceiveFile(args[0], args[1], args[2], tcpSessionClient);
+                    ReceiveFile(Path.GetDirectoryName(request.RemotePath) ?? "\\undefine", Path.GetFileName(request.RemotePath) ?? "", request.LocalPath, tcpSessionClient);
                     break;
                 default:
                     break;
@@ -124,12 +140,12 @@ namespace ConsoleApp
         }
         public bool SetRemoteFolderPath(string remoteFolderPath)
         {
-            string Command = "", Response = "";
+            string command, response;
 
-            Command = string.Format("CWD {0}", remoteFolderPath.Replace("\\", "/"));
-            _writer.WriteLine(Command);
-            Response = _reader.ReadLine() ?? "";
-            if (Response.StartsWith("250 ") == true)
+            command = string.Format("CWD {0}", remoteFolderPath);
+            _writer.WriteLine(command);
+            response = _reader.ReadLine() ?? "";
+            if (response.StartsWith("250 ") == true)
             {
                 return true;
             }
@@ -158,7 +174,7 @@ namespace ConsoleApp
             if (response.StartsWith("227 ") == true)
             {
                 IPEndPoint server_data_endpoint = GetServerEndpoint(response);
-                command = "LIST";
+                command = "MLSD";
                 _writer.WriteLine(command);
                 TcpClient data_channel = new TcpClient();
                 data_channel.Connect(server_data_endpoint);
@@ -185,17 +201,14 @@ namespace ConsoleApp
             StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
             StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
             string command, response;
-
-            command = string.Format("CWD {0}", remoteFolderPath.Replace("\\", "/"));
+            command = string.Format("CWD {0}", remoteFolderPath);
             streamWriter.WriteLine(command);
             response = streamReader.ReadLine() ?? "";
-            //Console.WriteLine(Response); // Console command line
             if (response.StartsWith("250 "))
             {
                 command = "PASV";
                 streamWriter.WriteLine(command);
                 response = streamReader.ReadLine() ?? "";
-                //Console.WriteLine(Response); // Console command line
                 if (response.StartsWith("227 ") == true)
                 {
                     IPEndPoint server_data_endpoint = GetServerEndpoint(response);
@@ -205,7 +218,6 @@ namespace ConsoleApp
                     command = string.Format("RETR {0}", remoteFileName);
                     streamWriter.WriteLine(command);
                     response = streamReader.ReadLine() ?? "";
-                    //Console.WriteLine(Response); // Console command line
                     if (response.StartsWith("150 "))
                     {
                         FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel);
@@ -214,7 +226,6 @@ namespace ConsoleApp
                         response = streamReader.ReadLine() ?? "";
                         if (response.StartsWith("226 "))
                         {
-                            //Console.WriteLine(Response); // Console command line
                             data_channel.Close();
                         }
                     }
@@ -228,16 +239,14 @@ namespace ConsoleApp
             StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
             string command , response;
 
-            command = string.Format("CWD {0}", remoteFolderPath.Replace("\\", "/"));
+            command = string.Format("CWD {0}", remoteFolderPath);
             streamWriter.WriteLine(command);
             response = streamReader.ReadLine() ?? "";
             if (response.StartsWith("250 "))
             {
-                //Console.WriteLine(Response); // Console command line
                 command = "PASV";
                 streamWriter.WriteLine(command);
                 response = streamReader.ReadLine() ?? "";
-                //Console.WriteLine(Response); // Console command line
                 if (response.StartsWith("227 ") == true)
                 {
                     IPEndPoint server_data_endpoint = GetServerEndpoint(response);
@@ -247,7 +256,6 @@ namespace ConsoleApp
                     command = string.Format("STOR {0}", remoteFileName);
                     streamWriter.WriteLine(command);
                     response = streamReader.ReadLine() ?? "";
-                    //Console.WriteLine(Response); // Console command line
                     if (response.StartsWith("150 "))
                     {
                         FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel);
@@ -256,7 +264,6 @@ namespace ConsoleApp
                         response = streamReader.ReadLine() ?? "";
                         if (response.StartsWith("226 "))
                         {
-                            //Console.WriteLine(Response); // Console command line
                             data_channel.Close();
                         }
                     }
@@ -264,7 +271,7 @@ namespace ConsoleApp
             }
         }
         
-        public void ReceiveFolder(string remoteFolderPath, string localFolderPath)
+        public void DownloadFolder(string remoteFolderPath, string localFolderPath)
         {
             bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
             if (currentRemoteFolderPath == true)
@@ -280,18 +287,18 @@ namespace ConsoleApp
                         {
                             Directory.CreateDirectory(newLocalFolderPath);
                         }
-                        ReceiveFolder(newRemoteFolderPath, newLocalFolderPath);
+                        DownloadFolder(newRemoteFolderPath, newLocalFolderPath);
                     }
                     else
                     {
-                        string command = $"RETR {remoteFolderPath} {fileInfor.Name} {localFolderPath}";
-                        ftpClientSession.PushQueueCommand(command);
+                        TaskSession taskSession = new TaskSession("RETR", $"{remoteFolderPath}\\{fileInfor.Name}" , localFolderPath);
+                        ftpClientSession.PushQueueCommand(taskSession);
                     }
                 }
             }
         }
 
-        public void SendFolder(string remoteFolderPath, string localFolderPath)
+        public void UploadFolder(string remoteFolderPath, string localFolderPath)
         {
             CreateNewRemoteFolder(remoteFolderPath);
             bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
@@ -300,15 +307,15 @@ namespace ConsoleApp
                 string[] localFiles = Directory.GetFiles(localFolderPath);
                 foreach (string localFile in localFiles)
                 {
-                    string command = $"STOR {remoteFolderPath} {Path.GetFileName(localFile)} {localFolderPath}";
-                    ftpClientSession.PushQueueCommand(command);
+                    TaskSession taskSession = new TaskSession("STOR", $"{remoteFolderPath}", localFile);
+                    ftpClientSession.PushQueueCommand(taskSession);
                 }
                 string[] localFolders = Directory.GetDirectories(localFolderPath);
                 foreach (string localFolder in localFolders)
                 {
                     string newRemoteFolderPath = remoteFolderPath + @"\" + Path.GetFileName(localFolder);
                     string newLocalFolderPath = localFolderPath + @"\" + Path.GetFileName(localFolder);
-                    SendFolder(newRemoteFolderPath, newLocalFolderPath);
+                    UploadFolder(newRemoteFolderPath, newLocalFolderPath);
                 }
             }
         }   

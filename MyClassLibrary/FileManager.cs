@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using MyClassLibrary.Common;
+using System.IO;
+using System.Text;
 
 namespace MyClassLibrary
 {
@@ -15,77 +17,76 @@ namespace MyClassLibrary
             _folderPath = @"D:\";
         }
 
-        public string GetCurrentFolderPath()
+        public string GetCurrentPath()
         {
             return _folderPath;
         }
 
-        public void CreateDirectory(string folderName)
+        public void Dir()
         {
-            try
-            {
-                // Tạo thư mục
-                Directory.CreateDirectory(@$"{_folderPath}\{folderName}");
-                Console.WriteLine("Tạo thư mục thành công!");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Lỗi: {ex.Message}");
-            }
-        }
-
-        public void CDCommand(string folderPath)
-        {
-            _folderPath += @"\" + folderPath;
-        }
-
-        public string GetPath()
-        {
-            return _folderPath;
-        }
-
-        public void SetCurrentDirectory()
-        {
-            Directory.SetCurrentDirectory(_folderPath);
-        }
-
-        public void ListDirectoryContents()
-        {
-            try
-            {
-                // Hiển thị thông tin về thư mục
-                Console.WriteLine("Directory of " + _folderPath + "\n");
-
-                GetSubDirectories();
-                GetFileList();
-                Console.WriteLine();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Lỗi: {ex.Message}");
-            }
-        }
-
-        private void GetSubDirectories()
-        {
-            // Lấy danh sách thư mục con
+            List<FileInfor> list = new List<FileInfor>();
             string[] directories = Directory.GetDirectories(_folderPath);
             foreach (var directory in directories)
             {
                 DirectoryInfo dirInfo = new DirectoryInfo(directory);
-                Console.WriteLine($"{dirInfo.LastWriteTime:MM/dd/yyyy  hh:mm tt}    <DIR>                    {dirInfo.Name}");
+                list.Add(new FileInfor()
+                {
+                    Name = dirInfo.Name,
+                    Length = 0,
+                    LastWriteTime = dirInfo.LastWriteTime,
+                    IsDirectory = true
+                });
             }
-        }
-
-        private void GetFileList()
-        {
-            // Lấy danh sách tệp tin
             string[] files = Directory.GetFiles(_folderPath);
+
             foreach (var file in files)
             {
                 FileInfo fileInfo = new FileInfo(file);
-                Console.WriteLine($"{fileInfo.LastWriteTime:MM/dd/yyyy  hh:mm tt}    {fileInfo.Length,24} {fileInfo.Name}");
+                list.Add(new FileInfor()
+                {
+                    Name = fileInfo.Name,
+                    Length = fileInfo.Length,
+                    LastWriteTime = fileInfo.LastWriteTime,
+                    IsDirectory = false
+                });
             }
+
+            foreach (var fileInfor in list)
+            {
+                Console.WriteLine(fileInfor.ToString());
+            }
+            return;
+        }
+
+        public string ChangeDirectory(string request)
+        {
+            request = request.Trim();
+            string[] parts = request.Split(' ');
+            if (parts.Length < 2)
+            {
+                return _folderPath;
+            }
+            
+            string folderName = request.Substring(parts[0].Length + 1).Trim();
+            if (folderName == "..")
+            {
+                string[] partsOfFolderPath = _folderPath.Split('\\');
+                if (partsOfFolderPath.Length > 1)
+                {
+                    _folderPath = string.Join('\\', partsOfFolderPath.Take(partsOfFolderPath.Length - 1));
+                }
+                return _folderPath;
+            }
+            string folderPath = @$"{_folderPath}\{folderName}";
+            if (Directory.Exists(folderPath))
+            {
+                _folderPath = folderPath;
+            }
+            else
+            {
+                Console.WriteLine("The system cannot find the path specified.");
+            }
+            return _folderPath;
         }
 
         /// <summary>
