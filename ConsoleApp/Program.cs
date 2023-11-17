@@ -57,6 +57,11 @@ while (true)
             string remoteFolder3 = ftpClient.Pwd();
             ftpClient.DownloadFolder($"{((remoteFolder3 == "\\") ? $"{remoteFolder3}" : $"{remoteFolder3}\\")}{folderName3}", $"{fileManager.GetCurrentPath()}\\{folderName3}");
             break;
+        case "EXPRESSUPLOAD":
+            string[] parts4 = request.Split(' ');
+            string fileName4 = request.Substring(parts4[0].Length + 1).Trim();
+            ftpClient.ExpressUpload(ftpClient.Pwd(), $"{fileManager.GetCurrentPath()}\\{fileName4}");
+            break;
         case "UPLOAD":
             string[] parts1 = request.Split(' ');
             string fileName1 = request.Substring(parts1[0].Length + 1).Trim();
