@@ -89,6 +89,12 @@ namespace ConsoleApp
             ftpClientSession.PushQueueCommand(taskSession);
         }
 
+        public void ExpressUpload(string remotePath, string localPath)
+        {
+            TaskSession taskSession = new TaskSession("EXPRESSUPLOAD", remotePath, localPath);
+            ftpClientSession.PushQueueCommand(taskSession);
+        }
+
         public void Upload(string remotePath, string localPath)
         {
             TaskSession taskSession = new TaskSession("STOR", remotePath, localPath);
@@ -102,6 +108,9 @@ namespace ConsoleApp
             {
                 case "STOR":
                     SendFile(request.RemotePath, Path.GetFileName(request.LocalPath) ?? "\\undefine", Path.GetDirectoryName(request.LocalPath) ?? "\\undefine", tcpSessionClient);
+                    break;
+                case "EXPRESSUPLOAD":
+                    ExpressSendFile(request.RemotePath, Path.GetFileName(request.LocalPath) ?? "\\undefine", Path.GetDirectoryName(request.LocalPath) ?? "\\undefine", tcpSessionClient);
                     break;
                 case "RETR":
                     ReceiveFile(Path.GetDirectoryName(request.RemotePath) ?? "\\undefine", Path.GetFileName(request.RemotePath) ?? "", request.LocalPath, tcpSessionClient);
@@ -231,6 +240,80 @@ namespace ConsoleApp
                     }
                 }
             }
+        }
+
+        public void ExpressSendFile(string remoteFolderPath, string remoteFileName, string localFolderPath, TcpClient tcpSessionClient)
+        {
+            StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
+            StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
+            string command, response;
+            command = string.Format("CWD {0}", remoteFolderPath);
+            streamWriter.WriteLine(command);
+            response = streamReader.ReadLine() ?? "";
+            if (response.StartsWith("250 "))
+            {
+                command = "PASV";
+                streamWriter.WriteLine(command);
+                response = streamReader.ReadLine() ?? "";
+                if (response.StartsWith("227 ") == true)
+                {
+                    IPEndPoint server_data_endpoint = GetServerEndpoint(response);
+                    
+                    command = string.Format("EXPRESSUPLOAD {0}", remoteFileName);
+                    streamWriter.WriteLine(command);
+                    response = streamReader.ReadLine() ?? "";
+                    if (response.StartsWith("150 "))
+                    {
+                        long fileSize;
+                        int maxBufferSize = (int)Math.Pow(2, 20) * 256;
+
+                        using (var fs = new FileStream(localFolderPath + @"\" + remoteFileName, FileMode.OpenOrCreate, FileAccess.Read))
+                        {
+                            fileSize = fs.Length;
+                            streamWriter.WriteLine(fileSize);
+                            for (int i = 0; i < (int)Math.Ceiling((double)fileSize / maxBufferSize); i++)
+                            {
+                                int currentBlock = i;
+                                Thread thread = new Thread(() => HandleSendTransfer(server_data_endpoint, localFolderPath + @"\" + remoteFileName, currentBlock * maxBufferSize, maxBufferSize));
+                                thread.Start();
+                                Thread.Sleep(100);
+                            }
+                        }
+
+                        response = streamReader.ReadLine() ?? "";
+                        if (response.StartsWith("226 "))
+                        {
+                            //Console.WriteLine("Upload file success!");
+                            //data_channel.Close();
+                        }
+                    }
+                }
+            }
+        }
+
+        public void HandleSendTransfer(IPEndPoint iPEndPoint , string fileName , long offset, long length)
+        {
+            TcpClient client = new TcpClient();
+            client.Connect(iPEndPoint);
+            NetworkStream ns = client.GetStream();
+
+            FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            fs.Seek(offset, SeekOrigin.Begin);
+            byte[] bytes = new byte[1024];
+            long i = 0;
+            while (i < length)
+            {
+                int bytesRead = fs.Read(bytes, 0, (int)Math.Min(bytes.Length, length - i));
+
+                ns.Write(bytes, 0, bytesRead);
+
+                if (bytesRead == 0)
+                    break;
+
+                i += bytesRead;
+            }
+            fs.Close();
+            ns.Close();
         }
 
         public void SendFile(string remoteFolderPath, string remoteFileName, string localFolderPath, TcpClient tcpSessionClient)

@@ -174,7 +174,7 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"425 Can't open data connection.");
                             continue;
                         }
-                        FileServerProcessing processing = new FileServerProcessing(data_channel, "");
+                        FileServerProcessing processing = new FileServerProcessing(data_channel);
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, "150 Opening data connection");
                         processing.SendList(list);
@@ -206,7 +206,7 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"425 Can't open data connection.");
                             continue;
                         }
-                        FileServerProcessing processing = new FileServerProcessing(data_channel, fullPath);
+                        FileServerProcessing processing = new FileServerProcessing(data_channel);
 
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, $"150 Opening data connection");
@@ -232,12 +232,34 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"425 Can't open data connection.");
                             continue;
                         }
-                        FileServerProcessing processing = new FileServerProcessing(data_channel, fullPath);
+                        FileServerProcessing processing = new FileServerProcessing(data_channel);
 
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, $"150 Opening data connection");
 
                         processing.ReceiveFile(fullPath);
+
+                        writer.WriteLine("226 Transfer complete");
+                        ResponseStatus(sessionID, $"226 Transfer complete");
+                        if (tcpListener != null)
+                            tcpListener.Stop();
+                    }
+                    else if (command == "EXPRESSUPLOAD")
+                    {
+                        string filePath = part[1];
+                        string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
+
+                        // Check Tcp Listener
+                        if (tcpListener == null)
+                            continue;
+
+                        writer.WriteLine("150 Opening data connection");
+                        ResponseStatus(sessionID, $"150 Opening data connection");
+
+                        long length = long.Parse(reader.ReadLine() ?? "0");
+
+                        FileServerExpressProcessing processing = new FileServerExpressProcessing(tcpListener, length);
+                        processing.ReceiveExpressFile(fullPath, length);
 
                         writer.WriteLine("226 Transfer complete");
                         ResponseStatus(sessionID, $"226 Transfer complete");

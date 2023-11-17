@@ -13,7 +13,7 @@ namespace MyFtpServer
     {
         private TcpClient _socket;
 
-        public FileServerProcessing(TcpClient socket, string rootPath)
+        public FileServerProcessing(TcpClient socket)
         {
             _socket = socket;
         }
