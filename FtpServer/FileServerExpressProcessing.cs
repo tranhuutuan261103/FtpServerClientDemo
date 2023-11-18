@@ -11,61 +11,58 @@ namespace MyFtpServer
     public class FileServerExpressProcessing
     {
         private readonly TcpListener _tcpListener;
-        private byte[] _data;
-        private long length;
-        private int maxBufferSize = (int)Math.Pow(2, 20) * 256;
-        private int totalThread;
-        private int currentSuccessThreadCount = 0;
+        private string _fullPath;
+        private long _length;
+        private int _maxBufferSize = (int)Math.Pow(2, 20) * 256;
+        private int _totalThread;
+        private int _currentSuccessThreadCount = 0;
         List<string> partFilePaths = new List<string>();
-        public FileServerExpressProcessing(TcpListener tcpListener, long length)
+        public FileServerExpressProcessing(TcpListener tcpListener, string fullPath, long length)
         {
             _tcpListener = tcpListener;
-            _data = new byte[length];
-            this.length = length;
+            _fullPath = fullPath;
+            _length = length;
         }
 
-        public void ReceiveExpressFile(string fullPath, long length)
+        public void ReceiveExpressFile()
         {
-            totalThread = (int)Math.Ceiling((double)length / maxBufferSize);
+            _totalThread = (int)Math.Ceiling((double)_length / _maxBufferSize);
 
-            int i = 0;
+            int currentThreadCount = 0;
             while (true)
             {
-                if (i == totalThread)
+                if (currentThreadCount == _totalThread)
                 {
-                    if (currentSuccessThreadCount == totalThread)
+                    if (_currentSuccessThreadCount == _totalThread)
                     {
-                        Merger(fullPath);
+                        Merger();
                         break;
                     }
                 }
                 else
                 {
                     TcpClient client = _tcpListener.AcceptTcpClient();
-                    IPEndPoint iPEndPoint = (IPEndPoint)client.Client.RemoteEndPoint;
-                    Console.WriteLine($"Client {iPEndPoint.Address}:{iPEndPoint.Port} connected");
-                    int index = i;
-                    Thread thread = new Thread(() => HandleReceiveExpressFile(index, client, fullPath));
-                    i++;
+                    currentThreadCount++;
+                    Thread thread = new Thread(() => HandleReceiveExpressFile(client));
                     thread.Start();
                 }
             }
         }
 
-        private void HandleReceiveExpressFile(int index, TcpClient client, string fullPath)
+        private void HandleReceiveExpressFile(TcpClient client)
         {
             NetworkStream ns = client.GetStream();
             int blocksize = 1024;
             byte[] buffer = new byte[blocksize];
-            int byteread = 0;
+            int byteread;
 
-            string fullPath2 = HandleFileName(fullPath, index);
+            string fullPathPart = RandomFileName(_fullPath);
             lock (_lock2)
             {
-                partFilePaths.Add(fullPath2);
+                partFilePaths.Add(fullPathPart);
             }
             
-            using (FileStream fs = new FileStream(fullPath2, FileMode.Create, FileAccess.Write))
+            using (FileStream fs = new FileStream(fullPathPart, FileMode.Append, FileAccess.Write))
             {
                 while (true)
                 {
@@ -79,36 +76,86 @@ namespace MyFtpServer
             }
             lock (_lock)
             {
-                currentSuccessThreadCount++;
+                _currentSuccessThreadCount++;
             }
-            Console.WriteLine($"Created at {DateTime.Now} in {fullPath2}");
+            Console.WriteLine($"Created at {DateTime.Now} in {fullPathPart}");
+        }
+
+        public void SendExpressFile()
+        {
+            int currentThreadCount = 0;
+            _totalThread = (int)Math.Ceiling((double)_length / _maxBufferSize);
+            while (true)
+            {
+                if (currentThreadCount == _totalThread)
+                {
+                    break;
+                }
+                else
+                {
+                    TcpClient client = _tcpListener.AcceptTcpClient();
+                    long offset = currentThreadCount * _maxBufferSize;
+                    Thread thread = new Thread(() => HandleSendExpressFile(client, offset, _maxBufferSize));
+                    thread.Start();
+                    currentThreadCount++;
+                }
+            }
+        }
+
+        private void HandleSendExpressFile(TcpClient client, long offset, long length)
+        {
+            NetworkStream ns = client.GetStream();
+            int blocksize = 1024;
+            byte[] buffer = new byte[blocksize];
+            int byteread;
+
+            long i = 0;
+            using (FileStream fs = new FileStream(_fullPath, FileMode.Open, FileAccess.Read))
+            {
+                fs.Seek(offset, SeekOrigin.Begin);
+                while (i < length)
+                {
+                    byteread = fs.Read(buffer, 0, (int)Math.Min(buffer.Length, length - i));
+                    ns.Write(buffer, 0, byteread);
+                    
+                    if (byteread == 0)
+                    {
+                        break;
+                    }
+
+                    i += byteread;
+                }
+            }
+            ns.Close();
         }
 
         private object _lock = new object();
         private object _lock2 = new object();
 
-        private void Merger(string fullPath)
+        private void Merger()
         {
             Console.WriteLine($"Merging... at {DateTime.Now}");
-            using (FileStream finalFileStream = new FileStream(fullPath, FileMode.OpenOrCreate, FileAccess.Write))
+            using (FileStream finalFileStream = new FileStream(_fullPath, FileMode.OpenOrCreate, FileAccess.Write))
             {
                 foreach (var partFilePath in partFilePaths)
                 {
-                    using (FileStream tempFileStream = new FileStream(partFilePath, FileMode.Open))
+                    using (FileStream tempFileStream = new FileStream(partFilePath, FileMode.Open, FileAccess.Read))
                     {
-                        byte[] buffer = new byte[1024 * 1024];
+                        byte[] buffer = new byte[1024];
                         int bytesRead;
                         while ((bytesRead = tempFileStream.Read(buffer, 0, buffer.Length)) > 0)
                         {
                             finalFileStream.Write(buffer, 0, bytesRead);
                         }
                     }
+                    File.Delete(partFilePath);
                 }
             }
-            Console.WriteLine($"Created at {DateTime.Now} in {fullPath}");
+            partFilePaths.Clear();
+            Console.WriteLine($"Created at {DateTime.Now} in {_fullPath}");
         }
 
-        private string HandleFileName(string filePath, int index)
+        private string RandomFileName(string filePath)
         {
             string? folderPath = Path.GetDirectoryName(filePath);
             if (folderPath == null)
@@ -118,7 +165,7 @@ namespace MyFtpServer
             string fileName = Path.GetFileName(filePath);
             string fileNameWithoutExtension = fileName.Split('.').First();
             string fileExtension = fileName.Split('.').Last();
-            fileName = $"{fileNameWithoutExtension}({index++}).{fileExtension}";
+            fileName = $"{fileNameWithoutExtension}_{Guid.NewGuid()}.{fileExtension}";
             filePath = @$"{folderPath}\{fileName}";
 
             return filePath;
