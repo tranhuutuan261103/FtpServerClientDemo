@@ -13,58 +13,68 @@ namespace MyFtpServer
     {
         private TcpClient _socket;
 
-        public FileServerProcessing(TcpClient socket, string rootPath)
+        public FileServerProcessing(TcpClient socket)
         {
             _socket = socket;
         }
 
         public void SendFile(string filePath)
         {
-            if (IsExistFilePath(filePath) == false)
-            {
-                throw new Exception("Đường dẫn tệp tin không tồn tại");
-            }
-
             NetworkStream ns = _socket.GetStream();
             int blocksize = 1024;
             byte[] buffer = new byte[blocksize];
             int byteread = 0;
             FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            while (true)
+            try
             {
-                byteread = fs.Read(buffer, 0, blocksize);
-                ns.Write(buffer, 0, byteread);
-                if (byteread == 0)
+                while (true)
                 {
-                    break;
+                    byteread = fs.Read(buffer, 0, blocksize);
+                    ns.Write(buffer, 0, byteread);
+                    if (byteread == 0)
+                    {
+                        break;
+                    }
                 }
+                ns.Flush();
+                ns.Close();
             }
-            ns.Flush();
-            ns.Close();
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         public void ReceiveFile(string filePath)
         {
             if (IsExistFilePath(filePath) == true)
             {
-                throw new Exception("Đường dẫn tệp tin đã tồn tại");
+                filePath = HandleDuplicatedFileName(filePath);
             }
+
             NetworkStream ns = _socket.GetStream();
             int blocksize = 1024;
             byte[] buffer = new byte[blocksize];
             int byteread = 0;
             FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write);
-            while (true)
+            try
             {
-                byteread = ns.Read(buffer, 0, blocksize);
-                fs.Write(buffer, 0, byteread);
-                if (byteread == 0)
+                while (true)
                 {
-                    break;
+                    byteread = ns.Read(buffer, 0, blocksize);
+                    fs.Write(buffer, 0, byteread);
+                    if (byteread == 0)
+                    {
+                        break;
+                    }
                 }
+                fs.Flush();
+                fs.Close();
             }
-            fs.Flush();
-            fs.Close();
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         public void SendList(List<FileInfor> fileInfors)
@@ -79,7 +89,26 @@ namespace MyFtpServer
 
         private bool IsExistFilePath(string filePath)
         {
-            return System.IO.File.Exists(filePath);
+            return File.Exists(filePath);
+        }
+
+        public string HandleDuplicatedFileName(string filePath)
+        {
+            string? folderPath = Path.GetDirectoryName(filePath);
+            if (folderPath == null)
+            {
+                throw new Exception("Folder path is null");
+            }
+            string fileName = Path.GetFileName(filePath);
+            string fileNameWithoutExtension = fileName.Split('.').First();
+            string fileExtension = fileName.Split('.').Last();
+            int i = 0;
+            while (File.Exists(filePath))
+            {
+                fileName = $"{fileNameWithoutExtension} ({i++}).{fileExtension}";
+                filePath = @$"{folderPath}{fileName}";
+            }
+            return filePath;
         }
     }
 }

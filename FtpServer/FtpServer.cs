@@ -43,7 +43,7 @@ namespace MyFtpServer
             catch (Exception ex)
             {
                 _controlSocket.Stop();
-                Console.WriteLine($"Lỗi: {ex.Message}");
+                Console.WriteLine($"Server error: {ex.Message}");
             }
         }
 
@@ -64,8 +64,8 @@ namespace MyFtpServer
             ResponseStatus(sessionID, $"220 FTP Server already for {iPEndPoint.Address}:{iPEndPoint.Port}");
             
             TcpListener tcpListener = new TcpListener(IPAddress.Parse(_host), _passivePort);
-            int passivePort = 0;
-            TcpClient data_channel = new TcpClient();
+            int passivePort;
+            TcpClient data_channel;
 
             string remoteFolderPath = @"\";
             try
@@ -135,7 +135,7 @@ namespace MyFtpServer
                         writer.WriteLine("257 Directory created");
                         ResponseStatus(sessionID, $"257 Directory created");
                     }
-                    else if (command == "LIST")
+                    else if (command == "MLSD")
                     {
                         List<FileInfor> list = new List<FileInfor>();
                         string[] directories = Directory.GetDirectories(_rootPath + remoteFolderPath);
@@ -174,7 +174,7 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"425 Can't open data connection.");
                             continue;
                         }
-                        FileServerProcessing processing = new FileServerProcessing(data_channel, "");
+                        FileServerProcessing processing = new FileServerProcessing(data_channel);
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, "150 Opening data connection");
                         processing.SendList(list);
@@ -206,7 +206,7 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"425 Can't open data connection.");
                             continue;
                         }
-                        FileServerProcessing processing = new FileServerProcessing(data_channel, fullPath);
+                        FileServerProcessing processing = new FileServerProcessing(data_channel);
 
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, $"150 Opening data connection");
@@ -232,7 +232,7 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"425 Can't open data connection.");
                             continue;
                         }
-                        FileServerProcessing processing = new FileServerProcessing(data_channel, fullPath);
+                        FileServerProcessing processing = new FileServerProcessing(data_channel);
 
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, $"150 Opening data connection");
@@ -241,6 +241,63 @@ namespace MyFtpServer
 
                         writer.WriteLine("226 Transfer complete");
                         ResponseStatus(sessionID, $"226 Transfer complete");
+                        if (tcpListener != null)
+                            tcpListener.Stop();
+                    }
+                    else if (command == "EXPRESSUPLOAD")
+                    {
+                        string filePath = part[1];
+                        string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
+
+                        if (tcpListener == null)
+                            continue;
+
+                        writer.WriteLine("150 Opening data connection");
+                        ResponseStatus(sessionID, $"150 Opening data connection");
+
+                        long length = long.Parse(reader.ReadLine() ?? "0");
+
+                        FileServerExpressProcessing processing = new FileServerExpressProcessing(tcpListener, fullPath , length);
+                        processing.ReceiveExpressFile();
+
+                        writer.WriteLine("226 Transfer complete");
+                        ResponseStatus(sessionID, $"226 Transfer complete");
+                        if (tcpListener != null)
+                            tcpListener.Stop();
+                    }
+                    else if (command == "EXPRESSDOWNLOAD")
+                    {
+                        string filePath = part[1];
+                        string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
+                        if (!File.Exists(fullPath))
+                        {
+                            writer.WriteLine("550 File not exist");
+                            ResponseStatus(sessionID, "550 File not exist");
+                            continue;
+                        }
+
+                        writer.WriteLine(new FileInfo(fullPath).Length.ToString());
+
+                        if (tcpListener == null)
+                            continue;
+                        writer.WriteLine("150 Opening data connection");
+                        ResponseStatus(sessionID, $"150 Opening data connection");
+
+                        FileServerExpressProcessing processing = new FileServerExpressProcessing(tcpListener, fullPath ,new FileInfo(fullPath).Length);
+                        processing.SendExpressFile();
+
+                        command = reader.ReadLine() ?? "550";
+                        if (command.StartsWith("226"))
+                        {
+                            writer.WriteLine("226 Transfer complete");
+                            ResponseStatus(sessionID, $"226 Transfer complete");
+                        }
+                        else
+                        {
+                            writer.WriteLine("550 Transfer error");
+                            ResponseStatus(sessionID, $"550 Transfer error");
+                        }
+
                         if (tcpListener != null)
                             tcpListener.Stop();
                     }
@@ -293,7 +350,7 @@ namespace MyFtpServer
         private int GetSessionID()
         {
             lock (lockObject) {
-                return _sessionID++;
+                return _sessionID+=2;
             }
         }
 

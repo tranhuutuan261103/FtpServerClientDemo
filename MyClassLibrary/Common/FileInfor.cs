@@ -32,10 +32,10 @@ namespace MyClassLibrary.Common
         {
             if (IsDirectory == true)
             {
-                return $"{LastWriteTime}\t{"<DIR>", 24}\t{Name}";
+                return $"{LastWriteTime.ToString("MM/dd/yyyy"), 10}  {LastWriteTime.ToString("hh:mm tt"),8}\t{"<DIR>", 24}\t{Name}";
             }
 
-            return $"{LastWriteTime}\t{Length, 24}\t{Name}";
+            return $"{LastWriteTime.ToString("MM/dd/yyyy"),10}  {LastWriteTime.ToString("hh:mm tt"),8}\t{Length, 24}\t{Name}";
         }
     }
 }

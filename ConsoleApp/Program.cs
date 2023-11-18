@@ -9,132 +9,78 @@ Console.InputEncoding = System.Text.Encoding.UTF8;
 FtpClient ftpClient = new FtpClient("127.0.0.1", 1234);
 
 string localFolderPath = @"D:\FileClient";
-string remoteFolderPath = @"\";
 FileManager fileManager = new FileManager(localFolderPath);
+
+Console.WriteLine("Help - Hiển thị danh sách các lệnh\n");
 
 while (true)
 {
-    Console.WriteLine("----- FTP Client -----");
-    Console.WriteLine($"Bạn đang ở đây: {fileManager.GetPath()}");
-    Console.WriteLine("----- Menu -----");
-    Console.WriteLine("1. Hiển thị danh sách thư mục con");
-    Console.WriteLine("2. Thay đổi thư mục làm việc hiện tại");
-    Console.WriteLine("3. Vị trí thư mục hiện tại ở server");
-    Console.WriteLine("4. Hiển thị danh sách thư mục con của server");
-    Console.WriteLine("5. Thay đổi thư mục làm việc hiện tại của server");
-    Console.WriteLine("6. Tạo thư mục");
-    Console.WriteLine("7. Gửi file");
-    Console.WriteLine("8. Nhận file");
-    Console.WriteLine("9. Gửi folder");
-    Console.WriteLine("10. Nhận folder");
-    Console.WriteLine("0. Thoát");
-    Console.Write("Chọn chức năng: ");
-    int choice = int.Parse(Console.ReadLine() ?? "0");
-    switch (choice)
+    Console.Write(fileManager.GetCurrentPath() + ">");
+    string request = Console.ReadLine() ?? "";
+    string command = request.Split(' ')[0].ToUpper();
+
+    switch (command)
     {
-        case 1:
-            fileManager.ListDirectoryContents();
+        case "HELP":
+            Console.WriteLine("DIR - Get list folder and file in local");
+            Console.WriteLine("CD - Change path in local");
+            Console.WriteLine("PWD - Path of server");
+            Console.WriteLine("DOWNLOAD - Download file form server to local");
+            Console.WriteLine("UPLOAD - Upload file to server");
+            Console.WriteLine("EXIT - Exit program");
             break;
-        case 2:
-            Console.Write("Nhập đường dẫn thư mục: ");
-            string folderPath = Console.ReadLine() ?? "";
-            if (folderPath == "")
-            {
-                Console.WriteLine("Đường dẫn thư mục không được để trống!");
-                break;
-            }
-            fileManager.CDCommand(folderPath);
+        case "DIR":
+            fileManager.Dir();
             break;
-        case 3:
-            Console.WriteLine($"Bạn đang ở đây: {ftpClient.ExecuteClientCommand("PWD")}");
+        case "CD":
+            fileManager.ChangeDirectory(request);
             break;
-        case 4:
-            object? obj = ftpClient.ExecuteClientCommand("MLSD");
-            if (obj == null)
-            {
-                Console.WriteLine("Lỗi!");
-                break;
-            }
-            
-            List<FileInfor> fileInfors = (List<FileInfor>)obj;
-            foreach (var fileInfor in fileInfors)
-            {
-                Console.WriteLine(fileInfor.ToString());
-            }
+        case "PWD":
+            Console.WriteLine("S>" + ftpClient.Pwd());
             break;
-        case 5:
-            Console.Write("Nhập đường dẫn thư mục: ");
-            string folderPath4 = Console.ReadLine() ?? "";
-            if (folderPath4 == "")
-            {
-                Console.WriteLine("Đường dẫn thư mục không được để trống!");
-                break;
-            }
-            //ftpClient.SetRemoteFolderPath(folderPath4);
-            ftpClient.ExecuteClientCommand($"CWD {folderPath4}");
+        case "CWD":
+            Console.WriteLine(ftpClient.Cwd(request) ? "S>" + ftpClient.Pwd() : "Couldn't found" );
             break;
-        case 6:
-            Console.Write("Enter folder name: ");
-            string folder = Console.ReadLine() ?? "";
-            if (folder == "")
-            {
-                Console.WriteLine("Tên thư mục không được để trống!");
-                break;
-            }
-            fileManager.CreateDirectory(folder);
+        case "MLSD":
+            Console.WriteLine("S>" + ftpClient.Pwd());
+            ftpClient.Mlsd();
             break;
-        case 7:
-            Console.Write("Enter file name: ");
-            string? fileName4 = Console.ReadLine();
-            if (fileName4 == null)
-            {
-                Console.WriteLine("Tên file không được để trống!");
-                break;
-            }
-            else
-            {
-                ftpClient.ExecuteClientCommand($"stor {remoteFolderPath} {fileName4} {fileManager.GetCurrentFolderPath()}");
-                //ftpClient.SendFile(remoteFolderPath, fileName4, fileManager.GetCurrentFolderPath());
-            }
+        case "EXPRESSDOWNLOAD":
+            string[] parts5 = request.Split(' ');
+            string fileName5 = request.Substring(parts5[0].Length + 1).Trim();
+            string remoteFolder5 = ftpClient.Pwd();
+            ftpClient.ExpressDownload($"{((remoteFolder5 == "\\") ? $"{remoteFolder5}" : $"{remoteFolder5}\\")}{fileName5}", fileManager.GetCurrentPath());
             break;
-        case 8:
-            Console.Write("Enter file name: ");
-            string? fileName = Console.ReadLine();
-            if (fileName == null)
-            {
-                Console.WriteLine("Tên file không được để trống!");
-                break;
-            }
-            else
-            {
-                ftpClient.ExecuteClientCommand($"retr {remoteFolderPath} {fileName} {fileManager.GetCurrentFolderPath()}");
-                //ftpClient.ReceiveFile(remoteFolderPath, fileName, fileManager.GetCurrentFolderPath());
-            }
+        case "DOWNLOAD":
+            string[] parts = request.Split(' ');
+            string fileName = request.Substring(parts[0].Length + 1).Trim();
+            string remoteFolder = ftpClient.Pwd();
+            ftpClient.Download($"{((remoteFolder == "\\") ? $"{remoteFolder}" : $"{remoteFolder}\\")}{fileName}", fileManager.GetCurrentPath());
             break;
-        case 9:
-            Console.Write("Enter folder name: ");
-            string? folderName9 = Console.ReadLine();
-            if (folderName9 == null)
-            {
-                Console.WriteLine("Tên thư mục không được để trống!");
-                break;
-            }
-            ftpClient.SendFolder(folderName9, fileManager.GetCurrentFolderPath());
+        case "DOWNLOADFOLDER":
+            string[] parts3 = request.Split(' ');
+            string folderName3 = request.Substring(parts3[0].Length + 1).Trim();
+            string remoteFolder3 = ftpClient.Pwd();
+            ftpClient.DownloadFolder($"{((remoteFolder3 == "\\") ? $"{remoteFolder3}" : $"{remoteFolder3}\\")}{folderName3}", $"{fileManager.GetCurrentPath()}\\{folderName3}");
             break;
-        case 10:
-            Console.Write("Enter folder name: ");
-            string? folderName = Console.ReadLine();
-            if(folderName == null)
-            {
-                Console.WriteLine("Tên thư mục không được để trống!");
-                break;
-            }
-            Directory.CreateDirectory(fileManager.GetCurrentFolderPath() + folderName);
-            ftpClient.ReceiveFolder(folderName, fileManager.GetCurrentFolderPath() + folderName);
+        case "EXPRESSUPLOAD":
+            string[] parts4 = request.Split(' ');
+            string fileName4 = request.Substring(parts4[0].Length + 1).Trim();
+            ftpClient.ExpressUpload(ftpClient.Pwd(), $"{fileManager.GetCurrentPath()}\\{fileName4}");
             break;
-        case 0:
-            Environment.Exit(0);
+        case "UPLOAD":
+            string[] parts1 = request.Split(' ');
+            string fileName1 = request.Substring(parts1[0].Length + 1).Trim();
+            ftpClient.Upload(ftpClient.Pwd(), $"{fileManager.GetCurrentPath()}\\{fileName1}");
             break;
+        case "UPLOADFOLDER":
+            string[] parts2 = request.Split(' ');
+            string folderName = request.Substring(parts2[0].Length + 1).Trim();
+            string remoteFolder2 = ftpClient.Pwd();
+            ftpClient.UploadFolder($"{((remoteFolder2 == "\\") ? $"{remoteFolder2}" : $"{remoteFolder2}\\")}{folderName}", $"{fileManager.GetCurrentPath()}\\{folderName}");
+            break;
+        case "EXIT":
+            return;
         default:
             Console.WriteLine("Chức năng không tồn tại!");
             break;
