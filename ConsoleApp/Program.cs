@@ -45,6 +45,12 @@ while (true)
             Console.WriteLine("S>" + ftpClient.Pwd());
             ftpClient.Mlsd();
             break;
+        case "EXPRESSDOWNLOAD":
+            string[] parts5 = request.Split(' ');
+            string fileName5 = request.Substring(parts5[0].Length + 1).Trim();
+            string remoteFolder5 = ftpClient.Pwd();
+            ftpClient.ExpressDownload($"{((remoteFolder5 == "\\") ? $"{remoteFolder5}" : $"{remoteFolder5}\\")}{fileName5}", fileManager.GetCurrentPath());
+            break;
         case "DOWNLOAD":
             string[] parts = request.Split(' ');
             string fileName = request.Substring(parts[0].Length + 1).Trim();

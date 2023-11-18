@@ -249,7 +249,6 @@ namespace MyFtpServer
                         string filePath = part[1];
                         string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
 
-                        // Check Tcp Listener
                         if (tcpListener == null)
                             continue;
 
@@ -258,11 +257,47 @@ namespace MyFtpServer
 
                         long length = long.Parse(reader.ReadLine() ?? "0");
 
-                        FileServerExpressProcessing processing = new FileServerExpressProcessing(tcpListener, length);
-                        processing.ReceiveExpressFile(fullPath, length);
+                        FileServerExpressProcessing processing = new FileServerExpressProcessing(tcpListener, fullPath , length);
+                        processing.ReceiveExpressFile();
 
                         writer.WriteLine("226 Transfer complete");
                         ResponseStatus(sessionID, $"226 Transfer complete");
+                        if (tcpListener != null)
+                            tcpListener.Stop();
+                    }
+                    else if (command == "EXPRESSDOWNLOAD")
+                    {
+                        string filePath = part[1];
+                        string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
+                        if (!File.Exists(fullPath))
+                        {
+                            writer.WriteLine("550 File not exist");
+                            ResponseStatus(sessionID, "550 File not exist");
+                            continue;
+                        }
+
+                        writer.WriteLine(new FileInfo(fullPath).Length.ToString());
+
+                        if (tcpListener == null)
+                            continue;
+                        writer.WriteLine("150 Opening data connection");
+                        ResponseStatus(sessionID, $"150 Opening data connection");
+
+                        FileServerExpressProcessing processing = new FileServerExpressProcessing(tcpListener, fullPath ,new FileInfo(fullPath).Length);
+                        processing.SendExpressFile();
+
+                        command = reader.ReadLine() ?? "550";
+                        if (command.StartsWith("226"))
+                        {
+                            writer.WriteLine("226 Transfer complete");
+                            ResponseStatus(sessionID, $"226 Transfer complete");
+                        }
+                        else
+                        {
+                            writer.WriteLine("550 Transfer error");
+                            ResponseStatus(sessionID, $"550 Transfer error");
+                        }
+
                         if (tcpListener != null)
                             tcpListener.Stop();
                     }
