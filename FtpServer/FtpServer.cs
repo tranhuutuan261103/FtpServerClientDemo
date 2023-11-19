@@ -211,6 +211,9 @@ namespace MyFtpServer
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, $"150 Opening data connection");
 
+                        //writer.WriteLine($"213 {new FileInfo(fullPath).Length}");
+                        writer.WriteLine($"{new FileInfo(fullPath).Length}");
+
                         processing.SendFile(fullPath);
 
                         writer.WriteLine("226 Transfer complete");

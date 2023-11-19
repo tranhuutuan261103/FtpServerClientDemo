@@ -44,6 +44,14 @@ namespace ConsoleApp
             return _port;
         }
 
+        public delegate void FtpClientEventHandler(FileTransferProcessing sender);
+        public FtpClientEventHandler FtpClientEvent { set; get; }
+
+        private void FileClientProcessingEventHandler(FileTransferProcessing sender)
+        {
+            FtpClientEvent?.Invoke(sender);
+        }
+
         public void Mlsd()
         {
             var list = ListRemoteFolderAndFiles();
@@ -85,44 +93,47 @@ namespace ConsoleApp
 
         public void ExpressDownload(string remotePath, string localPath)
         {
-            TaskSession taskSession = new TaskSession("EXPRESSDOWNLOAD", remotePath, localPath);
+            FileTransferProcessing taskSession = new FileTransferProcessing("EXPRESSDOWNLOAD", Path.GetDirectoryName(remotePath) ?? "\\undefine", Path.GetFileName(remotePath) ?? "", localPath);
             ftpClientSession.PushQueueCommand(taskSession);
         }
 
         public void Download(string remotePath, string localPath)
         {
-            TaskSession taskSession = new TaskSession("RETR", remotePath, localPath);
+            FileTransferProcessing taskSession = new FileTransferProcessing("RETR", Path.GetDirectoryName(remotePath) ?? "\\undefine", Path.GetFileName(remotePath) ?? "", localPath)
+            {
+                Status = FileTransferProcessingStatus.Waiting
+            };
             ftpClientSession.PushQueueCommand(taskSession);
         }
 
         public void ExpressUpload(string remotePath, string localPath)
         {
-            TaskSession taskSession = new TaskSession("EXPRESSUPLOAD", remotePath, localPath);
+            FileTransferProcessing taskSession = new FileTransferProcessing("EXPRESSUPLOAD", remotePath , Path.GetFileName(localPath) ?? "\\undefine", Path.GetDirectoryName(localPath) ?? "\\undefine");
             ftpClientSession.PushQueueCommand(taskSession);
         }
 
         public void Upload(string remotePath, string localPath)
         {
-            TaskSession taskSession = new TaskSession("STOR", remotePath, localPath);
+            FileTransferProcessing taskSession = new FileTransferProcessing("STOR", remotePath, Path.GetFileName(localPath) ?? "\\undefine", Path.GetDirectoryName(localPath) ?? "\\undefine");
             ftpClientSession.PushQueueCommand(taskSession);
         }
 
-        public void ExecuteSessionCommand(TaskSession request, TcpClient tcpSessionClient)
+        public void ExecuteSessionCommand(FileTransferProcessing request, TcpClient tcpSessionClient)
         {
             string command = request.Type;
             switch (command)
             {
                 case "STOR":
-                    SendFile(request.RemotePath, Path.GetFileName(request.LocalPath) ?? "\\undefine", Path.GetDirectoryName(request.LocalPath) ?? "\\undefine", tcpSessionClient);
+                    SendFile(request, tcpSessionClient);
                     break;
                 case "EXPRESSUPLOAD":
-                    ExpressSendFile(request.RemotePath, Path.GetFileName(request.LocalPath) ?? "\\undefine", Path.GetDirectoryName(request.LocalPath) ?? "\\undefine", tcpSessionClient);
+                    ExpressSendFile(request, tcpSessionClient);
                     break;
                 case "RETR":
-                    ReceiveFile(Path.GetDirectoryName(request.RemotePath) ?? "\\undefine", Path.GetFileName(request.RemotePath) ?? "", request.LocalPath, tcpSessionClient);
+                    ReceiveFile(request, tcpSessionClient);
                 break;
                 case "EXPRESSDOWNLOAD":
-                    ExpressReceiveFile(Path.GetDirectoryName(request.RemotePath) ?? "\\undefine", Path.GetFileName(request.RemotePath) ?? "", request.LocalPath, tcpSessionClient);
+                    ExpressReceiveFile(request, tcpSessionClient);
                     break;
                 default:
                     break;
@@ -200,7 +211,7 @@ namespace ConsoleApp
                 //Console.WriteLine(Response); // Console command line
                 if (response.StartsWith("150 "))
                 {
-                    FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel);
+                    FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel, FileClientProcessingEventHandler);
                     list = fileClientProcessing.ReceiveListRemoteFiles();
 
                     response = _reader.ReadLine() ?? "";
@@ -214,12 +225,12 @@ namespace ConsoleApp
             return list;
         }
 
-        public void ReceiveFile(string remoteFolderPath, string remoteFileName, string localFolderPath, TcpClient tcpSessionClient)
+        public void ReceiveFile(FileTransferProcessing processing, TcpClient tcpSessionClient)
         {
             StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
             StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
             string command, response;
-            command = string.Format("CWD {0}", remoteFolderPath);
+            command = string.Format("CWD {0}", processing.RemotePath);
             streamWriter.WriteLine(command);
             response = streamReader.ReadLine() ?? "";
             if (response.StartsWith("250 "))
@@ -233,13 +244,16 @@ namespace ConsoleApp
                     TcpClient data_channel = new TcpClient();
                     data_channel.Connect(server_data_endpoint);
 
-                    command = string.Format("RETR {0}", remoteFileName);
+                    command = string.Format("RETR {0}", processing.FileName);
                     streamWriter.WriteLine(command);
                     response = streamReader.ReadLine() ?? "";
                     if (response.StartsWith("150 "))
                     {
-                        FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel);
-                        fileClientProcessing.ReceiveFile(localFolderPath + @"\" + remoteFileName);
+                        long fileSize = long.Parse(streamReader.ReadLine() ?? "0");
+                        processing.FileSize = fileSize;
+
+                        FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel, FileClientProcessingEventHandler, processing);
+                        fileClientProcessing.ReceiveFile(processing.LocalPath + @"\" + processing.FileName);
 
                         response = streamReader.ReadLine() ?? "";
                         if (response.StartsWith("226 "))
@@ -251,12 +265,12 @@ namespace ConsoleApp
             }
         }
 
-        public void ExpressReceiveFile(string remoteFolderPath, string remoteFileName, string localFolderPath, TcpClient tcpSessionClient)
+        public void ExpressReceiveFile(FileTransferProcessing request, TcpClient tcpSessionClient)
         {
             StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
             StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
             string command, response;
-            command = string.Format("CWD {0}", remoteFolderPath);
+            command = string.Format("CWD {0}", request.RemotePath);
             streamWriter.WriteLine(command);
             response = streamReader.ReadLine() ?? "";
             if (response.StartsWith("250 "))
@@ -268,7 +282,7 @@ namespace ConsoleApp
                 {
                     IPEndPoint server_data_endpoint = GetServerEndpoint(response);
 
-                    command = string.Format("EXPRESSDOWNLOAD {0}", remoteFileName);
+                    command = string.Format("EXPRESSDOWNLOAD {0}", request.FileName);
                     streamWriter.WriteLine(command);
 
                     long fileSize = long.Parse(streamReader.ReadLine() ?? "0");
@@ -276,7 +290,7 @@ namespace ConsoleApp
                     response = streamReader.ReadLine() ?? "";
                     if (response.StartsWith("150 "))
                     {
-                        FileClientExpressProcessing fileClientExpressProcessing = new FileClientExpressProcessing(server_data_endpoint, localFolderPath + "\\" + remoteFileName, fileSize);
+                        FileClientExpressProcessing fileClientExpressProcessing = new FileClientExpressProcessing(server_data_endpoint, request.LocalPath + "\\" + request.FileName, fileSize);
                         fileClientExpressProcessing.ExpressReceiveFile();
 
                         command = "226 Transfer complete";
@@ -286,12 +300,12 @@ namespace ConsoleApp
             }
         }
 
-        public void ExpressSendFile(string remoteFolderPath, string remoteFileName, string localFolderPath, TcpClient tcpSessionClient)
+        public void ExpressSendFile(FileTransferProcessing request, TcpClient tcpSessionClient)
         {
             StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
             StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
             string command, response;
-            command = string.Format("CWD {0}", remoteFolderPath);
+            command = string.Format("CWD {0}", request.RemotePath);
             streamWriter.WriteLine(command);
             response = streamReader.ReadLine() ?? "";
             if (response.StartsWith("250 "))
@@ -303,15 +317,15 @@ namespace ConsoleApp
                 {
                     IPEndPoint server_data_endpoint = GetServerEndpoint(response);
                     
-                    command = string.Format("EXPRESSUPLOAD {0}", remoteFileName);
+                    command = string.Format("EXPRESSUPLOAD {0}", request.FileName);
                     streamWriter.WriteLine(command);
                     response = streamReader.ReadLine() ?? "";
                     if (response.StartsWith("150 "))
                     {
-                        long fileSize = new FileInfo(localFolderPath + @"\" + remoteFileName).Length;
+                        long fileSize = new FileInfo(request.LocalPath + @"\" + request.FileName).Length;
                         streamWriter.WriteLine(fileSize);
 
-                        FileClientExpressProcessing fileClientExpressProcessing = new FileClientExpressProcessing(server_data_endpoint, localFolderPath + @"\" + remoteFileName, fileSize);
+                        FileClientExpressProcessing fileClientExpressProcessing = new FileClientExpressProcessing(server_data_endpoint, request.LocalPath + @"\" + request.FileName, fileSize);
                         fileClientExpressProcessing.ExpressSendFile();
 
                         response = streamReader.ReadLine() ?? "";
@@ -325,13 +339,13 @@ namespace ConsoleApp
             }
         }
 
-        public void SendFile(string remoteFolderPath, string remoteFileName, string localFolderPath, TcpClient tcpSessionClient)
+        public void SendFile(FileTransferProcessing processing ,TcpClient tcpSessionClient)
         {
             StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
             StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
             string command , response;
 
-            command = string.Format("CWD {0}", remoteFolderPath);
+            command = string.Format("CWD {0}", processing.RemotePath);
             streamWriter.WriteLine(command);
             response = streamReader.ReadLine() ?? "";
             if (response.StartsWith("250 "))
@@ -345,13 +359,13 @@ namespace ConsoleApp
                     TcpClient data_channel = new TcpClient();
                     data_channel.Connect(server_data_endpoint);
                 
-                    command = string.Format("STOR {0}", remoteFileName);
+                    command = string.Format("STOR {0}", processing.FileName);
                     streamWriter.WriteLine(command);
                     response = streamReader.ReadLine() ?? "";
                     if (response.StartsWith("150 "))
                     {
-                        FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel);
-                        fileClientProcessing.SendFile(localFolderPath + @"\" + remoteFileName);
+                        FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel, FileClientProcessingEventHandler, processing);
+                        fileClientProcessing.SendFile(processing.LocalPath + @"\" + processing.FileName);
 
                         response = streamReader.ReadLine() ?? "";
                         if (response.StartsWith("226 "))
@@ -383,8 +397,11 @@ namespace ConsoleApp
                     }
                     else
                     {
-                        TaskSession taskSession = new TaskSession("RETR", $"{remoteFolderPath}\\{fileInfor.Name}" , localFolderPath);
-                        ftpClientSession.PushQueueCommand(taskSession);
+                        FileTransferProcessing processing = new FileTransferProcessing("RETR", Path.GetDirectoryName(remoteFolderPath) ?? "\\undefine", fileInfor.Name, localFolderPath)
+                        {
+                            Status = FileTransferProcessingStatus.Waiting
+                        };
+                        ftpClientSession.PushQueueCommand(processing);
                     }
                 }
             }
@@ -396,10 +413,10 @@ namespace ConsoleApp
             bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
             if (currentRemoteFolderPath == true)
             {
-                string[] localFiles = Directory.GetFiles(localFolderPath);
-                foreach (string localFile in localFiles)
+                string[] localPaths = Directory.GetFiles(localFolderPath);
+                foreach (string localPath in localPaths)
                 {
-                    TaskSession taskSession = new TaskSession("STOR", $"{remoteFolderPath}", localFile);
+                    FileTransferProcessing taskSession = new FileTransferProcessing("STOR", remoteFolderPath, Path.GetFileName(localPath) ?? "\\undefine", Path.GetDirectoryName(localPath) ?? "\\undefine");
                     ftpClientSession.PushQueueCommand(taskSession);
                 }
                 string[] localFolders = Directory.GetDirectories(localFolderPath);

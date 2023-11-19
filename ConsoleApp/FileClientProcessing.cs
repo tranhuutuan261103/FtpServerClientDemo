@@ -14,11 +14,41 @@ namespace ConsoleApp
         private StreamWriter _writer;
         private StreamReader _reader;
 
-        public FileClientProcessing(TcpClient tcpClient)
+        public delegate void FileClientProcessingEventHandler(FileTransferProcessing sender);
+        public event FileClientProcessingEventHandler FileClientProcessingEvent;
+
+        public FileClientProcessing(TcpClient tcpClient, FileClientProcessingEventHandler FileClientProcessingEvent, FileTransferProcessing processing)
         {
             _tcpClient = tcpClient;
             _writer = new StreamWriter(_tcpClient.GetStream()) { AutoFlush = true };
             _reader = new StreamReader(_tcpClient.GetStream());
+            this.FileClientProcessingEvent = FileClientProcessingEvent;
+            this.Processing = processing;
+
+            Thread thread = new Thread(UpdateProcessing);
+            thread.Start();
+        }
+
+        public FileClientProcessing(TcpClient tcpClient, FileClientProcessingEventHandler FileClientProcessingEvent)
+        {
+            _tcpClient = tcpClient;
+            _writer = new StreamWriter(_tcpClient.GetStream()) { AutoFlush = true };
+            _reader = new StreamReader(_tcpClient.GetStream());
+            this.FileClientProcessingEvent = FileClientProcessingEvent;
+        }
+
+        private FileTransferProcessing Processing;
+
+        public void UpdateProcessing()
+        {
+            while (true)
+            {
+                if (Processing != null)
+                {
+                    FileClientProcessingEvent(Processing);
+                }
+                Thread.Sleep(500);
+            }
         }
 
         public List<FileInfor> ReceiveListRemoteFiles()
@@ -45,16 +75,27 @@ namespace ConsoleApp
             int blocksize = 1024;
             byte[] buffer = new byte[blocksize];
             int byteread = 0;
+
+            long totalBytesRead = 0;
+
+            Processing.Status = FileTransferProcessingStatus.Downloading;
+            FileClientProcessingEvent(Processing);
+
             FileStream fs = new FileStream(fullFilePath, FileMode.OpenOrCreate, FileAccess.Write);
             while (true)
             {
                 byteread = ns.Read(buffer, 0, blocksize);
                 fs.Write(buffer, 0, byteread);
+                totalBytesRead += byteread;
+                Processing.SetFileTransferSize(totalBytesRead);
                 if (byteread == 0)
                 {
                     break;
                 }
             }
+
+            Processing.Status = FileTransferProcessingStatus.Completed;
+            FileClientProcessingEvent(Processing);
             fs.Flush();
             fs.Close();
         }

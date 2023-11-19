@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyClassLibrary.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -11,7 +12,7 @@ namespace ConsoleApp
     {
         private TcpSession[] _subClient = new TcpSession[2];
         private FtpClient _client;
-        private List<TaskSession> queueCommand = new List<TaskSession>();
+        private List<FileTransferProcessing> queueCommand = new List<FileTransferProcessing>();
 
         public FtpClientSession(FtpClient client)
         {
@@ -22,9 +23,10 @@ namespace ConsoleApp
             }
         }
 
-        public void PushQueueCommand(TaskSession command)
+        public void PushQueueCommand(FileTransferProcessing command)
         {
             queueCommand.Add(command);
+            _client.FtpClientEvent(command);
         }
 
         public bool PopQueueCommand()
@@ -37,7 +39,7 @@ namespace ConsoleApp
             return false;
         }
 
-        private TaskSession? GetFirstQueueCommand()
+        private FileTransferProcessing? GetFirstQueueCommand()
         {
             if (queueCommand.Count > 0)
             {
@@ -50,7 +52,7 @@ namespace ConsoleApp
         {
             while(true)
             {
-                TaskSession? command = GetFirstQueueCommand();
+                FileTransferProcessing? command = GetFirstQueueCommand();
                 if (command != null)
                 {
                     foreach(TcpSession tcpSession in _subClient)
@@ -77,7 +79,7 @@ namespace ConsoleApp
             }
         }
 
-        private void HandleCommand(TaskSession command, TcpSession tcpSession)
+        private void HandleCommand(FileTransferProcessing command, TcpSession tcpSession)
         {
             _client.ExecuteSessionCommand(command, tcpSession.GetTcpClient());
             tcpSession.SetStatus(TcpSessionStatus.Connected);
