@@ -1,5 +1,6 @@
 using MyClassLibrary.Common;
 using UserApp.BLL;
+using UserApp.UserComponent;
 
 namespace UserApp
 {
@@ -31,13 +32,29 @@ namespace UserApp
             {
                 MainForm_BLL.Download(fileInfo.Name);
             }
+            else if (fileInfo.IsDirectory == true)
+            {
+                MainForm_BLL.DownloadFolder(fileInfo.Name);
+            }
         }
 
-        public void ProcessTransfer(object sender)
+        public void ProcessTransfer(FileTransferProcessing sender)
         {
-            int progress = (int)sender;
-            progressDownload.Value = progress;
-            label1.BeginInvoke(delegate { label1.Text =  progress + "%"; });
+            if (sender.Status == FileTransferProcessingStatus.Waiting)
+            {
+                flowLayoutPanel_ListProcessing.Controls.Add(new FileTransferProcessingControl(sender));
+            }
+            else
+            {
+                foreach (FileTransferProcessingControl control in flowLayoutPanel_ListProcessing.Controls)
+                {
+                    if (sender == control.GetFileTransferProcessing())
+                    {
+                        control.UpdateTransferProcessing(sender);
+                        break;
+                    }
+                }
+            }
         }
     }
 }
