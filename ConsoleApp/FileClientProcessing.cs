@@ -14,11 +14,15 @@ namespace ConsoleApp
         private StreamWriter _writer;
         private StreamReader _reader;
 
-        public FileClientProcessing(TcpClient tcpClient)
+        public delegate void FileClientProcessingEventHandler(FileTransferProcessing sender);
+        public event FileClientProcessingEventHandler FileClientProcessingEvent;
+
+        public FileClientProcessing(TcpClient tcpClient, FileClientProcessingEventHandler FileClientProcessingEvent)
         {
             _tcpClient = tcpClient;
             _writer = new StreamWriter(_tcpClient.GetStream()) { AutoFlush = true };
             _reader = new StreamReader(_tcpClient.GetStream());
+            this.FileClientProcessingEvent = FileClientProcessingEvent;
         }
 
         public List<FileInfor> ReceiveListRemoteFiles()
@@ -39,17 +43,22 @@ namespace ConsoleApp
             return Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileInfor>>(data) ?? new List<FileInfor>();
         }
 
-        public void ReceiveFile(string fullFilePath)
+        public void ReceiveFile(string fullFilePath, long fileSize)
         {
             NetworkStream ns = _tcpClient.GetStream();
             int blocksize = 1024;
             byte[] buffer = new byte[blocksize];
             int byteread = 0;
+
+            long totalBytesRead = 0;
+
             FileStream fs = new FileStream(fullFilePath, FileMode.OpenOrCreate, FileAccess.Write);
             while (true)
             {
                 byteread = ns.Read(buffer, 0, blocksize);
                 fs.Write(buffer, 0, byteread);
+                totalBytesRead += byteread;
+               // FileClientProcessingEvent((int)((double)totalBytesRead * 100 / fileSize));
                 if (byteread == 0)
                 {
                     break;
