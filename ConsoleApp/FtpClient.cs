@@ -44,13 +44,12 @@ namespace ConsoleApp
             return _port;
         }
 
-        public delegate void FtpClientEventHandler(object sender);
+        public delegate void FtpClientEventHandler(FileTransferProcessing sender);
         public FtpClientEventHandler FtpClientEvent { set; get; }
 
-        private void FileClientProcessingEventHandler(object sender)
+        private void FileClientProcessingEventHandler(FileTransferProcessing sender)
         {
             FtpClientEvent?.Invoke(sender);
-            Console.WriteLine((int)sender);
         }
 
         public void Mlsd()
@@ -100,7 +99,10 @@ namespace ConsoleApp
 
         public void Download(string remotePath, string localPath)
         {
-            FileTransferProcessing taskSession = new FileTransferProcessing("RETR", Path.GetDirectoryName(remotePath) ?? "\\undefine", Path.GetFileName(remotePath) ?? "", localPath);
+            FileTransferProcessing taskSession = new FileTransferProcessing("RETR", Path.GetDirectoryName(remotePath) ?? "\\undefine", Path.GetFileName(remotePath) ?? "", localPath)
+            {
+                Status = FileTransferProcessingStatus.Waiting
+            };
             ftpClientSession.PushQueueCommand(taskSession);
         }
 
@@ -248,9 +250,10 @@ namespace ConsoleApp
                     if (response.StartsWith("150 "))
                     {
                         long fileSize = long.Parse(streamReader.ReadLine() ?? "0");
+                        processing.FileSize = fileSize;
 
-                        FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel, FileClientProcessingEventHandler);
-                        fileClientProcessing.ReceiveFile(processing.LocalPath + @"\" + processing.FileName, fileSize);
+                        FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel, FileClientProcessingEventHandler, processing);
+                        fileClientProcessing.ReceiveFile(processing.LocalPath + @"\" + processing.FileName);
 
                         response = streamReader.ReadLine() ?? "";
                         if (response.StartsWith("226 "))
@@ -361,7 +364,7 @@ namespace ConsoleApp
                     response = streamReader.ReadLine() ?? "";
                     if (response.StartsWith("150 "))
                     {
-                        FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel, FileClientProcessingEventHandler);
+                        FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel, FileClientProcessingEventHandler, processing);
                         fileClientProcessing.SendFile(processing.LocalPath + @"\" + processing.FileName);
 
                         response = streamReader.ReadLine() ?? "";
@@ -394,8 +397,11 @@ namespace ConsoleApp
                     }
                     else
                     {
-                        FileTransferProcessing taskSession = new FileTransferProcessing("RETR", Path.GetDirectoryName(remoteFolderPath) ?? "\\undefine", fileInfor.Name, localFolderPath);
-                        ftpClientSession.PushQueueCommand(taskSession);
+                        FileTransferProcessing processing = new FileTransferProcessing("RETR", Path.GetDirectoryName(remoteFolderPath) ?? "\\undefine", fileInfor.Name, localFolderPath)
+                        {
+                            Status = FileTransferProcessingStatus.Waiting
+                        };
+                        ftpClientSession.PushQueueCommand(processing);
                     }
                 }
             }

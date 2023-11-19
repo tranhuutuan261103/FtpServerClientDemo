@@ -26,6 +26,7 @@ namespace ConsoleApp
         public void PushQueueCommand(FileTransferProcessing command)
         {
             queueCommand.Add(command);
+            _client.FtpClientEvent(command);
         }
 
         public bool PopQueueCommand()

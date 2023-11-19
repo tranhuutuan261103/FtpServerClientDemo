@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +16,7 @@ namespace MyClassLibrary.Common
         public string LocalPath { get; set; } = "";
         public FileTransferProcessingStatus Status { get; set; }
         public long FileSize { get; set; }
-        public long FileTransfered { get; set; }
+        public long FileSizeTransfered { get; set; }
 
         public FileTransferProcessing()
         {
@@ -23,7 +24,7 @@ namespace MyClassLibrary.Common
             FileName = "";
             Status = FileTransferProcessingStatus.Downloading;
             FileSize = 0;
-            FileTransfered = 0;
+            FileSizeTransfered = 0;
         }
 
         public FileTransferProcessing(string type, string remotePath, string fileName , string localPath)
@@ -32,6 +33,18 @@ namespace MyClassLibrary.Common
             LocalPath = localPath;
             RemotePath = remotePath;
             FileName = fileName;
+            FileSize = 0;
+            FileSizeTransfered = 0;
+            FileTransferedPercent = 0;
+        }
+
+        public void SetFileTransferSize(long fileSizeTransfered)
+        {
+            FileSizeTransfered = fileSizeTransfered;
+            if (FileSize > 0)
+            {
+                FileTransferedPercent = (int)(FileSizeTransfered * 100 / FileSize);
+            }
         }
 
     }
@@ -41,6 +54,7 @@ namespace MyClassLibrary.Common
         Downloading,
         Uploading,
         Completed,
-        Failed
+        Failed,
+        Waiting
     }
 }

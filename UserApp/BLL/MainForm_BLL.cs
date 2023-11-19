@@ -33,10 +33,17 @@ namespace UserApp.BLL
             ftpClient.Download($"{((remoteFolder == "\\") ? $"{remoteFolder}" : $"{remoteFolder}\\")}{fileName}", fileManager.GetCurrentPath());
         }
 
-        public delegate void ProcessTransfer(object sender);
+        public void DownloadFolder(string folderName)
+        {
+            string remoteFolder = ftpClient.Pwd();
+            ftpClient.DownloadFolder($"{((remoteFolder == "\\") ? $"{remoteFolder}" : $"{remoteFolder}\\")}{folderName}", $"{fileManager.GetCurrentPath()}\\{folderName}");
+            ftpClient.SetRemoteFolderPath(remoteFolder);
+        }
+
+        public delegate void ProcessTransfer(FileTransferProcessing sender);
         public event ProcessTransfer processTransfer;
 
-        private void ftpClient_FtpClientEvent(object sender)
+        private void ftpClient_FtpClientEvent(FileTransferProcessing sender)
         {
             processTransfer(sender);
         }
