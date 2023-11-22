@@ -59,6 +59,7 @@
             Controls.Add(grid_FileAndFolder);
             Name = "MainForm";
             Text = "Transfer data";
+            FormClosed += MainForm_FormClosed;
             Load += MainForm_Load;
             ResumeLayout(false);
         }

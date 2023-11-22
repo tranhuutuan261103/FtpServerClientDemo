@@ -49,6 +49,11 @@ namespace ConsoleApp
             _status = status;
         }
 
+        internal void Dispose()
+        {
+            _clientSesstion.Dispose();
+            _status = TcpSessionStatus.Closed;
+        }
     }
 
     public enum TcpSessionStatus
