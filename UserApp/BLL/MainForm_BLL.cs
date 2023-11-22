@@ -11,8 +11,8 @@ namespace UserApp.BLL
 {
     public class MainForm_BLL
     {
-        private FileManager fileManager;
-        FtpClient ftpClient;
+        private readonly FileManager fileManager;
+        private readonly FtpClient ftpClient;
 
         public MainForm_BLL()
         {
@@ -45,7 +45,14 @@ namespace UserApp.BLL
 
         private void ftpClient_FtpClientEvent(FileTransferProcessing sender)
         {
-            processTransfer(sender);
+            if (processTransfer != null)
+                processTransfer(sender);
+        }
+
+        public void Dispose()
+        {
+            ftpClient.Dispose();
+            processTransfer -= ftpClient_FtpClientEvent;
         }
     }
 }

@@ -84,5 +84,13 @@ namespace ConsoleApp
             _client.ExecuteSessionCommand(command, tcpSession.GetTcpClient());
             tcpSession.SetStatus(TcpSessionStatus.Connected);
         }
+
+        internal void Dispose()
+        {
+            foreach (TcpSession tcpSession in _subClient)
+            {
+                tcpSession.Dispose();
+            }
+        }
     }
 }

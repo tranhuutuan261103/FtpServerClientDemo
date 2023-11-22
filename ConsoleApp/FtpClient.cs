@@ -45,11 +45,18 @@ namespace ConsoleApp
         }
 
         public delegate void FtpClientEventHandler(FileTransferProcessing sender);
-        public FtpClientEventHandler FtpClientEvent { set; get; }
+        public FtpClientEventHandler? FtpClientEvent { set; get; }
 
         private void FileClientProcessingEventHandler(FileTransferProcessing sender)
         {
             FtpClientEvent?.Invoke(sender);
+        }
+
+        public void Dispose()
+        {
+            FtpClientEvent = null;
+            _client.Dispose();
+            ftpClientSession.Dispose();
         }
 
         public void Mlsd()

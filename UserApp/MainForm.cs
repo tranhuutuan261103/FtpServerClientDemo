@@ -1,4 +1,4 @@
-using MyClassLibrary.Common;
+﻿using MyClassLibrary.Common;
 using UserApp.BLL;
 using UserApp.UserComponent;
 
@@ -55,6 +55,14 @@ namespace UserApp
                     }
                 }
             }
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            // Dispose event processTransfer when form is closed.
+            MainForm_BLL.Dispose();
+            MainForm_BLL.processTransfer -= ProcessTransfer;
+            flowLayoutPanel_ListProcessing.Controls.Clear();
         }
     }
 }
