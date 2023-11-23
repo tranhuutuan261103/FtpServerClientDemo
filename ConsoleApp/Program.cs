@@ -6,7 +6,12 @@ using MyClassLibrary.Common;
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 Console.InputEncoding = System.Text.Encoding.UTF8;
 
-FtpClient ftpClient = new FtpClient("127.0.0.1", 1234);
+FtpClient ftpClient = new FtpClient("127.0.0.1", 1234, TransferProgress);
+
+void TransferProgress(FileTransferProcessing sender)
+{
+    Console.WriteLine($"{sender.FileName}");
+}
 
 string localFolderPath = @"D:\FileClient";
 FileManager fileManager = new FileManager(localFolderPath);

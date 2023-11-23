@@ -10,19 +10,44 @@ namespace UserApp
         public MainForm()
         {
             InitializeComponent();
-            MainForm_BLL = new MainForm_BLL();
-            MainForm_BLL.processTransfer += new MainForm_BLL.ProcessTransfer(ProcessTransfer);
+            MainForm_BLL = new MainForm_BLL(TransferProgress);
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            UpdateGridFileAndFolder();
+        }
+
+        private void UpdateGridFileAndFolder()
+        {
+            grid_FileAndFolder.Controls.Clear();
             var fileInfos = MainForm_BLL.GetFileInfos();
             foreach (var item in fileInfos)
             {
-                var fileControl = new UserComponent.FileControl(Download);
+                var fileControl = new FileControl(FileControlHandle);
                 fileControl.Infor = item;
                 grid_FileAndFolder.Controls.Add(fileControl);
             }
+        }
+
+        public void FileControlHandle(object sender, EventArgs e)
+        {
+            MouseEventArgs mouseEventArgs = (MouseEventArgs)e;
+            if (mouseEventArgs.Clicks == 2)
+            {
+                MessageBox.Show("Double Click");
+            }
+            /*
+            FileInfor fileInfo = (FileInfor)sender;
+            if (fileInfo.IsDirectory == false)
+            {
+                MainForm_BLL.Download(fileInfo.Name);
+            }
+            else if (fileInfo.IsDirectory == true)
+            {
+                MainForm_BLL.ChangeFolder(fileInfo.Name);
+                UpdateGridFileAndFolder();
+            }*/
         }
 
         public void Download(object sender, EventArgs e)
@@ -34,11 +59,12 @@ namespace UserApp
             }
             else if (fileInfo.IsDirectory == true)
             {
-                MainForm_BLL.DownloadFolder(fileInfo.Name);
+                MainForm_BLL.ChangeFolder(fileInfo.Name);
+                UpdateGridFileAndFolder();
             }
         }
 
-        public void ProcessTransfer(FileTransferProcessing sender)
+        public void TransferProgress(FileTransferProcessing sender)
         {
             if (sender.Status == FileTransferProcessingStatus.Waiting)
             {
@@ -61,8 +87,31 @@ namespace UserApp
         {
             // Dispose event processTransfer when form is closed.
             MainForm_BLL.Dispose();
-            MainForm_BLL.processTransfer -= ProcessTransfer;
             flowLayoutPanel_ListProcessing.Controls.Clear();
+        }
+
+        private void btn_Back_Click(object sender, EventArgs e)
+        {
+            MainForm_BLL.Back();
+            UpdateGridFileAndFolder();
+        }
+
+        private void btn_Upload_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog oFD = new OpenFileDialog();
+            if (oFD.ShowDialog() == DialogResult.OK)
+            {
+                MainForm_BLL.Upload(oFD.FileName);
+            }
+        }
+
+        private void btn_UploadFolder_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog fBD = new FolderBrowserDialog();
+            if (fBD.ShowDialog() == DialogResult.OK)
+            {
+                MainForm_BLL.UploadFolder(fBD.SelectedPath);
+            }
         }
     }
 }

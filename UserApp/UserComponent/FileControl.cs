@@ -29,6 +29,11 @@ namespace UserApp.UserComponent
             FileControlClick(Infor, e);
         }
 
+        private void FileControl_Click(object sender, EventArgs e)
+        {
+            FileControlClick(Infor, e);
+        }
+
         public FileInfor Infor
         {
             get { return infor; }
