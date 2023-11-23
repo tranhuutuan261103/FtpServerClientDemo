@@ -26,7 +26,7 @@ namespace ConsoleApp
         public void PushQueueCommand(FileTransferProcessing command)
         {
             queueCommand.Add(command);
-            _client.FtpClientEvent(command);
+            _client.TransferProgressHandler(command);
         }
 
         public bool PopQueueCommand()
@@ -81,7 +81,7 @@ namespace ConsoleApp
 
         private void HandleCommand(FileTransferProcessing command, TcpSession tcpSession)
         {
-            _client.ExecuteSessionCommand(command, tcpSession.GetTcpClient());
+            ExecuteSessionCommand(command, tcpSession.GetTcpClient());
             tcpSession.SetStatus(TcpSessionStatus.Connected);
         }
 
@@ -90,6 +90,29 @@ namespace ConsoleApp
             foreach (TcpSession tcpSession in _subClient)
             {
                 tcpSession.Dispose();
+            }
+        }
+
+        public void ExecuteSessionCommand(FileTransferProcessing request, TcpClient tcpSessionClient)
+        {
+            FtpClientProcessing fcp = new FtpClientProcessing(tcpSessionClient, _client.TransferProgressHandler);
+            string command = request.Type;
+            switch (command)
+            {
+                case "STOR":
+                    fcp.SendFile(request, tcpSessionClient);
+                    break;
+                case "EXPRESSUPLOAD":
+                    fcp.ExpressSendFile(request, tcpSessionClient);
+                    break;
+                case "RETR":
+                    fcp.ReceiveFile(request, tcpSessionClient);
+                    break;
+                case "EXPRESSDOWNLOAD":
+                    fcp.ExpressReceiveFile(request, tcpSessionClient);
+                    break;
+                default:
+                    break;
             }
         }
     }

@@ -100,6 +100,10 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"501 Syntax error in parameters or arguments");
                             continue;
                         }
+                        if (folderPath == "")
+                        {
+                            folderPath = @"\";
+                        }
                         if (Directory.Exists(_rootPath + folderPath) == false)
                         {
                             writer.WriteLine("550 Couldn't open the file or directory");

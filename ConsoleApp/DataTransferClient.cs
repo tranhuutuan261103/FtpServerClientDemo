@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp
 {
-    public class FileClientProcessing
+    public class DataTransferClient
     {
         private TcpClient _tcpClient;
         private StreamWriter _writer;
@@ -17,7 +17,7 @@ namespace ConsoleApp
         public delegate void FileClientProcessingEventHandler(FileTransferProcessing sender);
         public event FileClientProcessingEventHandler FileClientProcessingEvent;
 
-        public FileClientProcessing(TcpClient tcpClient, FileClientProcessingEventHandler FileClientProcessingEvent, FileTransferProcessing processing)
+        public DataTransferClient(TcpClient tcpClient, FileClientProcessingEventHandler FileClientProcessingEvent, FileTransferProcessing processing)
         {
             _tcpClient = tcpClient;
             _writer = new StreamWriter(_tcpClient.GetStream()) { AutoFlush = true };
@@ -29,12 +29,11 @@ namespace ConsoleApp
             thread.Start();
         }
 
-        public FileClientProcessing(TcpClient tcpClient, FileClientProcessingEventHandler FileClientProcessingEvent)
+        public DataTransferClient(TcpClient tcpClient)
         {
             _tcpClient = tcpClient;
             _writer = new StreamWriter(_tcpClient.GetStream()) { AutoFlush = true };
             _reader = new StreamReader(_tcpClient.GetStream());
-            this.FileClientProcessingEvent = FileClientProcessingEvent;
         }
 
         private FileTransferProcessing Processing;

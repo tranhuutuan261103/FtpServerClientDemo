@@ -47,6 +47,8 @@
             label_Name.Size = new Size(60, 33);
             label_Name.TabIndex = 0;
             label_Name.Text = "name";
+            label_Name.Click += FileControl_Click;
+            label_Name.DoubleClick += FileControl_DoubleClick;
             // 
             // FileControl
             // 
@@ -56,6 +58,7 @@
             Controls.Add(label_Name);
             Name = "FileControl";
             Size = new Size(250, 60);
+            Click += FileControl_Click;
             DoubleClick += FileControl_DoubleClick;
             ResumeLayout(false);
             PerformLayout();
