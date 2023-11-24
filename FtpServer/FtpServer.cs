@@ -1,6 +1,7 @@
 ﻿using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -80,8 +81,8 @@ namespace MyFtpServer
                         break;
                     CommandStatus(sessionID, request);
 
-                    string[] part = request.Split(' ');
-                    string command = part[0];
+                    string[] parts = request.Split(' ');
+                    string command = parts[0];
                     if (command == "PASV")
                     {
                         passivePort = GetPortPassiveMode();
@@ -93,7 +94,7 @@ namespace MyFtpServer
                     }
                     else if (command == "CWD")
                     {
-                        string folderPath = part[1];
+                        string folderPath = string.Join(" ", parts, 1, parts.Length - 1);
                         if (folderPath == null)
                         {
                             writer.WriteLine("501 Syntax error in parameters or arguments");
@@ -122,7 +123,7 @@ namespace MyFtpServer
                     }
                     else if (command == "MKD")
                     {
-                        string folderPath = part[1];
+                        string folderPath = string.Join(" ", parts, 1, parts.Length - 1); ;
                         if (folderPath == null)
                         {
                             writer.WriteLine("501 Syntax error in parameters or arguments");
@@ -190,7 +191,7 @@ namespace MyFtpServer
                     }
                     else if (command == "RETR")
                     {
-                        string filePath = part[1];
+                        string filePath = string.Join(" ", parts, 1, parts.Length - 1);
                         string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
 
                         if (!File.Exists(fullPath))
@@ -227,7 +228,7 @@ namespace MyFtpServer
                     }
                     else if (command == "STOR")
                     {
-                        string filePath = part[1];
+                        string filePath = string.Join(" ", parts, 1, parts.Length - 1);
                         string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
 
                         if (tcpListener == null)
@@ -253,7 +254,7 @@ namespace MyFtpServer
                     }
                     else if (command == "EXPRESSUPLOAD")
                     {
-                        string filePath = part[1];
+                        string filePath = string.Join(" ", parts, 1, parts.Length - 1);
                         string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
 
                         if (tcpListener == null)
@@ -274,7 +275,7 @@ namespace MyFtpServer
                     }
                     else if (command == "EXPRESSDOWNLOAD")
                     {
-                        string filePath = part[1];
+                        string filePath = string.Join(" ", parts, 1, parts.Length - 1);
                         string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
                         if (!File.Exists(fullPath))
                         {

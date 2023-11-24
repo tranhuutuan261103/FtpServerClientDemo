@@ -13,43 +13,44 @@ namespace UserApp.BLL
     {
         private readonly FileManager fileManager;
         private readonly FtpClient ftpClient;
+        private string _remoteFolderPath = "\\";
 
-        public MainForm_BLL(TransferProgress process)
+        public MainForm_BLL(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile)
         {
             fileManager = new FileManager(@"D:\FileClient");
-            ftpClient = new FtpClient("127.0.0.1", 1234, TransferProgressHandler);
+            ftpClient = new FtpClient("127.0.0.1", 1234, TransferProgressHandler, ChangeFoldersAndFileHandler);
             progress += process;
+            this.changeFolderAndFile += changeFolderAndFile;
         }
 
-        public List<FileInfor> GetFileInfos()
+        public void GetFileInfos()
         {
-            return ftpClient.ListRemoteFolderAndFiles(); ;
+            ftpClient.ListRemoteFolderAndFiles("\\");
         }
 
         public void Download(string fileName)
         {
-            string remoteFolder = ftpClient.Pwd();
-            ftpClient.Download($"{((remoteFolder == "\\") ? $"{remoteFolder}" : $"{remoteFolder}\\")}{fileName}", fileManager.GetCurrentPath());
+            ftpClient.Download($"{((_remoteFolderPath == "\\") ? $"{_remoteFolderPath}" : $"{_remoteFolderPath}\\")}{fileName}", fileManager.GetCurrentPath());
         }
 
         public void DownloadFolder(string folderName)
         {
-            string remoteFolder = ftpClient.Pwd();
-            ftpClient.DownloadFolder($"{((remoteFolder == "\\") ? $"{remoteFolder}" : $"{remoteFolder}\\")}{folderName}", $"{fileManager.GetCurrentPath()}\\{folderName}");
-            ftpClient.SetRemoteFolderPath(remoteFolder);
+            ftpClient.DownloadFolder($"{((_remoteFolderPath == "\\") ? $"{_remoteFolderPath}" : $"{_remoteFolderPath}\\")}{folderName}", $"{fileManager.GetCurrentPath()}\\{folderName}");
         }
         public void ChangeFolder(string folderName)
         {
-            string remoteFolder = ftpClient.Pwd();
-            ftpClient.SetRemoteFolderPath((remoteFolder == "\\") ? $"\\{folderName}" : $"{remoteFolder}\\{folderName}");
+            _remoteFolderPath = (_remoteFolderPath == "\\") ? $"\\{folderName}" : $"{_remoteFolderPath}\\{folderName}";
+            ftpClient.ListRemoteFolderAndFiles(_remoteFolderPath);
         }
         public void Back()
         {
-            string remoteFolder = ftpClient.Pwd();
-            if (remoteFolder != "\\")
+            if (_remoteFolderPath == "")
+                _remoteFolderPath = "\\";
+            if (_remoteFolderPath != "\\")
             {
-                ftpClient.SetRemoteFolderPath(remoteFolder.Substring(0, remoteFolder.LastIndexOf('\\')));
+                _remoteFolderPath = _remoteFolderPath.Substring(0, _remoteFolderPath.LastIndexOf('\\'));
             }
+            ftpClient.ListRemoteFolderAndFiles(_remoteFolderPath);
         }
 
         public delegate void TransferProgress(FileTransferProcessing sender);
@@ -61,22 +62,29 @@ namespace UserApp.BLL
                 progress(sender);
         }
 
+        public delegate void OnChangeFolderAndFile(List<FileInfor> sender);
+        public event OnChangeFolderAndFile changeFolderAndFile;
+
+        private void ChangeFoldersAndFileHandler(List<FileInfor> fileInfors)
+        {
+            if (fileInfors != null)
+                changeFolderAndFile(fileInfors);
+        }
+
         public void Dispose()
         {
             ftpClient.Dispose();
         }
 
-        internal void Upload(string filePath)
+        public void Upload(string filePath)
         {
-            ftpClient.Upload(ftpClient.Pwd(), filePath);
+            ftpClient.Upload(_remoteFolderPath, filePath);
         }
 
-        internal void UploadFolder(string selectedPath)
+        public void UploadFolder(string selectedPath)
         {
-            string remoteFolder = ftpClient.Pwd();
             string folderName = selectedPath.Substring(selectedPath.LastIndexOf('\\') + 1);
-            ftpClient.UploadFolder((ftpClient.Pwd() == "\\") ? $"\\{folderName}" : $"{remoteFolder}\\{folderName}", selectedPath);
-            ftpClient.SetRemoteFolderPath(remoteFolder);
+            ftpClient.UploadFolder((_remoteFolderPath == "\\") ? $"\\{folderName}" : $"{_remoteFolderPath}\\{folderName}", selectedPath);
         }
     }
 }

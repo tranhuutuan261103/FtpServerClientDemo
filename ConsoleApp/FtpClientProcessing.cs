@@ -16,12 +16,13 @@ namespace ConsoleApp
         private readonly StreamWriter _writer;
         private readonly StreamReader _reader;
 
-        public FtpClientProcessing(TcpClient tcpClient, TransferProgress transferProgress)
+        public FtpClientProcessing(TcpClient tcpClient, TransferProgress transferProgress, OnTransferRequest transferRequest)
         {
             _tcpClient = tcpClient;
             _writer = new StreamWriter(_tcpClient.GetStream()) { AutoFlush = true };
             _reader = new StreamReader(_tcpClient.GetStream());
             progress += transferProgress;
+            this.transferRequest += transferRequest;
         }
 
         public delegate void TransferProgress(FileTransferProcessing sender);
@@ -30,6 +31,9 @@ namespace ConsoleApp
         {
             progress?.Invoke(sender);
         }
+
+        public delegate void OnTransferRequest(FileTransferProcessing request);
+        public event OnTransferRequest transferRequest;
 
         public string GetRemoteFolderPath()
         {
@@ -217,6 +221,8 @@ namespace ConsoleApp
                         response = streamReader.ReadLine() ?? "";
                         if (response.StartsWith("226 "))
                         {
+                            processing.Status = FileTransferProcessingStatus.Completed;
+                            TransferProgressHandler(processing);
                             data_channel.Close();
                         }
                     }
@@ -224,10 +230,14 @@ namespace ConsoleApp
             }
         }
 
-        public List<FileInfor> ListRemoteFolderAndFiles()
+        public List<FileInfor> ListRemoteFoldersAndFiles(string remoteFolderPath)
         {
             List<FileInfor> list = new List<FileInfor>();
             string command, response;
+
+            command = string.Format("CWD {0}", remoteFolderPath);
+            _writer.WriteLine(command);
+            response = _reader.ReadLine() ?? "";
 
             command = "PWD";
             _writer.WriteLine(command);
@@ -266,6 +276,55 @@ namespace ConsoleApp
                 }
             }
             return list;
+        }
+
+        public void DownloadFolder(string remoteFolderPath, string localFolderPath)
+        {
+            bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
+            if (currentRemoteFolderPath == true)
+            {
+                List<FileInfor> fileInfors = ListRemoteFoldersAndFiles(remoteFolderPath);
+                foreach (FileInfor fileInfor in fileInfors)
+                {
+                    if (fileInfor.IsDirectory == true)
+                    {
+                        string newRemoteFolderPath = remoteFolderPath + @"\" + fileInfor.Name;
+                        string newLocalFolderPath = localFolderPath + @"\" + fileInfor.Name;
+                        if (Directory.Exists(newLocalFolderPath) == false)
+                        {
+                            Directory.CreateDirectory(newLocalFolderPath);
+                        }
+                        DownloadFolder(newRemoteFolderPath, newLocalFolderPath);
+                    }
+                    else
+                    {
+                        FileTransferProcessing processing = new FileTransferProcessing("RETR", remoteFolderPath, fileInfor.Name, localFolderPath);
+                        transferRequest(processing);
+                    }
+                }
+            }
+        }
+
+        public void UploadFolder(string remoteFolderPath, string localFolderPath)
+        {
+            CreateNewRemoteFolder(remoteFolderPath);
+            bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
+            if (currentRemoteFolderPath == true)
+            {
+                string[] localPaths = Directory.GetFiles(localFolderPath);
+                foreach (string localPath in localPaths)
+                {
+                    FileTransferProcessing taskSession = new FileTransferProcessing("STOR", remoteFolderPath, Path.GetFileName(localPath) ?? "\\undefine", Path.GetDirectoryName(localPath) ?? "\\undefine");
+                    transferRequest(taskSession);
+                }
+                string[] localFolders = Directory.GetDirectories(localFolderPath);
+                foreach (string localFolder in localFolders)
+                {
+                    string newRemoteFolderPath = remoteFolderPath + @"\" + Path.GetFileName(localFolder);
+                    string newLocalFolderPath = localFolderPath + @"\" + Path.GetFileName(localFolder);
+                    UploadFolder(newRemoteFolderPath, newLocalFolderPath);
+                }
+            }
         }
 
         private IPEndPoint GetServerEndpoint(string response)

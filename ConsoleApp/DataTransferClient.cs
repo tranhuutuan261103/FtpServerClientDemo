@@ -105,11 +105,21 @@ namespace ConsoleApp
             int blocksize = 1024;
             byte[] buffer = new byte[blocksize];
             int byteread = 0;
+
+            Processing.Status = FileTransferProcessingStatus.Uploading;
+            FileClientProcessingEvent(Processing);
+
+            long totalBytesRead = 0;
+            
+
             FileStream fs = new FileStream(fullFilePath, FileMode.Open, FileAccess.Read);
+            Processing.FileSize = fs.Length;
             while (true)
             {
                 byteread = fs.Read(buffer, 0, blocksize);
                 ns.Write(buffer, 0, byteread);
+                totalBytesRead += byteread;
+                Processing.SetFileTransferSize(totalBytesRead);
                 if (byteread == 0)
                 {
                     break;

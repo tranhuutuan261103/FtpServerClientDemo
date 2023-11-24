@@ -42,13 +42,17 @@ namespace UserApp.UserComponent
 
                 UpdateControlText(label_FileName, processing.FileName);
 
+                // Safely update label_Status.
+
+                UpdateControlText(label_Status, processing.StatusToString());
+
                 // Safely update label_FileTransferPercent.
 
                 UpdateControlText(label_FileTransferPercent, $"{processing.FileTransferedPercent,3}%");
 
                 // Safely update label_TransferRate.
 
-                UpdateControlText(label_TransferRate, $"{processing.FileSizeTransfered}/{processing.FileSize}");
+                UpdateControlText(label_TransferRate, TransferRateFormat(processing.FileSizeTransfered, processing.FileSize));
 
                 // Safely update progressBar.
 
@@ -98,6 +102,24 @@ namespace UserApp.UserComponent
 
             }
 
+        }
+
+        private string TransferRateFormat(long fileTransfered, long fileSize)
+        {
+            string[] type = { "B", "KB", "MB", "GB", "TB" };
+            int i = 0;
+            int j = 0;
+            while (fileTransfered > 1024)
+            {
+                fileTransfered /= 1024;
+                i++;
+            }
+            while (fileSize > 1024)
+            {
+                fileSize /= 1024;
+                j++;
+            }
+            return $"{fileTransfered} {type[i]}/{fileSize} {type[j]}";
         }
 
         public void UpdateTransferProcessing(FileTransferProcessing processing)
