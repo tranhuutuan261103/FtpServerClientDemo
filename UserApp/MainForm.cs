@@ -50,9 +50,16 @@ namespace UserApp
         {
             MouseEventArgs mouseEventArgs = (MouseEventArgs)e;
             FileInfor fileInfo = (FileInfor)sender;
-            if (mouseEventArgs.Clicks == 2 && fileInfo.IsDirectory)
+            if (mouseEventArgs.Clicks == 2)
             {
-                MainForm_BLL.ChangeFolder(fileInfo.Name);
+                if (fileInfo.IsDirectory == true)
+                {
+                    MainForm_BLL.ChangeFolder(fileInfo.Name);
+                }
+                else
+                {
+                    MainForm_BLL.ExpressDownload(fileInfo.Name);
+                }
             }
             else if (mouseEventArgs.Button == MouseButtons.Right)
             {

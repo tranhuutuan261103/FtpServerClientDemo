@@ -33,6 +33,11 @@ namespace UserApp.BLL
             ftpClient.Download($"{((_remoteFolderPath == "\\") ? $"{_remoteFolderPath}" : $"{_remoteFolderPath}\\")}{fileName}", fileManager.GetCurrentPath());
         }
 
+        public void ExpressDownload(string fileName)
+        {
+            ftpClient.ExpressDownload($"{((_remoteFolderPath == "\\") ? $"{_remoteFolderPath}" : $"{_remoteFolderPath}\\")}{fileName}", fileManager.GetCurrentPath());
+        }
+
         public void DownloadFolder(string folderName)
         {
             ftpClient.DownloadFolder($"{((_remoteFolderPath == "\\") ? $"{_remoteFolderPath}" : $"{_remoteFolderPath}\\")}{folderName}", $"{fileManager.GetCurrentPath()}\\{folderName}");
