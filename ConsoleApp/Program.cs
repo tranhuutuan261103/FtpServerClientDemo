@@ -6,13 +6,26 @@ using MyClassLibrary.Common;
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 Console.InputEncoding = System.Text.Encoding.UTF8;
 
-FtpClient ftpClient = new FtpClient("127.0.0.1", 1234);
+FtpClient ftpClient = new FtpClient("127.0.0.1", 1234, TransferProgress, ChangeFoldersAndFileHandler);
+
+void TransferProgress(FileTransferProcessing sender)
+{
+    Console.WriteLine($"{sender.FileName}");
+}
+
+void ChangeFoldersAndFileHandler(List<FileInfor> foldersAndFiles)
+{
+    foreach (var item in foldersAndFiles)
+    {
+        Console.WriteLine($"{item.Name}");
+    }
+}
 
 string localFolderPath = @"D:\FileClient";
 FileManager fileManager = new FileManager(localFolderPath);
 
 Console.WriteLine("Help - Hiển thị danh sách các lệnh\n");
-
+/*
 while (true)
 {
     Console.Write(fileManager.GetCurrentPath() + ">");
@@ -85,4 +98,4 @@ while (true)
             Console.WriteLine("Chức năng không tồn tại!");
             break;
     }
-}
+}*/

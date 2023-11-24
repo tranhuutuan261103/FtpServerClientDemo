@@ -11,41 +11,80 @@ namespace UserApp.BLL
 {
     public class MainForm_BLL
     {
-        private FileManager fileManager;
-        FtpClient ftpClient;
+        private readonly FileManager fileManager;
+        private readonly FtpClient ftpClient;
+        private string _remoteFolderPath = "\\";
 
-        public MainForm_BLL()
+        public MainForm_BLL(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile)
         {
             fileManager = new FileManager(@"D:\FileClient");
-            ftpClient = new FtpClient("127.0.0.1", 1234);
-            ftpClient.FtpClientEvent += new FtpClient.FtpClientEventHandler(ftpClient_FtpClientEvent);
-            //ftpClient.Login("admin", "admin");
+            ftpClient = new FtpClient("127.0.0.1", 1234, TransferProgressHandler, ChangeFoldersAndFileHandler);
+            progress += process;
+            this.changeFolderAndFile += changeFolderAndFile;
         }
 
-        public List<FileInfor> GetFileInfos()
+        public void GetFileInfos()
         {
-            return ftpClient.ListRemoteFolderAndFiles(); ;
+            ftpClient.ListRemoteFolderAndFiles("\\");
         }
 
         public void Download(string fileName)
         {
-            string remoteFolder = ftpClient.Pwd();
-            ftpClient.Download($"{((remoteFolder == "\\") ? $"{remoteFolder}" : $"{remoteFolder}\\")}{fileName}", fileManager.GetCurrentPath());
+            ftpClient.Download($"{((_remoteFolderPath == "\\") ? $"{_remoteFolderPath}" : $"{_remoteFolderPath}\\")}{fileName}", fileManager.GetCurrentPath());
         }
 
         public void DownloadFolder(string folderName)
         {
-            string remoteFolder = ftpClient.Pwd();
-            ftpClient.DownloadFolder($"{((remoteFolder == "\\") ? $"{remoteFolder}" : $"{remoteFolder}\\")}{folderName}", $"{fileManager.GetCurrentPath()}\\{folderName}");
-            ftpClient.SetRemoteFolderPath(remoteFolder);
+            ftpClient.DownloadFolder($"{((_remoteFolderPath == "\\") ? $"{_remoteFolderPath}" : $"{_remoteFolderPath}\\")}{folderName}", $"{fileManager.GetCurrentPath()}\\{folderName}");
+        }
+        public void ChangeFolder(string folderName)
+        {
+            _remoteFolderPath = (_remoteFolderPath == "\\") ? $"\\{folderName}" : $"{_remoteFolderPath}\\{folderName}";
+            ftpClient.ListRemoteFolderAndFiles(_remoteFolderPath);
+        }
+        public void Back()
+        {
+            if (_remoteFolderPath == "")
+                _remoteFolderPath = "\\";
+            if (_remoteFolderPath != "\\")
+            {
+                _remoteFolderPath = _remoteFolderPath.Substring(0, _remoteFolderPath.LastIndexOf('\\'));
+            }
+            ftpClient.ListRemoteFolderAndFiles(_remoteFolderPath);
         }
 
-        public delegate void ProcessTransfer(FileTransferProcessing sender);
-        public event ProcessTransfer processTransfer;
+        public delegate void TransferProgress(FileTransferProcessing sender);
+        public event TransferProgress progress;
 
-        private void ftpClient_FtpClientEvent(FileTransferProcessing sender)
+        private void TransferProgressHandler(FileTransferProcessing sender)
         {
-            processTransfer(sender);
+            if (progress != null)
+                progress(sender);
+        }
+
+        public delegate void OnChangeFolderAndFile(List<FileInfor> sender);
+        public event OnChangeFolderAndFile changeFolderAndFile;
+
+        private void ChangeFoldersAndFileHandler(List<FileInfor> fileInfors)
+        {
+            if (fileInfors != null)
+                changeFolderAndFile(fileInfors);
+        }
+
+        public void Dispose()
+        {
+            ftpClient.Dispose();
+        }
+
+        public void Upload(string filePath)
+        {
+            ftpClient.Upload(_remoteFolderPath, filePath);
+        }
+
+        public void UploadFolder(string selectedPath)
+        {
+            string folderName = selectedPath.Substring(selectedPath.LastIndexOf('\\') + 1);
+            ftpClient.UploadFolder((_remoteFolderPath == "\\") ? $"\\{folderName}" : $"{_remoteFolderPath}\\{folderName}", selectedPath);
         }
     }
 }

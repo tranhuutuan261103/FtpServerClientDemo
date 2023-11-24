@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp
 {
-    public class FileClientExpressProcessing
+    public class DataExpressTransferClient
     {
         private IPEndPoint server_data_endpoint;
         private string _fullPath;
         private int _maxBufferSize = (int)Math.Pow(2, 20) * 256;
         private long _fileSize;
 
-        public FileClientExpressProcessing(IPEndPoint server_data_endpoint, string fullPath, long fileSize)
+        public DataExpressTransferClient(IPEndPoint server_data_endpoint, string fullPath, long fileSize)
         {
             this.server_data_endpoint = server_data_endpoint;
             _fullPath = fullPath;

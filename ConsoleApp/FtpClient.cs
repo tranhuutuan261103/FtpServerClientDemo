@@ -15,429 +15,229 @@ namespace ConsoleApp
     {
         private string _host;
         private int _port;
-        private TcpClient _client;
-        private FtpClientSession ftpClientSession;
-        private StreamWriter _writer;
-        private StreamReader _reader;
-        public FtpClient(string host, int port)
+        private TcpSession _mainTcpSession;
+        private List<TaskSession> _mainTaskSessions = new List<TaskSession>();
+        private TcpSession[] subTcpSession = new TcpSession[2];
+        private List<FileTransferProcessing> _subTaskSessions = new List<FileTransferProcessing>();
+        public FtpClient(string host, int port, TransferProgress process, OnChangeFolderAndFile changeFolderAndFile)
         {
             _host = host;
             _port = port;
-            _client = new TcpClient();
-            
-            _client.Connect(_host, _port);
-            _writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
-            _reader = new StreamReader(_client.GetStream());
 
-            ftpClientSession = new FtpClientSession(this);
-            Thread thread = new Thread(() => ftpClientSession.Process());
-            thread.Start();
-        }
-
-        public string GetHost()
-        {
-            return _host;
-        }
-
-        public int GetPort()
-        {
-            return _port;
-        }
-
-        public delegate void FtpClientEventHandler(FileTransferProcessing sender);
-        public FtpClientEventHandler FtpClientEvent { set; get; }
-
-        private void FileClientProcessingEventHandler(FileTransferProcessing sender)
-        {
-            FtpClientEvent?.Invoke(sender);
-        }
-
-        public void Mlsd()
-        {
-            var list = ListRemoteFolderAndFiles();
-            foreach (var file in list)
+            _mainTcpSession = new TcpSession(_host, _port);
+            _mainTcpSession.Connect();
+            for (int i = 0; i < subTcpSession.Length; i++)
             {
-                Console.WriteLine(file.ToString());
+                subTcpSession[i] = new TcpSession(_host, _port);
+            }
+            Thread threadMain = new Thread(MainProcess);
+            threadMain.Start();
+
+            Thread threadSub = new Thread(SubProcess);
+            threadSub.Start();
+
+            progress += process;
+            this.changeFolderAndFile += changeFolderAndFile;
+        }
+
+        private void PushMainTaskSession(TaskSession taskSession)
+        {
+            lock(_mainTaskSessionLock)
+            {
+                _mainTaskSessions.Add(taskSession);
             }
         }
 
-        public string Pwd()
+        private void PushSubTaskSession(FileTransferProcessing taskSession)
         {
-            return GetRemoteFolderPath();
-        }
-
-        public bool Cwd(string request)
-        {
-            request = request.Trim();
-            string[] parts = request.Split(' ');
-            if (parts.Length < 2)
+            lock (_subTaskSessionLock)
             {
-                return false;
+                _subTaskSessions.Add(taskSession);
             }
-
-            string folderName = request.Substring(parts[0].Length + 1).Trim();
-            return SetRemoteFolderPath(folderName);
+            TransferProgressHandler(taskSession);
         }
 
-        public bool Mkd(string request)
+        private void MainProcess()
         {
-            request = request.Trim();
-            string[] parts = request.Split(' ');
-            if (parts.Length < 2)
+            while (true)
             {
-                return false;
+                lock (_mainTaskSessionLock)
+                {
+                    if (_mainTaskSessions.Count > 0)
+                    {
+                        TaskSession taskSession = _mainTaskSessions[0];
+                        _mainTaskSessions.RemoveAt(0);
+                        ExecuteMainTaskSession(taskSession);
+                    }
+                }
             }
-            string folderName = request.Substring(parts[0].Length + 1).Trim();
-            return CreateNewRemoteFolder(folderName);
         }
-
-        public void ExpressDownload(string remotePath, string localPath)
+        private bool PopSubTaskSession()
         {
-            FileTransferProcessing taskSession = new FileTransferProcessing("EXPRESSDOWNLOAD", Path.GetDirectoryName(remotePath) ?? "\\undefine", Path.GetFileName(remotePath) ?? "", localPath);
-            ftpClientSession.PushQueueCommand(taskSession);
-        }
-
-        public void Download(string remotePath, string localPath)
-        {
-            FileTransferProcessing taskSession = new FileTransferProcessing("RETR", Path.GetDirectoryName(remotePath) ?? "\\undefine", Path.GetFileName(remotePath) ?? "", localPath)
+            if (_subTaskSessions.Count > 0)
             {
-                Status = FileTransferProcessingStatus.Waiting
-            };
-            ftpClientSession.PushQueueCommand(taskSession);
+                _subTaskSessions.RemoveAt(0);
+                return true;
+            }
+            return false;
         }
 
-        public void ExpressUpload(string remotePath, string localPath)
+        private FileTransferProcessing? GetFirstSubTaskSession()
         {
-            FileTransferProcessing taskSession = new FileTransferProcessing("EXPRESSUPLOAD", remotePath , Path.GetFileName(localPath) ?? "\\undefine", Path.GetDirectoryName(localPath) ?? "\\undefine");
-            ftpClientSession.PushQueueCommand(taskSession);
-        }
-
-        public void Upload(string remotePath, string localPath)
-        {
-            FileTransferProcessing taskSession = new FileTransferProcessing("STOR", remotePath, Path.GetFileName(localPath) ?? "\\undefine", Path.GetDirectoryName(localPath) ?? "\\undefine");
-            ftpClientSession.PushQueueCommand(taskSession);
-        }
-
-        public void ExecuteSessionCommand(FileTransferProcessing request, TcpClient tcpSessionClient)
-        {
-            string command = request.Type;
-            switch (command)
+            if (_subTaskSessions.Count > 0)
             {
-                case "STOR":
-                    SendFile(request, tcpSessionClient);
+                return _subTaskSessions[0];
+            }
+            return null;
+        }
+
+        private void SubProcess()
+        {
+            while (true)
+            {
+                FileTransferProcessing? command = GetFirstSubTaskSession();
+                if (command != null)
+                {
+                    foreach (TcpSession tcpSession in subTcpSession)
+                    {
+                        if (tcpSession.GetStatus() == TcpSessionStatus.Connected)
+                        {
+                            PopSubTaskSession();
+                            tcpSession.SetStatus(TcpSessionStatus.Busy);
+                            Thread thread = new Thread(() => HandleCommand(command, tcpSession));
+                            thread.Start();
+                            break;
+                        }
+                        else if (tcpSession.GetStatus() == TcpSessionStatus.Closed)
+                        {
+                            tcpSession.Connect();
+                            PopSubTaskSession();
+                            tcpSession.SetStatus(TcpSessionStatus.Busy);
+                            Thread thread = new Thread(() => HandleCommand(command, tcpSession));
+                            thread.Start();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void HandleCommand(FileTransferProcessing command, TcpSession tcpSession)
+        {
+            ExecuteSubTaskSession(command, tcpSession.GetTcpClient());
+            tcpSession.SetStatus(TcpSessionStatus.Connected);
+        }
+
+        private void ExecuteMainTaskSession(TaskSession taskSession)
+        {
+            FtpClientProcessing fcp = new FtpClientProcessing(_mainTcpSession.GetTcpClient(), null, TransferRequestHandler);
+            switch (taskSession.Type)
+            {
+                case "LIST":
+                    {
+                        List<FileInfor> fileInfors = fcp.ListRemoteFoldersAndFiles(taskSession.RemotePath);
+                        ChangeFolderAndFileHandler(fileInfors);
+                    }
                     break;
-                case "EXPRESSUPLOAD":
-                    ExpressSendFile(request, tcpSessionClient);
+                case "DOWNLOADFOLDER":
+                    {
+                        fcp.DownloadFolder(taskSession.RemotePath, taskSession.LocalPath);
+                    }
                     break;
-                case "RETR":
-                    ReceiveFile(request, tcpSessionClient);
-                break;
-                case "EXPRESSDOWNLOAD":
-                    ExpressReceiveFile(request, tcpSessionClient);
+                case "UPLOADFOLDER":
+                    {
+                        fcp.UploadFolder(taskSession.RemotePath, taskSession.LocalPath);
+                    }
                     break;
                 default:
                     break;
             }
         }
 
-        public string GetRemoteFolderPath()
+        private void ExecuteSubTaskSession(FileTransferProcessing request, TcpClient tcpSessionClient)
         {
-            string command, response ;
-
-            command = "PWD";
-            _writer.WriteLine(command);
-            response = _reader.ReadLine() ?? "";
-            if (response.StartsWith("257 ") == true)
+            FtpClientProcessing fcp = new FtpClientProcessing(tcpSessionClient, TransferProgressHandler, null);
+            string command = request.Type;
+            switch (command)
             {
-                string[] tokens = response.Split('"');
-                return tokens[1];
-            }
-            return "";
-        }
-
-        public bool CreateNewRemoteFolder(string remoteFolderName)
-        {
-            string Command = "", Response = "";
-            Command = string.Format("MKD {0}", remoteFolderName);
-            _writer.WriteLine(Command);
-            Response = _reader.ReadLine() ?? "";
-            if (Response.StartsWith("257 ") == true)
-            {
-                return true;
-            }
-            return false;
-        }
-        public bool SetRemoteFolderPath(string remoteFolderPath)
-        {
-            string command, response;
-
-            command = string.Format("CWD {0}", remoteFolderPath);
-            _writer.WriteLine(command);
-            response = _reader.ReadLine() ?? "";
-            if (response.StartsWith("250 ") == true)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public List<FileInfor> ListRemoteFolderAndFiles()
-        {
-            List<FileInfor> list = new List<FileInfor>();
-            string command, response;
-
-            command = "PWD";
-            _writer.WriteLine(command);
-            response = _reader.ReadLine() ?? "";
-            //Console.WriteLine(Response); // Console command line
-            if (response.StartsWith("257 ") == true)
-            {
-                string[] tokens = response.Split('"');
-                //Console.WriteLine(tokens[1]); // Console command line
-            }
-
-            command = "PASV";
-            _writer.WriteLine(command);
-            response = _reader.ReadLine() ?? "";
-            //Console.WriteLine(Response); // Console command line
-            if (response.StartsWith("227 ") == true)
-            {
-                IPEndPoint server_data_endpoint = GetServerEndpoint(response);
-                command = "MLSD";
-                _writer.WriteLine(command);
-                TcpClient data_channel = new TcpClient();
-                data_channel.Connect(server_data_endpoint);
-                response = _reader.ReadLine() ?? "";
-                //Console.WriteLine(Response); // Console command line
-                if (response.StartsWith("150 "))
-                {
-                    FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel, FileClientProcessingEventHandler);
-                    list = fileClientProcessing.ReceiveListRemoteFiles();
-
-                    response = _reader.ReadLine() ?? "";
-                    if (response.StartsWith("226 "))
-                    {
-                        //Console.WriteLine(Response); // Console command line
-                        data_channel.Close();
-                    }
-                }
-            }
-            return list;
-        }
-
-        public void ReceiveFile(FileTransferProcessing processing, TcpClient tcpSessionClient)
-        {
-            StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
-            StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
-            string command, response;
-            command = string.Format("CWD {0}", processing.RemotePath);
-            streamWriter.WriteLine(command);
-            response = streamReader.ReadLine() ?? "";
-            if (response.StartsWith("250 "))
-            {
-                command = "PASV";
-                streamWriter.WriteLine(command);
-                response = streamReader.ReadLine() ?? "";
-                if (response.StartsWith("227 ") == true)
-                {
-                    IPEndPoint server_data_endpoint = GetServerEndpoint(response);
-                    TcpClient data_channel = new TcpClient();
-                    data_channel.Connect(server_data_endpoint);
-
-                    command = string.Format("RETR {0}", processing.FileName);
-                    streamWriter.WriteLine(command);
-                    response = streamReader.ReadLine() ?? "";
-                    if (response.StartsWith("150 "))
-                    {
-                        long fileSize = long.Parse(streamReader.ReadLine() ?? "0");
-                        processing.FileSize = fileSize;
-
-                        FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel, FileClientProcessingEventHandler, processing);
-                        fileClientProcessing.ReceiveFile(processing.LocalPath + @"\" + processing.FileName);
-
-                        response = streamReader.ReadLine() ?? "";
-                        if (response.StartsWith("226 "))
-                        {
-                            data_channel.Close();
-                        }
-                    }
-                }
+                case "STOR":
+                    fcp.SendFile(request, tcpSessionClient);
+                    break;
+                case "EXPRESSUPLOAD":
+                    fcp.ExpressSendFile(request, tcpSessionClient);
+                    break;
+                case "RETR":
+                    fcp.ReceiveFile(request, tcpSessionClient);
+                    break;
+                case "EXPRESSDOWNLOAD":
+                    fcp.ExpressReceiveFile(request, tcpSessionClient);
+                    break;
+                default:
+                    break;
             }
         }
 
-        public void ExpressReceiveFile(FileTransferProcessing request, TcpClient tcpSessionClient)
+        public delegate void TransferProgress(FileTransferProcessing sender);
+        public event TransferProgress progress;
+
+        public void TransferProgressHandler(FileTransferProcessing sender)
         {
-            StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
-            StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
-            string command, response;
-            command = string.Format("CWD {0}", request.RemotePath);
-            streamWriter.WriteLine(command);
-            response = streamReader.ReadLine() ?? "";
-            if (response.StartsWith("250 "))
+            progress?.Invoke(sender);
+        }
+
+        public delegate void OnChangeFolderAndFile(List<FileInfor> sender);
+        public event OnChangeFolderAndFile changeFolderAndFile;
+
+        public void ChangeFolderAndFileHandler(List<FileInfor> sender)
+        {
+            changeFolderAndFile?.Invoke(sender);
+        }
+
+        public void TransferRequestHandler(FileTransferProcessing request)
+        {
+            PushSubTaskSession(request);
+        }
+
+        public void Dispose()
+        {
+            _mainTcpSession.Dispose();
+            foreach (TcpSession tcpSession in subTcpSession)
             {
-                command = "PASV";
-                streamWriter.WriteLine(command);
-                response = streamReader.ReadLine() ?? "";
-                if (response.StartsWith("227 ") == true)
-                {
-                    IPEndPoint server_data_endpoint = GetServerEndpoint(response);
-
-                    command = string.Format("EXPRESSDOWNLOAD {0}", request.FileName);
-                    streamWriter.WriteLine(command);
-
-                    long fileSize = long.Parse(streamReader.ReadLine() ?? "0");
-
-                    response = streamReader.ReadLine() ?? "";
-                    if (response.StartsWith("150 "))
-                    {
-                        FileClientExpressProcessing fileClientExpressProcessing = new FileClientExpressProcessing(server_data_endpoint, request.LocalPath + "\\" + request.FileName, fileSize);
-                        fileClientExpressProcessing.ExpressReceiveFile();
-
-                        command = "226 Transfer complete";
-                        streamWriter.WriteLine(command);
-                    }
-                }
+                tcpSession.Dispose();
             }
         }
 
-        public void ExpressSendFile(FileTransferProcessing request, TcpClient tcpSessionClient)
+        public void Download(string remotePath, string localPath)
         {
-            StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
-            StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
-            string command, response;
-            command = string.Format("CWD {0}", request.RemotePath);
-            streamWriter.WriteLine(command);
-            response = streamReader.ReadLine() ?? "";
-            if (response.StartsWith("250 "))
-            {
-                command = "PASV";
-                streamWriter.WriteLine(command);
-                response = streamReader.ReadLine() ?? "";
-                if (response.StartsWith("227 ") == true)
-                {
-                    IPEndPoint server_data_endpoint = GetServerEndpoint(response);
-                    
-                    command = string.Format("EXPRESSUPLOAD {0}", request.FileName);
-                    streamWriter.WriteLine(command);
-                    response = streamReader.ReadLine() ?? "";
-                    if (response.StartsWith("150 "))
-                    {
-                        long fileSize = new FileInfo(request.LocalPath + @"\" + request.FileName).Length;
-                        streamWriter.WriteLine(fileSize);
-
-                        FileClientExpressProcessing fileClientExpressProcessing = new FileClientExpressProcessing(server_data_endpoint, request.LocalPath + @"\" + request.FileName, fileSize);
-                        fileClientExpressProcessing.ExpressSendFile();
-
-                        response = streamReader.ReadLine() ?? "";
-                        if (response.StartsWith("226 "))
-                        {
-                            //Console.WriteLine("Upload file success!");
-                            //data_channel.Close();
-                        }
-                    }
-                }
-            }
+            FileTransferProcessing taskSession = new FileTransferProcessing("RETR", Path.GetDirectoryName(remotePath) ?? "\\undefine", Path.GetFileName(remotePath) ?? "", localPath);
+            PushSubTaskSession(taskSession);
         }
 
-        public void SendFile(FileTransferProcessing processing ,TcpClient tcpSessionClient)
-        {
-            StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
-            StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
-            string command , response;
-
-            command = string.Format("CWD {0}", processing.RemotePath);
-            streamWriter.WriteLine(command);
-            response = streamReader.ReadLine() ?? "";
-            if (response.StartsWith("250 "))
-            {
-                command = "PASV";
-                streamWriter.WriteLine(command);
-                response = streamReader.ReadLine() ?? "";
-                if (response.StartsWith("227 ") == true)
-                {
-                    IPEndPoint server_data_endpoint = GetServerEndpoint(response);
-                    TcpClient data_channel = new TcpClient();
-                    data_channel.Connect(server_data_endpoint);
-                
-                    command = string.Format("STOR {0}", processing.FileName);
-                    streamWriter.WriteLine(command);
-                    response = streamReader.ReadLine() ?? "";
-                    if (response.StartsWith("150 "))
-                    {
-                        FileClientProcessing fileClientProcessing = new FileClientProcessing(data_channel, FileClientProcessingEventHandler, processing);
-                        fileClientProcessing.SendFile(processing.LocalPath + @"\" + processing.FileName);
-
-                        response = streamReader.ReadLine() ?? "";
-                        if (response.StartsWith("226 "))
-                        {
-                            data_channel.Close();
-                        }
-                    }
-                }
-            }
-        }
-        
         public void DownloadFolder(string remoteFolderPath, string localFolderPath)
         {
-            bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
-            if (currentRemoteFolderPath == true)
-            {
-                List<FileInfor> fileInfors = ListRemoteFolderAndFiles();
-                foreach (FileInfor fileInfor in fileInfors)
-                {
-                    if (fileInfor.IsDirectory == true)
-                    {
-                        string newRemoteFolderPath = remoteFolderPath + @"\" + fileInfor.Name;
-                        string newLocalFolderPath = localFolderPath + @"\" + fileInfor.Name;
-                        if (Directory.Exists(newLocalFolderPath) == false)
-                        {
-                            Directory.CreateDirectory(newLocalFolderPath);
-                        }
-                        DownloadFolder(newRemoteFolderPath, newLocalFolderPath);
-                    }
-                    else
-                    {
-                        FileTransferProcessing processing = new FileTransferProcessing("RETR", Path.GetDirectoryName(remoteFolderPath) ?? "\\undefine", fileInfor.Name, localFolderPath)
-                        {
-                            Status = FileTransferProcessingStatus.Waiting
-                        };
-                        ftpClientSession.PushQueueCommand(processing);
-                    }
-                }
-            }
+            TaskSession taskSession = new TaskSession("DOWNLOADFOLDER", remoteFolderPath, "", localFolderPath);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void Upload(string remotePath, string localPath)
+        {
+            FileTransferProcessing taskSession = new FileTransferProcessing("STOR", remotePath, Path.GetFileName(localPath) ?? "", Path.GetDirectoryName(localPath) ?? "\\undefine");
+            PushSubTaskSession(taskSession);
         }
 
         public void UploadFolder(string remoteFolderPath, string localFolderPath)
         {
-            CreateNewRemoteFolder(remoteFolderPath);
-            bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
-            if (currentRemoteFolderPath == true)
-            {
-                string[] localPaths = Directory.GetFiles(localFolderPath);
-                foreach (string localPath in localPaths)
-                {
-                    FileTransferProcessing taskSession = new FileTransferProcessing("STOR", remoteFolderPath, Path.GetFileName(localPath) ?? "\\undefine", Path.GetDirectoryName(localPath) ?? "\\undefine");
-                    ftpClientSession.PushQueueCommand(taskSession);
-                }
-                string[] localFolders = Directory.GetDirectories(localFolderPath);
-                foreach (string localFolder in localFolders)
-                {
-                    string newRemoteFolderPath = remoteFolderPath + @"\" + Path.GetFileName(localFolder);
-                    string newLocalFolderPath = localFolderPath + @"\" + Path.GetFileName(localFolder);
-                    UploadFolder(newRemoteFolderPath, newLocalFolderPath);
-                }
-            }
-        }   
-        
-        private IPEndPoint GetServerEndpoint(string response)
-        {
-            int start = response.IndexOf('(');
-            int end = response.IndexOf(')');
-            string substr = response.Substring(start + 1, end - start - 1);
-            string[] octets = substr.Split(',');
-            int port = int.Parse(octets[4]) * 256 + int.Parse(octets[5]);
-            IPAddress address = new IPAddress(new byte[] { byte.Parse(octets[0]), byte.Parse(octets[1]), byte.Parse(octets[2]), byte.Parse(octets[3]) });
-            return new IPEndPoint(address, port);
+            TaskSession taskSession = new TaskSession("UPLOADFOLDER", remoteFolderPath, "", localFolderPath);
+            PushMainTaskSession(taskSession);
         }
+
+        public void ListRemoteFolderAndFiles(string remoteFolderPath)
+        {
+            TaskSession taskSession = new TaskSession("LIST", remoteFolderPath, "", "");
+            PushMainTaskSession(taskSession);
+        }
+
+        private object _mainTaskSessionLock = new object();
+        private object _subTaskSessionLock = new object();
     }
 }
