@@ -36,6 +36,7 @@ namespace MyClassLibrary.Common
             FileSize = 0;
             FileSizeTransfered = 0;
             FileTransferedPercent = 0;
+            Status = FileTransferProcessingStatus.Waiting;
         }
 
         public void SetFileTransferSize(long fileSizeTransfered)
@@ -47,6 +48,24 @@ namespace MyClassLibrary.Common
             }
         }
 
+        public string StatusToString()
+        {
+            switch (Status)
+            {
+                case FileTransferProcessingStatus.Downloading:
+                    return "Downloading";
+                case FileTransferProcessingStatus.Uploading:
+                    return "Uploading";
+                case FileTransferProcessingStatus.Completed:
+                    return "Completed";
+                case FileTransferProcessingStatus.Failed:
+                    return "Failed";
+                case FileTransferProcessingStatus.Waiting:
+                    return "Waiting";
+                default:
+                    return "Unknown";
+            }
+        }
     }
 
     public enum FileTransferProcessingStatus

@@ -42,7 +42,15 @@ namespace UserApp.UserComponent
                 infor = value;
                 if (infor != null)
                 {
-                    label_Name.Text = infor.Name;
+                    // Safely update label_Name.
+                    if (label_Name.IsHandleCreated && !label_Name.IsDisposed)
+                    {
+                        label_Name.Invoke((MethodInvoker)delegate { label_Name.Text = infor.Name; });
+                    }
+                    else
+                    {
+                        label_Name.Text = infor.Name;
+                    }
                 }
             }
         }

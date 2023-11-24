@@ -1,4 +1,5 @@
 ﻿using MyClassLibrary.Common;
+using System.Diagnostics.Eventing.Reader;
 using UserApp.BLL;
 using UserApp.UserComponent;
 
@@ -10,44 +11,60 @@ namespace UserApp
         public MainForm()
         {
             InitializeComponent();
-            MainForm_BLL = new MainForm_BLL(TransferProgress);
+            MainForm_BLL = new MainForm_BLL(TransferProgress, ChangeFolderAndFileHandler);
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            UpdateGridFileAndFolder();
+            MainForm_BLL.GetFileInfos();
         }
 
-        private void UpdateGridFileAndFolder()
+        private void ChangeFolderAndFileHandler(List<FileInfor> sender)
         {
-            grid_FileAndFolder.Controls.Clear();
-            var fileInfos = MainForm_BLL.GetFileInfos();
-            foreach (var item in fileInfos)
+            UpdateGridFileAndFolder(sender);
+        }
+
+        private void UpdateGridFileAndFolder(List<FileInfor> fileInfors)
+        {
+            if (grid_FileAndFolder.IsHandleCreated && !grid_FileAndFolder.IsDisposed)
             {
-                var fileControl = new FileControl(FileControlHandle);
-                fileControl.Infor = item;
-                grid_FileAndFolder.Controls.Add(fileControl);
+                grid_FileAndFolder.Invoke((MethodInvoker)delegate {
+                    grid_FileAndFolder.Controls.Clear();
+                });
+            }
+            
+            foreach (var item in fileInfors)
+            {
+                if (grid_FileAndFolder.IsHandleCreated && !grid_FileAndFolder.IsDisposed)
+                {
+                    grid_FileAndFolder.Invoke((MethodInvoker)delegate { 
+                        grid_FileAndFolder.Controls.Add(new FileControl(FileControlHandle) {
+                            Infor = item
+                        });
+                    });
+                }
             }
         }
 
         public void FileControlHandle(object sender, EventArgs e)
         {
             MouseEventArgs mouseEventArgs = (MouseEventArgs)e;
-            if (mouseEventArgs.Clicks == 2)
-            {
-                MessageBox.Show("Double Click");
-            }
-            /*
             FileInfor fileInfo = (FileInfor)sender;
-            if (fileInfo.IsDirectory == false)
-            {
-                MainForm_BLL.Download(fileInfo.Name);
-            }
-            else if (fileInfo.IsDirectory == true)
+            if (mouseEventArgs.Clicks == 2 && fileInfo.IsDirectory)
             {
                 MainForm_BLL.ChangeFolder(fileInfo.Name);
-                UpdateGridFileAndFolder();
-            }*/
+            }
+            else if (mouseEventArgs.Button == MouseButtons.Right)
+            {
+                if (fileInfo.IsDirectory == false)
+                {
+                    MainForm_BLL.Download(fileInfo.Name);
+                }
+                else if (fileInfo.IsDirectory == true)
+                {
+                    MainForm_BLL.DownloadFolder(fileInfo.Name);
+                }
+            }
         }
 
         public void Download(object sender, EventArgs e)
@@ -60,24 +77,30 @@ namespace UserApp
             else if (fileInfo.IsDirectory == true)
             {
                 MainForm_BLL.ChangeFolder(fileInfo.Name);
-                UpdateGridFileAndFolder();
+                //UpdateGridFileAndFolder();
             }
         }
 
         public void TransferProgress(FileTransferProcessing sender)
         {
-            if (sender.Status == FileTransferProcessingStatus.Waiting)
+            if (flowLayoutPanel_ListProcessing.IsHandleCreated && !flowLayoutPanel_ListProcessing.IsDisposed)
             {
-                flowLayoutPanel_ListProcessing.Controls.Add(new FileTransferProcessingControl(sender));
-            }
-            else
-            {
-                foreach (FileTransferProcessingControl control in flowLayoutPanel_ListProcessing.Controls)
+                if (sender.Status == FileTransferProcessingStatus.Waiting)
                 {
-                    if (sender == control.GetFileTransferProcessing())
+                    flowLayoutPanel_ListProcessing.Invoke((MethodInvoker)delegate
                     {
-                        control.UpdateTransferProcessing(sender);
-                        break;
+                        flowLayoutPanel_ListProcessing.Controls.Add(new FileTransferProcessingControl(sender));
+                    });
+                }
+                else
+                {
+                    foreach (FileTransferProcessingControl control in flowLayoutPanel_ListProcessing.Controls)
+                    {
+                        if (sender == control.GetFileTransferProcessing())
+                        {
+                            control.UpdateTransferProcessing(sender);
+                            break;
+                        }
                     }
                 }
             }
@@ -93,7 +116,6 @@ namespace UserApp
         private void btn_Back_Click(object sender, EventArgs e)
         {
             MainForm_BLL.Back();
-            UpdateGridFileAndFolder();
         }
 
         private void btn_Upload_Click(object sender, EventArgs e)
