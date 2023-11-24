@@ -141,11 +141,13 @@ namespace ConsoleApp
                     response = streamReader.ReadLine() ?? "";
                     if (response.StartsWith("150 "))
                     {
-                        DataExpressTransferClient fileClientExpressProcessing = new DataExpressTransferClient(server_data_endpoint, request.LocalPath + "\\" + request.FileName, fileSize);
+                        DataExpressTransferClient fileClientExpressProcessing = new DataExpressTransferClient(server_data_endpoint, request.LocalPath + "\\" + request.FileName, fileSize, TransferProgressHandler, request);
                         fileClientExpressProcessing.ExpressReceiveFile();
 
                         command = "226 Transfer complete";
                         streamWriter.WriteLine(command);
+                        request.Status = FileTransferProcessingStatus.Completed;
+                        progress(request);
                     }
                 }
             }
@@ -176,7 +178,7 @@ namespace ConsoleApp
                         long fileSize = new FileInfo(request.LocalPath + @"\" + request.FileName).Length;
                         streamWriter.WriteLine(fileSize);
 
-                        DataExpressTransferClient fileClientExpressProcessing = new DataExpressTransferClient(server_data_endpoint, request.LocalPath + @"\" + request.FileName, fileSize);
+                        DataExpressTransferClient fileClientExpressProcessing = new DataExpressTransferClient(server_data_endpoint, request.LocalPath + @"\" + request.FileName, fileSize, TransferProgressHandler, request);
                         fileClientExpressProcessing.ExpressSendFile();
 
                         response = streamReader.ReadLine() ?? "";

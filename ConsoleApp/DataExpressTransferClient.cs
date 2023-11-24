@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using MyClassLibrary.Common;
 
 namespace ConsoleApp
 {
@@ -15,12 +16,38 @@ namespace ConsoleApp
         private string _fullPath;
         private int _maxBufferSize = (int)Math.Pow(2, 20) * 256;
         private long _fileSize;
+        private long totalBytesRead = 0;
 
-        public DataExpressTransferClient(IPEndPoint server_data_endpoint, string fullPath, long fileSize)
+        private object _totalBytesReadLock = new object();
+
+        public DataExpressTransferClient(IPEndPoint server_data_endpoint, string fullPath, long fileSize, FileClientProcessingEventHandler FileClientProcessingEvent, FileTransferProcessing processing)
         {
             this.server_data_endpoint = server_data_endpoint;
             _fullPath = fullPath;
             _fileSize = fileSize;
+            this.FileClientProcessingEvent = FileClientProcessingEvent;
+            this.Processing = processing;
+            Processing.FileSize = fileSize;
+
+            Thread thread = new Thread(UpdateProcessing);
+            thread.Start();
+        }
+
+        public delegate void FileClientProcessingEventHandler(FileTransferProcessing sender);
+        public event FileClientProcessingEventHandler FileClientProcessingEvent;
+
+        private FileTransferProcessing Processing;
+
+        public void UpdateProcessing()
+        {
+            while (true)
+            {
+                if (Processing != null)
+                {
+                    FileClientProcessingEvent(Processing);
+                }
+                Thread.Sleep(500);
+            }
         }
 
         public void ExpressSendFile()
@@ -67,6 +94,9 @@ namespace ConsoleApp
         
         public void ExpressReceiveFile()
         {
+            Processing.Status = FileTransferProcessingStatus.Downloading;
+            FileClientProcessingEvent(Processing);
+
             _totalThread = (int)Math.Ceiling((double)_fileSize / _maxBufferSize);
             for (int i = 0; i < _totalThread; i++)
             {
@@ -103,6 +133,11 @@ namespace ConsoleApp
             {
                 int bytesRead = ns.Read(bytes, 0, bytes.Length);
                 fs.Write(bytes, 0, bytesRead);
+                lock (_totalBytesReadLock)
+                {
+                    totalBytesRead += bytesRead;
+                    Processing.SetFileTransferSize(totalBytesRead);
+                }
                 if (bytesRead == 0)
                 {
                     break;
@@ -138,6 +173,10 @@ namespace ConsoleApp
         private void Merger()
         {
             Console.WriteLine($"Merging... at {DateTime.Now}");
+            Processing.Status = FileTransferProcessingStatus.Merging;
+            totalBytesRead = 0;
+            Processing.SetFileTransferSize(totalBytesRead);
+            FileClientProcessingEvent(Processing);
             using (FileStream finalFileStream = new FileStream(_fullPath, FileMode.OpenOrCreate, FileAccess.Write))
             {
                 foreach (var partFilePath in partFilePaths)
@@ -149,6 +188,8 @@ namespace ConsoleApp
                         while ((bytesRead = tempFileStream.Read(buffer, 0, buffer.Length)) > 0)
                         {
                             finalFileStream.Write(buffer, 0, bytesRead);
+                            totalBytesRead += bytesRead;
+                            Processing.SetFileTransferSize(totalBytesRead);
                         }
                     }
                     File.Delete(partFilePath);

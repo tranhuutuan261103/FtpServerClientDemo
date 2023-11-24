@@ -62,6 +62,8 @@ namespace MyClassLibrary.Common
                     return "Failed";
                 case FileTransferProcessingStatus.Waiting:
                     return "Waiting";
+                case FileTransferProcessingStatus.Merging:
+                    return "Merging";
                 default:
                     return "Unknown";
             }
@@ -74,6 +76,7 @@ namespace MyClassLibrary.Common
         Uploading,
         Completed,
         Failed,
-        Waiting
+        Waiting,
+        Merging
     }
 }
