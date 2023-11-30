@@ -94,7 +94,7 @@ namespace MyFtpServer
                 else
                 {
                     TcpClient client = _tcpListener.AcceptTcpClient();
-                    long offset = currentThreadCount * _maxBufferSize;
+                    long offset = (long)currentThreadCount * _maxBufferSize;
                     Thread thread = new Thread(() => HandleSendExpressFile(client, offset, _maxBufferSize));
                     thread.Start();
                     currentThreadCount++;
