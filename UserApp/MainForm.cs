@@ -1,6 +1,9 @@
 ﻿using MyClassLibrary.Common;
 using System.Diagnostics.Eventing.Reader;
+using System.Drawing.Text;
 using UserApp.BLL;
+using UserApp.DTO;
+using UserApp.Fonts;
 using UserApp.UserComponent;
 
 namespace UserApp
@@ -8,6 +11,7 @@ namespace UserApp
     public partial class MainForm : Form
     {
         private MainForm_BLL MainForm_BLL;
+        private InterFont font = new InterFont();
         public MainForm()
         {
             InitializeComponent();
@@ -28,17 +32,20 @@ namespace UserApp
         {
             if (grid_FileAndFolder.IsHandleCreated && !grid_FileAndFolder.IsDisposed)
             {
-                grid_FileAndFolder.Invoke((MethodInvoker)delegate {
+                grid_FileAndFolder.Invoke((MethodInvoker)delegate
+                {
                     grid_FileAndFolder.Controls.Clear();
                 });
             }
-            
+
             foreach (var item in fileInfors)
             {
                 if (grid_FileAndFolder.IsHandleCreated && !grid_FileAndFolder.IsDisposed)
                 {
-                    grid_FileAndFolder.Invoke((MethodInvoker)delegate { 
-                        grid_FileAndFolder.Controls.Add(new FileControl(FileControlHandle) {
+                    grid_FileAndFolder.Invoke((MethodInvoker)delegate
+                    {
+                        grid_FileAndFolder.Controls.Add(new FileControl(FileControlHandle)
+                        {
                             Infor = item
                         });
                     });
@@ -48,28 +55,23 @@ namespace UserApp
 
         public void FileControlHandle(object sender, EventArgs e)
         {
-            MouseEventArgs mouseEventArgs = (MouseEventArgs)e;
-            FileInfor fileInfo = (FileInfor)sender;
-            if (mouseEventArgs.Clicks == 2)
+            var request = (FileControlRequest)sender;
+            if (request.type == FileControlRequestType.ChangeFolder)
             {
-                if (fileInfo.IsDirectory == true)
+                if (request.fileInfor.IsDirectory == true)
                 {
-                    MainForm_BLL.ChangeFolder(fileInfo.Name);
-                }
-                else
-                {
-                    MainForm_BLL.ExpressDownload(fileInfo.Name);
+                    MainForm_BLL.ChangeFolder(request.fileInfor.Name);
                 }
             }
-            else if (mouseEventArgs.Button == MouseButtons.Right)
+            else if (request.type == FileControlRequestType.Download)
             {
-                if (fileInfo.IsDirectory == false)
+                if (request.fileInfor.IsDirectory == false)
                 {
-                    MainForm_BLL.Download(fileInfo.Name);
+                    MainForm_BLL.Download(request.fileInfor.Name);
                 }
-                else if (fileInfo.IsDirectory == true)
+                else if (request.fileInfor.IsDirectory == true)
                 {
-                    MainForm_BLL.DownloadFolder(fileInfo.Name);
+                    MainForm_BLL.DownloadFolder(request.fileInfor.Name);
                 }
             }
         }
@@ -127,6 +129,11 @@ namespace UserApp
 
         private void btn_Upload_Click(object sender, EventArgs e)
         {
+            guna2ContextMenuStrip_btnNew.Show(this, this.PointToClient(MousePosition));
+        }
+
+        private void ToolStripMenuItem_UploadFile_Click(object sender, EventArgs e)
+        {
             OpenFileDialog oFD = new OpenFileDialog();
             if (oFD.ShowDialog() == DialogResult.OK)
             {
@@ -134,12 +141,24 @@ namespace UserApp
             }
         }
 
-        private void btn_UploadFolder_Click(object sender, EventArgs e)
+        private void ToolStripMenuItem_UploadFolder_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog fBD = new FolderBrowserDialog();
             if (fBD.ShowDialog() == DialogResult.OK)
             {
                 MainForm_BLL.UploadFolder(fBD.SelectedPath);
+            }
+        }
+
+        private void btn_TransferInfor_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (guna2ContainerControl_TransferInfor.Visible == true)
+            {
+                guna2ContainerControl_TransferInfor.Visible = false;
+            }
+            else
+            {
+                guna2ContainerControl_TransferInfor.Visible = true;
             }
         }
     }
