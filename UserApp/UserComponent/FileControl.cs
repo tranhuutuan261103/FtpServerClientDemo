@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using UserApp.DTO;
 
 namespace UserApp.UserComponent
 {
@@ -26,12 +27,37 @@ namespace UserApp.UserComponent
 
         private void FileControl_DoubleClick(object sender, EventArgs e)
         {
-            FileControlClick(Infor, e);
+            FileControlRequest fileControlRequest = new FileControlRequest()
+            {
+                fileInfor = Infor,
+                type = FileControlRequestType.ChangeFolder,
+            };
+            FileControlClick(fileControlRequest, e);
         }
 
-        private void FileControl_Click(object sender, EventArgs e)
+        private void ToolStripMenuItem_Download_Click(object sender, EventArgs e)
         {
-            FileControlClick(Infor, e);
+            FileControlRequest fileControlRequest = new FileControlRequest()
+            {
+                fileInfor = Infor,
+                type = FileControlRequestType.Download,
+            };
+            FileControlClick(fileControlRequest, e);
+        }
+
+        private void ToolStripMenuItem_Rename_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Rename");
+        }
+
+        private void ToolStripMenuItem_Information_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Information");
+        }
+
+        private void ToolStripMenuItem_Remove_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Remove");
         }
 
         public FileInfor Infor

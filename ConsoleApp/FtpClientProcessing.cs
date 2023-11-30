@@ -282,6 +282,10 @@ namespace ConsoleApp
 
         public void DownloadFolder(string remoteFolderPath, string localFolderPath)
         {
+            if (Directory.Exists(localFolderPath) == false)
+            {
+                Directory.CreateDirectory(localFolderPath);
+            }
             bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
             if (currentRemoteFolderPath == true)
             {
@@ -292,10 +296,6 @@ namespace ConsoleApp
                     {
                         string newRemoteFolderPath = remoteFolderPath + @"\" + fileInfor.Name;
                         string newLocalFolderPath = localFolderPath + @"\" + fileInfor.Name;
-                        if (Directory.Exists(newLocalFolderPath) == false)
-                        {
-                            Directory.CreateDirectory(newLocalFolderPath);
-                        }
                         DownloadFolder(newRemoteFolderPath, newLocalFolderPath);
                     }
                     else

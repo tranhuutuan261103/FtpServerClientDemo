@@ -14,7 +14,7 @@ namespace ConsoleApp
     {
         private IPEndPoint server_data_endpoint;
         private string _fullPath;
-        private int _maxBufferSize = (int)Math.Pow(2, 20) * 256;
+        private int _maxBufferSize = (int)Math.Pow(2, 20) * 512;
         private long _fileSize;
         private long totalBytesRead = 0;
 
