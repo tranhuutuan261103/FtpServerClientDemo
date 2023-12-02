@@ -5,17 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UserApp.Fonts
+namespace UserApp.UI.Fonts
 {
     public class InterFont
     {
         private PrivateFontCollection pfc = new PrivateFontCollection();
-        public InterFont() 
+        public InterFont()
         {
-            pfc.AddFontFile("../../../Fonts/InterFonts/Inter-Black.ttf");
-            pfc.AddFontFile("../../../Fonts/InterFonts/Inter-Bold.ttf");
+            pfc.AddFontFile("../../../UI/Fonts/InterFonts/Inter-Black.ttf");
+            pfc.AddFontFile("../../../UI/Fonts/InterFonts/Inter-Bold.ttf");
 
-            pfc.AddFontFile("../../../Fonts/InterFonts/Inter-Regular.ttf");
+            pfc.AddFontFile("../../../UI/Fonts/InterFonts/Inter-Regular.ttf");
         }
 
         public Font InterBlack(float size)

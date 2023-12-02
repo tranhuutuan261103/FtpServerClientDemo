@@ -1,3 +1,4 @@
+using UserApp.UI;
 namespace UserApp
 {
     internal static class Program

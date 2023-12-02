@@ -1,12 +1,13 @@
 ﻿using MyClassLibrary.Common;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing.Text;
+using System.Windows.Forms;
 using UserApp.BLL;
 using UserApp.DTO;
-using UserApp.Fonts;
-using UserApp.UserComponent;
+using UserApp.UI.Fonts;
+using UserApp.UI.UserComponent;
 
-namespace UserApp
+namespace UserApp.UI
 {
     public partial class MainForm : Form
     {
@@ -15,6 +16,11 @@ namespace UserApp
         public MainForm()
         {
             InitializeComponent();
+            flowLayoutPanel_ListProcessing.AutoScroll = false;
+            flowLayoutPanel_ListProcessing.HorizontalScroll.Enabled = false;
+            flowLayoutPanel_ListProcessing.HorizontalScroll.Visible = false;
+            flowLayoutPanel_ListProcessing.HorizontalScroll.Maximum = 0;
+            flowLayoutPanel_ListProcessing.AutoScroll = true;
             MainForm_BLL = new MainForm_BLL(TransferProgress, ChangeFolderAndFileHandler);
         }
 
@@ -44,10 +50,7 @@ namespace UserApp
                 {
                     grid_FileAndFolder.Invoke((MethodInvoker)delegate
                     {
-                        grid_FileAndFolder.Controls.Add(new FileControl(FileControlHandle)
-                        {
-                            Infor = item
-                        });
+                        grid_FileAndFolder.Controls.Add(new FileControl(item, FileControlHandle));
                     });
                 }
             }
@@ -73,20 +76,6 @@ namespace UserApp
                 {
                     MainForm_BLL.DownloadFolder(request.fileInfor.Name);
                 }
-            }
-        }
-
-        public void Download(object sender, EventArgs e)
-        {
-            FileInfor fileInfo = (FileInfor)sender;
-            if (fileInfo.IsDirectory == false)
-            {
-                MainForm_BLL.Download(fileInfo.Name);
-            }
-            else if (fileInfo.IsDirectory == true)
-            {
-                MainForm_BLL.ChangeFolder(fileInfo.Name);
-                //UpdateGridFileAndFolder();
             }
         }
 
@@ -152,13 +141,13 @@ namespace UserApp
 
         private void btn_TransferInfor_MouseClick(object sender, MouseEventArgs e)
         {
-            if (guna2ContainerControl_TransferInfor.Visible == true)
+            if (flowLayoutPanel_ListProcessing.Visible == true)
             {
-                guna2ContainerControl_TransferInfor.Visible = false;
+                flowLayoutPanel_ListProcessing.Visible = false;
             }
             else
             {
-                guna2ContainerControl_TransferInfor.Visible = true;
+                flowLayoutPanel_ListProcessing.Visible = true;
             }
         }
     }
