@@ -1,4 +1,4 @@
-﻿namespace UserApp
+﻿namespace UserApp.UI
 {
     partial class MainForm
     {
@@ -33,9 +33,8 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges4 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges5 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges6 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             grid_FileAndFolder = new FlowLayoutPanel();
             btn_Back = new Guna.UI2.WinForms.Guna2Button();
             btn_New = new Guna.UI2.WinForms.Guna2Button();
@@ -51,12 +50,10 @@
             tabPage2 = new TabPage();
             tabPage3 = new TabPage();
             tabPage4 = new TabPage();
-            guna2ContainerControl_TransferInfor = new Guna.UI2.WinForms.Guna2ContainerControl();
             flowLayoutPanel_ListProcessing = new FlowLayoutPanel();
             guna2ContextMenuStrip_btnNew.SuspendLayout();
             guna2TabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
-            guna2ContainerControl_TransferInfor.SuspendLayout();
             SuspendLayout();
             // 
             // grid_FileAndFolder
@@ -67,7 +64,7 @@
             grid_FileAndFolder.Location = new Point(37, 61);
             grid_FileAndFolder.Name = "grid_FileAndFolder";
             grid_FileAndFolder.Padding = new Padding(30);
-            grid_FileAndFolder.Size = new Size(834, 351);
+            grid_FileAndFolder.Size = new Size(772, 476);
             grid_FileAndFolder.TabIndex = 0;
             // 
             // btn_Back
@@ -169,15 +166,18 @@
             btn_TransferInfor.DisabledState.CustomBorderColor = Color.DarkGray;
             btn_TransferInfor.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
             btn_TransferInfor.DisabledState.ForeColor = Color.FromArgb(141, 141, 141);
+            btn_TransferInfor.FillColor = Color.Transparent;
             btn_TransferInfor.Font = new Font("Segoe UI", 13.8F, FontStyle.Regular, GraphicsUnit.Point);
             btn_TransferInfor.ForeColor = Color.White;
-            btn_TransferInfor.Location = new Point(1005, 12);
+            btn_TransferInfor.Image = (Image)resources.GetObject("btn_TransferInfor.Image");
+            btn_TransferInfor.ImageSize = new Size(50, 50);
+            btn_TransferInfor.Location = new Point(970, 12);
+            btn_TransferInfor.Margin = new Padding(0);
             btn_TransferInfor.Name = "btn_TransferInfor";
             btn_TransferInfor.ShadowDecoration.CustomizableEdges = customizableEdges5;
             btn_TransferInfor.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
             btn_TransferInfor.Size = new Size(50, 50);
             btn_TransferInfor.TabIndex = 4;
-            btn_TransferInfor.Text = "!";
             btn_TransferInfor.MouseClick += btn_TransferInfor_MouseClick;
             // 
             // guna2TabControl1
@@ -192,7 +192,7 @@
             guna2TabControl1.Location = new Point(0, 81);
             guna2TabControl1.Name = "guna2TabControl1";
             guna2TabControl1.SelectedIndex = 0;
-            guna2TabControl1.Size = new Size(1094, 447);
+            guna2TabControl1.Size = new Size(1032, 572);
             guna2TabControl1.TabButtonHoverState.BorderColor = Color.Empty;
             guna2TabControl1.TabButtonHoverState.FillColor = Color.FromArgb(40, 52, 70);
             guna2TabControl1.TabButtonHoverState.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Regular, GraphicsUnit.Point);
@@ -222,7 +222,7 @@
             tabPage1.Margin = new Padding(3, 30, 3, 3);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(906, 439);
+            tabPage1.Size = new Size(844, 564);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Drive của tôi";
             // 
@@ -231,7 +231,7 @@
             tabPage2.Location = new Point(184, 4);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(906, 439);
+            tabPage2.Size = new Size(844, 564);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Được chia sẻ với tôi";
             tabPage2.UseVisualStyleBackColor = true;
@@ -240,7 +240,7 @@
             // 
             tabPage3.Location = new Point(184, 4);
             tabPage3.Name = "tabPage3";
-            tabPage3.Size = new Size(906, 439);
+            tabPage3.Size = new Size(844, 564);
             tabPage3.TabIndex = 2;
             tabPage3.Text = "Có gắn dấu sao";
             tabPage3.UseVisualStyleBackColor = true;
@@ -249,57 +249,43 @@
             // 
             tabPage4.Location = new Point(184, 4);
             tabPage4.Name = "tabPage4";
-            tabPage4.Size = new Size(906, 439);
+            tabPage4.Size = new Size(844, 564);
             tabPage4.TabIndex = 3;
             tabPage4.Text = "Thông tin tài khoản";
             tabPage4.UseVisualStyleBackColor = true;
             // 
-            // guna2ContainerControl_TransferInfor
-            // 
-            guna2ContainerControl_TransferInfor.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            guna2ContainerControl_TransferInfor.BackColor = Color.Transparent;
-            guna2ContainerControl_TransferInfor.BorderRadius = 20;
-            guna2ContainerControl_TransferInfor.Controls.Add(flowLayoutPanel_ListProcessing);
-            guna2ContainerControl_TransferInfor.CustomizableEdges = customizableEdges6;
-            guna2ContainerControl_TransferInfor.FillColor = Color.FromArgb(255, 255, 128);
-            guna2ContainerControl_TransferInfor.Location = new Point(805, 68);
-            guna2ContainerControl_TransferInfor.Name = "guna2ContainerControl_TransferInfor";
-            guna2ContainerControl_TransferInfor.ShadowDecoration.BorderRadius = 20;
-            guna2ContainerControl_TransferInfor.ShadowDecoration.CustomizableEdges = customizableEdges7;
-            guna2ContainerControl_TransferInfor.ShadowDecoration.Enabled = true;
-            guna2ContainerControl_TransferInfor.ShadowDecoration.Shadow = new Padding(0, 0, 5, 5);
-            guna2ContainerControl_TransferInfor.Size = new Size(250, 250);
-            guna2ContainerControl_TransferInfor.TabIndex = 6;
-            guna2ContainerControl_TransferInfor.Text = "guna2ContainerControl1";
-            guna2ContainerControl_TransferInfor.Visible = false;
-            // 
             // flowLayoutPanel_ListProcessing
             // 
+            flowLayoutPanel_ListProcessing.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             flowLayoutPanel_ListProcessing.AutoScroll = true;
-            flowLayoutPanel_ListProcessing.Dock = DockStyle.Fill;
-            flowLayoutPanel_ListProcessing.Location = new Point(0, 0);
+            flowLayoutPanel_ListProcessing.BackColor = Color.White;
+            flowLayoutPanel_ListProcessing.BorderStyle = BorderStyle.FixedSingle;
+            flowLayoutPanel_ListProcessing.Location = new Point(650, 65);
+            flowLayoutPanel_ListProcessing.Margin = new Padding(0);
             flowLayoutPanel_ListProcessing.Name = "flowLayoutPanel_ListProcessing";
-            flowLayoutPanel_ListProcessing.Size = new Size(250, 250);
+            flowLayoutPanel_ListProcessing.Size = new Size(370, 300);
             flowLayoutPanel_ListProcessing.TabIndex = 1;
+            flowLayoutPanel_ListProcessing.Visible = false;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(233, 244, 255);
-            ClientSize = new Size(1094, 528);
-            Controls.Add(guna2ContainerControl_TransferInfor);
+            ClientSize = new Size(1032, 653);
+            Controls.Add(flowLayoutPanel_ListProcessing);
             Controls.Add(guna2TabControl1);
             Controls.Add(btn_TransferInfor);
             Controls.Add(btn_New);
             Name = "MainForm";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Transfer data";
+            TopMost = true;
             FormClosed += MainForm_FormClosed;
             Load += MainForm_Load;
             guna2ContextMenuStrip_btnNew.ResumeLayout(false);
             guna2TabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
-            guna2ContainerControl_TransferInfor.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -318,9 +304,8 @@
         private Guna.UI2.WinForms.Guna2TabControl guna2TabControl1;
         private TabPage tabPage1;
         private TabPage tabPage2;
-        private Guna.UI2.WinForms.Guna2ContainerControl guna2ContainerControl_TransferInfor;
-        private FlowLayoutPanel flowLayoutPanel_ListProcessing;
         private TabPage tabPage3;
         private TabPage tabPage4;
+        private FlowLayoutPanel flowLayoutPanel_ListProcessing;
     }
 }
