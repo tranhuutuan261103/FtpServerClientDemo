@@ -55,25 +55,29 @@ namespace MyFtpServer
             NetworkStream ns = _socket.GetStream();
             int blocksize = 1024;
             byte[] buffer = new byte[blocksize];
-            int byteread = 0;
-            FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write);
+            int bytesRead;
             try
             {
-                while (true)
+                using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                 {
-                    byteread = ns.Read(buffer, 0, blocksize);
-                    fs.Write(buffer, 0, byteread);
-                    if (byteread == 0)
+                    using (BinaryWriter bw = new BinaryWriter(fs))
                     {
-                        break;
+                        while (true)
+                        {
+                            bytesRead = ns.Read(buffer, 0, blocksize);
+                            if (bytesRead == 0)
+                            {
+                                break;
+                            }
+                            bw.Write(buffer, 0, bytesRead);
+                        }
                     }
                 }
-                fs.Flush();
-                fs.Close();
+
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                Console.WriteLine($"An error occurred: {ex.Message}");
             }
         }
 
