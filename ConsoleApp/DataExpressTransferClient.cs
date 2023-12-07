@@ -128,22 +128,29 @@ namespace ConsoleApp
                 partFilePaths.Add(fullPathPart);
             }
 
-            FileStream fs = new FileStream(fullPathPart, FileMode.Append, FileAccess.Write);
-            while (true)
+            using (FileStream fs = new FileStream(fullPathPart, FileMode.Append, FileAccess.Write))
             {
-                int bytesRead = ns.Read(bytes, 0, bytes.Length);
-                fs.Write(bytes, 0, bytesRead);
-                lock (_totalBytesReadLock)
+                using (BinaryWriter bw = new BinaryWriter(fs))
                 {
-                    totalBytesRead += bytesRead;
-                    Processing.SetFileTransferSize(totalBytesRead);
-                }
-                if (bytesRead == 0)
-                {
-                    break;
+                    while (true)
+                    {
+                        int bytesRead = ns.Read(bytes, 0, bytes.Length);
+                        if (bytesRead == 0)
+                        {
+                            break;
+                        }
+
+                        bw.Write(bytes, 0, bytesRead);
+
+                        lock (_totalBytesReadLock)
+                        {
+                            totalBytesRead += bytesRead;
+                            Processing.SetFileTransferSize(totalBytesRead);
+                        }
+                    }
                 }
             }
-            fs.Close();
+
             lock (_lock)
             {
                 _currentSuccessThreadCount++;
@@ -177,26 +184,34 @@ namespace ConsoleApp
             totalBytesRead = 0;
             Processing.SetFileTransferSize(totalBytesRead);
             FileClientProcessingEvent(Processing);
+
+            const int bufferSize = 1024 * 1024; // 1 MB buffer size
+
             using (FileStream finalFileStream = new FileStream(_fullPath, FileMode.OpenOrCreate, FileAccess.Write))
+            using (BinaryWriter bw = new BinaryWriter(finalFileStream))
             {
                 foreach (var partFilePath in partFilePaths)
                 {
                     using (FileStream tempFileStream = new FileStream(partFilePath, FileMode.Open, FileAccess.Read))
+                    using (BinaryReader br = new BinaryReader(tempFileStream))
                     {
-                        byte[] buffer = new byte[1024 * 1024];
+                        byte[] buffer = new byte[bufferSize];
                         int bytesRead;
-                        while ((bytesRead = tempFileStream.Read(buffer, 0, buffer.Length)) > 0)
+                        while ((bytesRead = br.Read(buffer, 0, buffer.Length)) > 0)
                         {
-                            finalFileStream.Write(buffer, 0, bytesRead);
+                            bw.Write(buffer, 0, bytesRead);
                             totalBytesRead += bytesRead;
                             Processing.SetFileTransferSize(totalBytesRead);
                         }
                     }
+
                     File.Delete(partFilePath);
                 }
             }
+
             partFilePaths.Clear();
             Console.WriteLine($"Created at {DateTime.Now} in {_fullPath}");
         }
+
     }
 }
