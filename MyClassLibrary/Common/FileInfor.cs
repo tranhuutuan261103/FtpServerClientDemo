@@ -8,6 +8,7 @@ namespace MyClassLibrary.Common
 {
     public class FileInfor
     {
+        public string Id { get; set; } = "";
         public string Name { get; set; } = "";
         public DateTime LastWriteTime { get; set; }
         /**

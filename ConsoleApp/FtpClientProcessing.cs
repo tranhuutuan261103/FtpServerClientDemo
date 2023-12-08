@@ -50,7 +50,7 @@ namespace ConsoleApp
             return "";
         }
 
-        public bool CreateNewRemoteFolder(string remoteFolderName)
+        public string CreateNewRemoteFolder(string remoteFolderName)
         {
             string Command = "", Response = "";
             Command = string.Format("MKD {0}", remoteFolderName);
@@ -58,9 +58,9 @@ namespace ConsoleApp
             Response = _reader.ReadLine() ?? "";
             if (Response.StartsWith("257 ") == true)
             {
-                return true;
+                return Response.Substring(Response.IndexOf(" ") + 1);
             }
-            return false;
+            return "";
         }
         public bool SetRemoteFolderPath(string remoteFolderPath)
         {
@@ -294,13 +294,13 @@ namespace ConsoleApp
                 {
                     if (fileInfor.IsDirectory == true)
                     {
-                        string newRemoteFolderPath = remoteFolderPath + @"\" + fileInfor.Name;
+                        string newRemoteFolderPath = fileInfor.Id;
                         string newLocalFolderPath = localFolderPath + @"\" + fileInfor.Name;
                         DownloadFolder(newRemoteFolderPath, newLocalFolderPath);
                     }
                     else
                     {
-                        FileTransferProcessing processing = new FileTransferProcessing("RETR", remoteFolderPath, fileInfor.Name, localFolderPath);
+                        FileTransferProcessing processing = new FileTransferProcessing("RETR", fileInfor.Id, fileInfor.Name, localFolderPath);
                         transferRequest(processing);
                     }
                 }
@@ -309,22 +309,22 @@ namespace ConsoleApp
 
         public void UploadFolder(string remoteFolderPath, string localFolderPath)
         {
-            CreateNewRemoteFolder(remoteFolderPath);
-            bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
+            string remoteFolderId = CreateNewRemoteFolder(remoteFolderPath);
+            bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderId);
             if (currentRemoteFolderPath == true)
             {
                 string[] localPaths = Directory.GetFiles(localFolderPath);
                 foreach (string localPath in localPaths)
                 {
-                    FileTransferProcessing taskSession = new FileTransferProcessing("STOR", remoteFolderPath, Path.GetFileName(localPath) ?? "\\undefine", Path.GetDirectoryName(localPath) ?? "\\undefine");
+                    FileTransferProcessing taskSession = new FileTransferProcessing("STOR", remoteFolderId, Path.GetFileName(localPath) ?? "\\undefine", Path.GetDirectoryName(localPath) ?? "\\undefine");
                     transferRequest(taskSession);
                 }
                 string[] localFolders = Directory.GetDirectories(localFolderPath);
                 foreach (string localFolder in localFolders)
                 {
-                    string newRemoteFolderPath = remoteFolderPath + @"\" + Path.GetFileName(localFolder);
+                    string newRemoteFolderName = Path.GetFileName(localFolder);
                     string newLocalFolderPath = localFolderPath + @"\" + Path.GetFileName(localFolder);
-                    UploadFolder(newRemoteFolderPath, newLocalFolderPath);
+                    UploadFolder(newRemoteFolderName, newLocalFolderPath);
                 }
             }
         }

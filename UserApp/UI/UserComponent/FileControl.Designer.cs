@@ -68,7 +68,7 @@
             label_Name.Size = new Size(221, 65);
             label_Name.TabIndex = 0;
             label_Name.Text = "name";
-            label_Name.TextAlignment = ContentAlignment.MiddleCenter;
+            label_Name.TextAlignment = ContentAlignment.MiddleLeft;
             label_Name.DoubleClick += FileControl_DoubleClick;
             // 
             // guna2CMStrip
