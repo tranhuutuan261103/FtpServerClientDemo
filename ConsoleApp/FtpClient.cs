@@ -207,9 +207,9 @@ namespace ConsoleApp
             }
         }
 
-        public void Download(string remotePath, string localPath)
+        public void Download(string remoteFileId, string localPath, string localFileName)
         {
-            FileTransferProcessing taskSession = new FileTransferProcessing("RETR", Path.GetDirectoryName(remotePath) ?? "\\undefine", Path.GetFileName(remotePath) ?? "", localPath);
+            FileTransferProcessing taskSession = new FileTransferProcessing("RETR", remoteFileId, localFileName, localPath);
             PushSubTaskSession(taskSession);
         }
 

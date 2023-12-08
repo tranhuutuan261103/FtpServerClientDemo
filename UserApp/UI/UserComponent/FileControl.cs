@@ -71,11 +71,11 @@ namespace UserApp.UI.UserComponent
                 // Safely update label_Name.
                 if (label_Name.IsHandleCreated && !label_Name.IsDisposed)
                 {
-                    label_Name.Invoke((MethodInvoker)delegate { label_Name.Text = infor.Name; });
+                    label_Name.Invoke((MethodInvoker)delegate { label_Name.Text = GetSuitString(infor.Name, 15); });
                 }
                 else
                 {
-                    label_Name.Text = infor.Name;
+                    label_Name.Text = GetSuitString(infor.Name, 15);
                 }
 
                 // Update picturebox.
@@ -107,6 +107,15 @@ namespace UserApp.UI.UserComponent
         {
             pictureBox_MoreOption.BackColor = Color.White;
             guna2CirclePictureBox_MoreOption.FillColor = Color.White;
+        }
+
+        private string GetSuitString(string input, int maxLenght)
+        {
+            if (input.Length > maxLenght)
+            {
+                return input.Substring(0, maxLenght) + "...";
+            }
+            return input;
         }
     }
 }

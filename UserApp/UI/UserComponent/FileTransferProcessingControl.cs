@@ -40,7 +40,7 @@ namespace UserApp.UI.UserComponent
 
                 // Safely update label_FileName.
 
-                UpdateControlText(label_FileName, processing.FileName);
+                UpdateControlText(label_FileName, GetSuitString(processing.FileName, 20));
 
                 // Safely update label_Status.
 
@@ -167,6 +167,15 @@ namespace UserApp.UI.UserComponent
                 if (this.Parent != null)
                     this.Parent.Controls.Remove(this);
             }
+        }
+
+        private string GetSuitString(string input, int maxLenght)
+        {
+            if (input.Length > maxLenght)
+            {
+                return input.Substring(0, maxLenght) + "...";
+            }
+            return input;
         }
     }
 }

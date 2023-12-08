@@ -63,18 +63,18 @@ namespace UserApp.UI
             {
                 if (request.fileInfor.IsDirectory == true)
                 {
-                    MainForm_BLL.ChangeFolder(request.fileInfor.Name);
+                    MainForm_BLL.ChangeFolder(request.fileInfor.Id);
                 }
             }
             else if (request.type == FileControlRequestType.Download)
             {
                 if (request.fileInfor.IsDirectory == false)
                 {
-                    MainForm_BLL.Download(request.fileInfor.Name);
+                    MainForm_BLL.Download(request.fileInfor);
                 }
                 else if (request.fileInfor.IsDirectory == true)
                 {
-                    MainForm_BLL.DownloadFolder(request.fileInfor.Name);
+                    MainForm_BLL.DownloadFolder(request.fileInfor);
                 }
             }
         }
