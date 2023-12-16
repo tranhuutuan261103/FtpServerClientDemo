@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyFtpServer.DAL.EF;
 
@@ -11,9 +12,11 @@ using MyFtpServer.DAL.EF;
 namespace MyFtpServer.DAL.Migrations
 {
     [DbContext(typeof(FileStorageDBContext))]
-    partial class FileStorageDBContextModelSnapshot : ModelSnapshot
+    [Migration("20231216092037_InitDB")]
+    partial class InitDB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

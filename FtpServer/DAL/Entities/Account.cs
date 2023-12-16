@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace MyFtpServer.DAL.Entities
 {
+    [Table("Accounts")]
     public class Account
     {
         public int Id { get; set; }
@@ -16,7 +18,7 @@ namespace MyFtpServer.DAL.Entities
         public DateTime CreateDate { get; set; }
         public string? Avatar { get; set; }
         public bool IsDeleted { get; set; }
-        public ICollection<Folder> Folders { get; set; } = new List<Folder>();
-        public ICollection<File> Files { get; set; } = new List<File>();
+        public ICollection<FileAccess> FileAccesses { get; set; } = new List<FileAccess>();
+        public ICollection<FolderAccess> FolderAccesses = new List<FolderAccess>();
     }
 }

@@ -92,7 +92,6 @@ namespace MyFtpServer.DAL
                     IdParent = idParent == "" ? null : idParent,
                     Name = name,
                     FilePath = filePath,
-                    IdUser = 10000,
                     CreationDate = DateTime.Now,
                     Favorite = false,
                 };
@@ -136,7 +135,6 @@ namespace MyFtpServer.DAL
                     Id = id,
                     IdParent = idParent == "" ? null : idParent,
                     Name = name,
-                    IdUser = 10000,
                     CreationDate = DateTime.Now,
                 };
                 db.Folders.Add(folder);
