@@ -80,23 +80,27 @@ namespace ConsoleApp
             Processing.Status = FileTransferProcessingStatus.Downloading;
             FileClientProcessingEvent(Processing);
 
-            FileStream fs = new FileStream(fullFilePath, FileMode.OpenOrCreate, FileAccess.Write);
-            while (true)
+            using (FileStream fs = new FileStream(fullFilePath, FileMode.Append, FileAccess.Write))
             {
-                byteread = ns.Read(buffer, 0, blocksize);
-                fs.Write(buffer, 0, byteread);
-                totalBytesRead += byteread;
-                Processing.SetFileTransferSize(totalBytesRead);
-                if (byteread == 0)
+                using (BinaryWriter bw = new BinaryWriter(fs))
                 {
-                    break;
+                    while (true)
+                    {
+                        byteread = ns.Read(buffer, 0, blocksize);
+                        if (byteread == 0)
+                        {
+                            break;
+                        }
+                        bw.Write(buffer, 0, byteread);
+                        totalBytesRead += byteread;
+                        Processing.SetFileTransferSize(totalBytesRead);
+                    }
                 }
             }
 
+
             Processing.Status = FileTransferProcessingStatus.Completed;
             FileClientProcessingEvent(Processing);
-            fs.Flush();
-            fs.Close();
         }
 
         public void SendFile(string fullFilePath)

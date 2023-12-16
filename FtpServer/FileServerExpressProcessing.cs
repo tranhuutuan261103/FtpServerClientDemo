@@ -61,19 +61,23 @@ namespace MyFtpServer
             {
                 partFilePaths.Add(fullPathPart);
             }
-            
+
             using (FileStream fs = new FileStream(fullPathPart, FileMode.Append, FileAccess.Write))
             {
-                while (true)
+                using (BinaryWriter bw = new BinaryWriter(fs))
                 {
-                    byteread = ns.Read(buffer, 0, blocksize);
-                    fs.Write(buffer, 0, byteread);
-                    if (byteread == 0)
+                    while (true)
                     {
-                        break;
+                        byteread = ns.Read(buffer, 0, blocksize);
+                        if (byteread == 0)
+                        {
+                            break;
+                        }
+                        bw.Write(buffer, 0, byteread);
                     }
                 }
             }
+
             lock (_lock)
             {
                 _currentSuccessThreadCount++;
@@ -94,7 +98,7 @@ namespace MyFtpServer
                 else
                 {
                     TcpClient client = _tcpListener.AcceptTcpClient();
-                    long offset = currentThreadCount * _maxBufferSize;
+                    long offset = (long)currentThreadCount * _maxBufferSize;
                     Thread thread = new Thread(() => HandleSendExpressFile(client, offset, _maxBufferSize));
                     thread.Start();
                     currentThreadCount++;
@@ -135,25 +139,31 @@ namespace MyFtpServer
         private void Merger()
         {
             Console.WriteLine($"Merging... at {DateTime.Now}");
+
             using (FileStream finalFileStream = new FileStream(_fullPath, FileMode.OpenOrCreate, FileAccess.Write))
+            using (BinaryWriter bw = new BinaryWriter(finalFileStream))
             {
                 foreach (var partFilePath in partFilePaths)
                 {
                     using (FileStream tempFileStream = new FileStream(partFilePath, FileMode.Open, FileAccess.Read))
+                    using (BinaryReader br = new BinaryReader(tempFileStream))
                     {
                         byte[] buffer = new byte[1024];
                         int bytesRead;
-                        while ((bytesRead = tempFileStream.Read(buffer, 0, buffer.Length)) > 0)
+                        while ((bytesRead = br.Read(buffer, 0, buffer.Length)) > 0)
                         {
-                            finalFileStream.Write(buffer, 0, bytesRead);
+                            bw.Write(buffer, 0, bytesRead);
                         }
                     }
+
                     File.Delete(partFilePath);
                 }
             }
+
             partFilePaths.Clear();
             Console.WriteLine($"Created at {DateTime.Now} in {_fullPath}");
         }
+
 
         private string RandomFileName(string filePath)
         {

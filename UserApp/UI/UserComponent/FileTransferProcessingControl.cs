@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace UserApp.UserComponent
+namespace UserApp.UI.UserComponent
 {
     public partial class FileTransferProcessingControl : UserControl
     {
@@ -40,7 +40,7 @@ namespace UserApp.UserComponent
 
                 // Safely update label_FileName.
 
-                UpdateControlText(label_FileName, processing.FileName);
+                UpdateControlText(label_FileName, GetSuitString(processing.FileName, 20));
 
                 // Safely update label_Status.
 
@@ -58,6 +58,8 @@ namespace UserApp.UserComponent
 
                 UpdateProgressBar(progressBar, processing.FileTransferedPercent);
 
+                // Safely update delete_btn.
+                UpdateDeleteButton(processing.Status == FileTransferProcessingStatus.Failed || processing.Status == FileTransferProcessingStatus.Completed);
             }
 
         }
@@ -126,6 +128,54 @@ namespace UserApp.UserComponent
         {
             this.processing = processing;
             UpdateUI();
+        }
+
+        private void UpdateDeleteButton(bool isEnable)
+        {
+            if (delete_btn.IsHandleCreated && !delete_btn.Disposing && !delete_btn.IsDisposed)
+            {
+                delete_btn.Invoke((MethodInvoker)delegate { delete_btn.Visible = isEnable; });
+            }
+        }
+
+        private void FileTransferProcessingControl_MouseEnter(object sender, EventArgs e)
+        {
+            this.BackColor = Color.FromArgb(200, 200, 200);
+        }
+
+        private void FileTransferProcessingControl_MouseLeave(object sender, EventArgs e)
+        {
+            this.BackColor = Color.White;
+        }
+
+        private void delete_btn_MouseEnter(object sender, EventArgs e)
+        {
+            this.BackColor = Color.FromArgb(200, 200, 200);
+            delete_btn.Image = new Bitmap("../../../UI/Icons/delete-button-able.png");
+        }
+
+        private void delete_btn_MouseLeave(object sender, EventArgs e)
+        {
+            this.BackColor = Color.White;
+            delete_btn.Image = new Bitmap("../../../UI/Icons/delete-button-disable.png");
+        }
+
+        private void delete_btn_Click(object sender, EventArgs e)
+        {
+            if (processing.Status == FileTransferProcessingStatus.Failed || processing.Status == FileTransferProcessingStatus.Completed)
+            {
+                if (this.Parent != null)
+                    this.Parent.Controls.Remove(this);
+            }
+        }
+
+        private string GetSuitString(string input, int maxLenght)
+        {
+            if (input.Length > maxLenght)
+            {
+                return input.Substring(0, maxLenght) + "...";
+            }
+            return input;
         }
     }
 }

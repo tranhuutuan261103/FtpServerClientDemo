@@ -1,4 +1,5 @@
 ﻿using MyClassLibrary.Common;
+using MyFtpServer.DAL;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -68,7 +69,8 @@ namespace MyFtpServer
             int passivePort;
             TcpClient data_channel;
 
-            string remoteFolderPath = @"\";
+            // string remoteFolderPath = @"\";
+            string remoteFolderPath = @"";
             try
             {
                 while (true)
@@ -101,16 +103,13 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"501 Syntax error in parameters or arguments");
                             continue;
                         }
-                        if (folderPath == "")
-                        {
-                            folderPath = @"\";
-                        }
+                        /*
                         if (Directory.Exists(_rootPath + folderPath) == false)
                         {
                             writer.WriteLine("550 Couldn't open the file or directory");
                             ResponseStatus(sessionID, $"550 Couldn't open the file or directory");
                             continue;
-                        }
+                        }*/
                         remoteFolderPath = folderPath;
                         writer.WriteLine("250 CWD command successful");
                         ResponseStatus(sessionID, $"250 CWD command successful");
@@ -123,25 +122,43 @@ namespace MyFtpServer
                     }
                     else if (command == "MKD")
                     {
-                        string folderPath = string.Join(" ", parts, 1, parts.Length - 1); ;
-                        if (folderPath == null)
+                        string folderName = string.Join(" ", parts, 1, parts.Length - 1); ;
+                        if (folderName == null)
                         {
                             writer.WriteLine("501 Syntax error in parameters or arguments");
                             ResponseStatus(sessionID, $"501 Syntax error in parameters or arguments");
                             continue;
                         }
+                        /*
                         if (Directory.Exists(_rootPath + folderPath))
                         {
                             writer.WriteLine("550 Directory already exists");
                             ResponseStatus(sessionID, $"550 Directory already exists");
                             continue;
                         }
-                        Directory.CreateDirectory(_rootPath + folderPath);
-                        writer.WriteLine("257 Directory created");
+                        Directory.CreateDirectory(_rootPath + folderPath);*/
+                        FileStorage_DAL dal = new FileStorage_DAL();
+                        if (dal.IsDirectory(remoteFolderPath) == false)
+                        {
+                            Console.WriteLine(remoteFolderPath);
+                            writer.WriteLine("550 Directory already exists");
+                            ResponseStatus(sessionID, $"550 Directory already exists");
+                            continue;
+                        }
+                        string id = dal.CreateNewFolder(remoteFolderPath, folderName);
+                        writer.WriteLine($"257 {id}");
                         ResponseStatus(sessionID, $"257 Directory created");
                     }
                     else if (command == "MLSD")
                     {
+                        // Get list file and folder
+
+                        string idParent = remoteFolderPath;
+
+                        FileStorage_DAL dal = new FileStorage_DAL();
+                        List<FileInfor> list = dal.GetFileInfors(idParent);
+
+                        /*
                         List<FileInfor> list = new List<FileInfor>();
                         string[] directories = Directory.GetDirectories(_rootPath + remoteFolderPath);
                         foreach (var directory in directories)
@@ -167,7 +184,7 @@ namespace MyFtpServer
                                 LastWriteTime = fileInfo.LastWriteTime,
                                 IsDirectory = false
                             });
-                        }
+                        }*/
 
                         // Check Tcp Listener
                         if (tcpListener == null)
@@ -191,8 +208,11 @@ namespace MyFtpServer
                     }
                     else if (command == "RETR")
                     {
-                        string filePath = string.Join(" ", parts, 1, parts.Length - 1);
-                        string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
+                        //string filePath = string.Join(" ", parts, 1, parts.Length - 1);
+                        //string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
+                        Console.WriteLine(remoteFolderPath);
+                        FileStorage_DAL dal = new FileStorage_DAL();
+                        string fullPath = _rootPath + dal.GetFilePath(remoteFolderPath);
 
                         if (!File.Exists(fullPath))
                         {
@@ -228,8 +248,16 @@ namespace MyFtpServer
                     }
                     else if (command == "STOR")
                     {
-                        string filePath = string.Join(" ", parts, 1, parts.Length - 1);
-                        string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
+                        FileStorage_DAL dal = new FileStorage_DAL();
+                        if (dal.IsDirectory(remoteFolderPath) == false)
+                        {
+                            writer.WriteLine("550 Couldn't open the file or directory");
+                            ResponseStatus(sessionID, $"550 Couldn't open the file or directory");
+                            continue;
+                        }
+
+                        string fileName = string.Join(" ", parts, 1, parts.Length - 1);
+                        string fullPath = _rootPath + dal.CreateNewFile(remoteFolderPath, fileName);
 
                         if (tcpListener == null)
                             continue;

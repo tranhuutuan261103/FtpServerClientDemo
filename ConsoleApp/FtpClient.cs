@@ -130,7 +130,7 @@ namespace ConsoleApp
 
         private void ExecuteMainTaskSession(TaskSession taskSession)
         {
-            FtpClientProcessing fcp = new FtpClientProcessing(_mainTcpSession.GetTcpClient(), null, TransferRequestHandler);
+            FtpClientProcessing fcp = new FtpClientProcessing(_mainTcpSession.GetTcpClient(), TransferProgressHandler, TransferRequestHandler);
             switch (taskSession.Type)
             {
                 case "LIST":
@@ -156,7 +156,7 @@ namespace ConsoleApp
 
         private void ExecuteSubTaskSession(FileTransferProcessing request, TcpClient tcpSessionClient)
         {
-            FtpClientProcessing fcp = new FtpClientProcessing(tcpSessionClient, TransferProgressHandler, null);
+            FtpClientProcessing fcp = new FtpClientProcessing(tcpSessionClient, TransferProgressHandler, TransferRequestHandler);
             string command = request.Type;
             switch (command)
             {
@@ -207,9 +207,15 @@ namespace ConsoleApp
             }
         }
 
-        public void Download(string remotePath, string localPath)
+        public void Download(string remoteFileId, string localPath, string localFileName)
         {
-            FileTransferProcessing taskSession = new FileTransferProcessing("RETR", Path.GetDirectoryName(remotePath) ?? "\\undefine", Path.GetFileName(remotePath) ?? "", localPath);
+            FileTransferProcessing taskSession = new FileTransferProcessing("RETR", remoteFileId, localFileName, localPath);
+            PushSubTaskSession(taskSession);
+        }
+
+        public void ExpressDownload(string remotePath, string localPath)
+        {
+            FileTransferProcessing taskSession = new FileTransferProcessing("EXPRESSDOWNLOAD", Path.GetDirectoryName(remotePath) ?? "\\undefine", Path.GetFileName(remotePath) ?? "", localPath);
             PushSubTaskSession(taskSession);
         }
 

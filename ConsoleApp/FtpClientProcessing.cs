@@ -50,7 +50,7 @@ namespace ConsoleApp
             return "";
         }
 
-        public bool CreateNewRemoteFolder(string remoteFolderName)
+        public string CreateNewRemoteFolder(string remoteFolderName)
         {
             string Command = "", Response = "";
             Command = string.Format("MKD {0}", remoteFolderName);
@@ -58,9 +58,9 @@ namespace ConsoleApp
             Response = _reader.ReadLine() ?? "";
             if (Response.StartsWith("257 ") == true)
             {
-                return true;
+                return Response.Substring(Response.IndexOf(" ") + 1);
             }
-            return false;
+            return "";
         }
         public bool SetRemoteFolderPath(string remoteFolderPath)
         {
@@ -141,11 +141,13 @@ namespace ConsoleApp
                     response = streamReader.ReadLine() ?? "";
                     if (response.StartsWith("150 "))
                     {
-                        DataExpressTransferClient fileClientExpressProcessing = new DataExpressTransferClient(server_data_endpoint, request.LocalPath + "\\" + request.FileName, fileSize);
+                        DataExpressTransferClient fileClientExpressProcessing = new DataExpressTransferClient(server_data_endpoint, request.LocalPath + "\\" + request.FileName, fileSize, TransferProgressHandler, request);
                         fileClientExpressProcessing.ExpressReceiveFile();
 
                         command = "226 Transfer complete";
                         streamWriter.WriteLine(command);
+                        request.Status = FileTransferProcessingStatus.Completed;
+                        progress(request);
                     }
                 }
             }
@@ -176,7 +178,7 @@ namespace ConsoleApp
                         long fileSize = new FileInfo(request.LocalPath + @"\" + request.FileName).Length;
                         streamWriter.WriteLine(fileSize);
 
-                        DataExpressTransferClient fileClientExpressProcessing = new DataExpressTransferClient(server_data_endpoint, request.LocalPath + @"\" + request.FileName, fileSize);
+                        DataExpressTransferClient fileClientExpressProcessing = new DataExpressTransferClient(server_data_endpoint, request.LocalPath + @"\" + request.FileName, fileSize, TransferProgressHandler, request);
                         fileClientExpressProcessing.ExpressSendFile();
 
                         response = streamReader.ReadLine() ?? "";
@@ -280,6 +282,10 @@ namespace ConsoleApp
 
         public void DownloadFolder(string remoteFolderPath, string localFolderPath)
         {
+            if (Directory.Exists(localFolderPath) == false)
+            {
+                Directory.CreateDirectory(localFolderPath);
+            }
             bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
             if (currentRemoteFolderPath == true)
             {
@@ -288,17 +294,13 @@ namespace ConsoleApp
                 {
                     if (fileInfor.IsDirectory == true)
                     {
-                        string newRemoteFolderPath = remoteFolderPath + @"\" + fileInfor.Name;
+                        string newRemoteFolderPath = fileInfor.Id;
                         string newLocalFolderPath = localFolderPath + @"\" + fileInfor.Name;
-                        if (Directory.Exists(newLocalFolderPath) == false)
-                        {
-                            Directory.CreateDirectory(newLocalFolderPath);
-                        }
                         DownloadFolder(newRemoteFolderPath, newLocalFolderPath);
                     }
                     else
                     {
-                        FileTransferProcessing processing = new FileTransferProcessing("RETR", remoteFolderPath, fileInfor.Name, localFolderPath);
+                        FileTransferProcessing processing = new FileTransferProcessing("RETR", fileInfor.Id, fileInfor.Name, localFolderPath);
                         transferRequest(processing);
                     }
                 }
@@ -307,22 +309,22 @@ namespace ConsoleApp
 
         public void UploadFolder(string remoteFolderPath, string localFolderPath)
         {
-            CreateNewRemoteFolder(remoteFolderPath);
-            bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
+            string remoteFolderId = CreateNewRemoteFolder(remoteFolderPath);
+            bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderId);
             if (currentRemoteFolderPath == true)
             {
                 string[] localPaths = Directory.GetFiles(localFolderPath);
                 foreach (string localPath in localPaths)
                 {
-                    FileTransferProcessing taskSession = new FileTransferProcessing("STOR", remoteFolderPath, Path.GetFileName(localPath) ?? "\\undefine", Path.GetDirectoryName(localPath) ?? "\\undefine");
+                    FileTransferProcessing taskSession = new FileTransferProcessing("STOR", remoteFolderId, Path.GetFileName(localPath) ?? "\\undefine", Path.GetDirectoryName(localPath) ?? "\\undefine");
                     transferRequest(taskSession);
                 }
                 string[] localFolders = Directory.GetDirectories(localFolderPath);
                 foreach (string localFolder in localFolders)
                 {
-                    string newRemoteFolderPath = remoteFolderPath + @"\" + Path.GetFileName(localFolder);
+                    string newRemoteFolderName = Path.GetFileName(localFolder);
                     string newLocalFolderPath = localFolderPath + @"\" + Path.GetFileName(localFolder);
-                    UploadFolder(newRemoteFolderPath, newLocalFolderPath);
+                    UploadFolder(newRemoteFolderName, newLocalFolderPath);
                 }
             }
         }
