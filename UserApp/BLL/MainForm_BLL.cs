@@ -18,7 +18,10 @@ namespace UserApp.BLL
         public MainForm_BLL(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile)
         {
             fileManager = new FileManager(@"D:\FileClient");
-            ftpClient = new FtpClient("127.0.0.1", 1234, TransferProgressHandler, ChangeFoldersAndFileHandler);
+            //ftpClient = new FtpClient("127.0.0.1", 1234, TransferProgressHandler, ChangeFoldersAndFileHandler);
+            ftpClient = new FtpClient("127.0.0.1", 1234);
+            ftpClient.Login("tuan", "tuan");
+            ftpClient.Start(TransferProgressHandler, ChangeFoldersAndFileHandler);
             progress += process;
             this.changeFolderAndFile += changeFolderAndFile;
         }

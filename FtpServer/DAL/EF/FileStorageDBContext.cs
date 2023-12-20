@@ -15,9 +15,9 @@ namespace MyFtpServer.DAL.EF
         public virtual DbSet<Account> Accounts { get; set; }
         public virtual DbSet<Folder> Folders { get; set; }
         public virtual DbSet<File> Files { get; set; }
-        public virtual DbSet<AccessStatus> Roles { get; set; }
-        public virtual DbSet<Entities.FileAccess> FileRoleAccounts { get; set; }
-        public virtual DbSet<FolderAccess> FolderRoleAccounts { get; set; }
+        public virtual DbSet<AccessStatus> AccessStatuses { get; set; }
+        public virtual DbSet<Entities.FileAccess> FileAccesses { get; set; }
+        public virtual DbSet<FolderAccess> FolderAccesses { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(@$"Server=MSI\SQLEXPRESS;Database=FileStorageDB;TrustServerCertificate=true;User Id=sa;Password=tuan261103");
