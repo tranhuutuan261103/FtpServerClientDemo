@@ -37,6 +37,12 @@ namespace ConsoleApp
             return _mainTcpSession.Register(request);
         }
 
+        public bool ResetPassword(ResetPasswordRequest request)
+        {
+            return _mainTcpSession.ResetPassword(request);
+        }
+
+
         public bool Login(string username, string password)
         {
             _mainTcpSession.SetUsername(username);

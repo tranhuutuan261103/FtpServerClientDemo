@@ -19,11 +19,13 @@ namespace UserApp.UI
         private FtpClient ftpClient;
         private LoginControl loginControl;
         private RegisterControl registerControl;
+        private ResetPasswordControl resetPasswordControl;
         public AccountForm()
         {
             InitializeComponent();
-            loginControl = new LoginControl(LoginInvoke, SetFormRegisterInvoke);
+            loginControl = new LoginControl(LoginInvoke, SetFormRegisterInvoke, SetFormResetPasswordInvoke);
             registerControl = new RegisterControl(RegisterInvoke, SetFormLoginInvoke);
+            resetPasswordControl = new ResetPasswordControl(ResetPasswordInvoke, SetFormLogin);
             ftpClient = new FtpClient("127.0.0.1", 1234);
         }
 
@@ -66,6 +68,26 @@ namespace UserApp.UI
             registerControl.Show();
         }
 
+        public delegate void SetFormResetPasswordDelegate();
+        public void SetFormResetPasswordInvoke()
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new SetFormResetPasswordDelegate(SetFormResetPassword));
+            }
+            else
+            {
+                SetFormResetPassword();
+            }
+        }
+
+        private void SetFormResetPassword()
+        {
+            panel_Container.Controls.Clear();
+            panel_Container.Controls.Add(resetPasswordControl);
+            resetPasswordControl.Show();
+        }
+
         private void AccountForm_Load(object sender, EventArgs e)
         {
             SetFormLogin();
@@ -97,6 +119,21 @@ namespace UserApp.UI
             else
             {
                 MessageBox.Show("Register failed");
+            }
+        }
+
+        private void ResetPasswordInvoke(ResetPasswordRequest request)
+        {
+            if (ftpClient.ResetPassword(request) == true)
+            {
+                MessageBox.Show("Reset password successfully");
+                SetFormLoginInvoke();
+                loginControl.SetUsername(request.Email);
+                loginControl.SetPassword("");
+            }
+            else
+            {
+                MessageBox.Show("Reset password failed");
             }
         }
     }

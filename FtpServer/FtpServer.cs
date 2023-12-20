@@ -391,6 +391,32 @@ namespace MyFtpServer
                     writer.WriteLine("530 Register failed");
                     ResponseStatus(sessionID, $"Register failed");
                 }
+            } else if (command.StartsWith("RESETPASSWORD"))
+            {
+                string json = command.Substring(14);
+
+                ResetPasswordRequest request = Newtonsoft.Json.JsonConvert.DeserializeObject<ResetPasswordRequest>(json) ?? null;
+
+                if (request == null)
+                {
+                    writer.WriteLine("530 Reset password failed");
+                    ResponseStatus(sessionID, $"Reset password failed");
+                    return 0;
+                }
+
+                AccountDAL accountDAL = new AccountDAL();
+                bool result = accountDAL.ResetPassword(request);
+                if (result != false)
+                {
+                    writer.WriteLine("230 Reset password successful");
+                    ResponseStatus(sessionID, $"230 Reset password successful");
+                    return 0;
+                }
+                else
+                {
+                    writer.WriteLine("530 Reset password failed");
+                    ResponseStatus(sessionID, $"Reset password failed");
+                }
             }
             return 0;
         }

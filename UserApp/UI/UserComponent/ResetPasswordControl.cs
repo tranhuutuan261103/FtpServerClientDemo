@@ -9,33 +9,37 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using UserApp.DTO;
 
 namespace UserApp.UI.UserComponent
 {
-    public partial class RegisterControl : UserControl
+    public partial class ResetPasswordControl : UserControl
     {
-        public delegate void RegisterDelegate(RegisterRequest request);
-        public RegisterDelegate RegisterInvoke;
+        public delegate void ResetPasswordDelegate(ResetPasswordRequest request);
+        public ResetPasswordDelegate ResetPasswordInvoke;
         public delegate void SetFormLoginDelegate();
         public SetFormLoginDelegate SetFormLoginInvoke;
-        public RegisterControl(RegisterDelegate registerInvoke, SetFormLoginDelegate setFormLoginInvoke)
+        public ResetPasswordControl(ResetPasswordDelegate resetPasswordDelegate, SetFormLoginDelegate setFormLoginInvoke)
         {
             InitializeComponent();
-            RegisterInvoke = registerInvoke;
+            ResetPasswordInvoke = resetPasswordDelegate;
             SetFormLoginInvoke = setFormLoginInvoke;
             countdownTimer = new System.Windows.Forms.Timer();
         }
 
-        private void btn_Submit_Click(object sender, EventArgs e)
+        private void label_GoToLogin_Click(object sender, EventArgs e)
         {
-            if (txt_Email.Text == "" || txt_Password.Text == "")
+            SetFormLoginInvoke();
+        }
+
+        private void btb_Submit_Click(object sender, EventArgs e)
+        {
+            if (txt_Email.Text == "" || txt_NewPassword.Text == "")
             {
                 MessageBox.Show("Username or password is empty!");
                 return;
             }
 
-            if (txt_Password.Text != txt_ConfirmPassword.Text)
+            if (txt_NewPassword.Text != txt_ConfirmNewPassword.Text)
             {
                 MessageBox.Show("Password and confirm password are not the same!");
                 return;
@@ -47,20 +51,13 @@ namespace UserApp.UI.UserComponent
                 return;
             }
 
-            RegisterRequest request = new RegisterRequest()
+            ResetPasswordRequest request = new ResetPasswordRequest()
             {
-                Username = txt_Email.Text,
-                Password = txt_Password.Text,
-                FirstName = txt_FirstName.Text,
-                LastName = txt_LastName.Text,
+                Email = txt_Email.Text,
+                NewPassword = txt_NewPassword.Text
             };
 
-            RegisterInvoke(request);
-        }
-
-        private void label_GoToLogin_Click(object sender, EventArgs e)
-        {
-            SetFormLoginInvoke();
+            ResetPasswordInvoke(request);
         }
 
         private void txt_OTP_KeyPress(object sender, KeyPressEventArgs e)

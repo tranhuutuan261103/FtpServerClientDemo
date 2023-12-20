@@ -113,6 +113,38 @@ namespace ConsoleApp
             }
         }
 
+        public bool ResetPassword(ResetPasswordRequest request)
+        {
+            try
+            {
+                if (_clientSession.Connected == false)
+                {
+                    _clientSession.Connect(_host, _port);
+                }
+                string response = "";
+                NetworkStream ns = _clientSession.GetStream();
+                StreamWriter sw = new StreamWriter(ns);
+                StreamReader sr = new StreamReader(ns);
+                string json = Newtonsoft.Json.JsonConvert.SerializeObject(request);
+                sw.WriteLine("RESETPASSWORD " + json);
+                sw.Flush();
+                response = sr.ReadLine() ?? "";
+                if (response.StartsWith("230"))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
         public void Close()
         {
             _clientSession.Close();

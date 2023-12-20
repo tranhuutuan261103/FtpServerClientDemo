@@ -16,31 +16,39 @@ namespace UserApp.UI.UserComponent
         public LoginDelegate LoginInvoke;
         public delegate void SetFormRegisterDelegate();
         public SetFormRegisterDelegate SetFormRegisterInvoke;
-        public LoginControl(LoginDelegate loginInvoke, SetFormRegisterDelegate setFormRegisterInvoke)
+        public delegate void SetFormResetPasswordDelegate();
+        public SetFormResetPasswordDelegate SetFormResetPasswordInvoke;
+        public LoginControl(LoginDelegate loginInvoke, SetFormRegisterDelegate setFormRegisterInvoke, SetFormResetPasswordDelegate setFormResetPasswordInvoke)
         {
             InitializeComponent();
             LoginInvoke = loginInvoke;
-            textBox_Username.Text = "tuan";
-            textBox_Password.Text = "tuan";
+            txt_Email.Text = "testdtcl1123@gmail.com";
+            txt_Password.Text = "1234";
             SetFormRegisterInvoke = setFormRegisterInvoke;
+            SetFormResetPasswordInvoke = setFormResetPasswordInvoke;
         }
         public void SetUsername(string username)
         {
-            textBox_Username.Text = username;
+            txt_Email.Text = username;
         }
         public void SetPassword(string password)
         {
-            textBox_Password.Text = password;
+            txt_Password.Text = password;
         }
 
         private void btn_Submit_Click(object sender, EventArgs e)
         {
-            LoginInvoke?.Invoke(textBox_Username.Text, textBox_Password.Text);
+            LoginInvoke?.Invoke(txt_Email.Text, txt_Password.Text);
         }
 
         private void label_GoToRegister_Click(object sender, EventArgs e)
         {
             SetFormRegisterInvoke();
+        }
+
+        private void label_GoToResetPassForm_Click(object sender, EventArgs e)
+        {
+            SetFormResetPasswordInvoke();
         }
     }
 }
