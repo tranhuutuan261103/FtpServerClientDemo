@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyClassLibrary.Bean;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -34,7 +35,10 @@ namespace ConsoleApp
 
         public bool Connect()
         {
-            _clientSession.Connect(_host, _port);
+            if (_clientSession.Connected == false)
+            {
+                _clientSession.Connect(_host, _port);
+            }
             _status = TcpSessionStatus.Connected;
             return Login(_username, _password);
         }
@@ -43,17 +47,17 @@ namespace ConsoleApp
         {
             try
             {
-                string response = "", request = "";
+                string response = "";
                 NetworkStream ns = _clientSession.GetStream();
                 StreamWriter sw = new StreamWriter(ns);
                 StreamReader sr = new StreamReader(ns);
                 sw.WriteLine("USER " + username);
                 sw.Flush();
-                if (sr.ReadLine().StartsWith("331"))
+                if ((sr.ReadLine() ?? "").StartsWith("331"))
                 {
                     sw.WriteLine("PASS " + password);
                     sw.Flush();
-                    response = sr.ReadLine();
+                    response = sr.ReadLine() ?? "";
                     if (response.StartsWith("230"))
                     {
                         return true;
@@ -62,6 +66,40 @@ namespace ConsoleApp
                     {
                         return false;
                     }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
+        public bool Register(RegisterRequest request)
+        {
+            try
+            {
+                if (_clientSession.Connected == false)
+                {
+                    _clientSession.Connect(_host, _port);
+                }
+                string response = "";
+                NetworkStream ns = _clientSession.GetStream();
+                StreamWriter sw = new StreamWriter(ns);
+                StreamReader sr = new StreamReader(ns);
+
+                string json = Newtonsoft.Json.JsonConvert.SerializeObject(request);
+                sw.WriteLine("REGISTER " + json);
+                sw.Flush();
+                
+                response = sr.ReadLine() ?? "";
+                if (response.StartsWith("230"))
+                {
+                    return true;
                 }
                 else
                 {

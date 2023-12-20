@@ -1,4 +1,6 @@
-﻿using MyFtpServer.DAL.EF;
+﻿using MyClassLibrary.Bean;
+using MyFtpServer.DAL.EF;
+using MyFtpServer.DAL.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +21,29 @@ namespace MyFtpServer.DAL
                     return account.Id;
                 }
                 return 0;
+            }
+        }
+
+        public bool Register(RegisterRequest request)
+        {
+            using (var db = new FileStorageDBContext())
+            {
+                var account = db.Accounts.FirstOrDefault(a => a.Username == request.Username);
+                if (account != null)
+                {
+                    return false;
+                }
+                account = new Account()
+                {
+                    Username = request.Username,
+                    Password = request.Password,
+                    FirstName = request.FirstName,
+                    LastName = request.LastName,
+                    CreateDate = DateTime.Now,
+                };
+                db.Accounts.Add(account);
+                db.SaveChanges();
+                return true;
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using MyClassLibrary.Common;
+﻿using MyClassLibrary.Bean;
+using MyClassLibrary.Common;
 using MyFtpServer.DAL;
 using System;
 using System.Collections.Generic;
@@ -65,7 +66,11 @@ namespace MyFtpServer
 
             ResponseStatus(sessionID, $"220 FTP Server already for {iPEndPoint.Address}:{iPEndPoint.Port}");
 
-            int idAccount = Authenticate(sessionID, reader, writer);
+            int idAccount;
+            do
+            {
+                idAccount = Authenticate(sessionID, reader, writer);
+            } while (idAccount == 0);
             
             TcpListener tcpListener = new TcpListener(IPAddress.Parse(_host), _passivePort);
             int passivePort;
@@ -359,6 +364,32 @@ namespace MyFtpServer
                         writer.WriteLine("530 Not logged in");
                         ResponseStatus(sessionID, $"530 Not logged in");
                     }
+                }
+            } else if (command.StartsWith("REGISTER"))
+            {
+                string json = command.Substring(9);
+
+                RegisterRequest request = Newtonsoft.Json.JsonConvert.DeserializeObject<RegisterRequest>(json) ?? null;
+
+                if (request == null)
+                {
+                    writer.WriteLine("530 Register failed");
+                    ResponseStatus(sessionID, $"Register failed");
+                    return 0;
+                }
+                
+                AccountDAL accountDAL = new AccountDAL();
+                bool result = accountDAL.Register(request);
+                if (result != false)
+                {
+                    writer.WriteLine("230 Register successful");
+                    ResponseStatus(sessionID, $"230 Register successful");
+                    return 0;
+                }
+                else
+                {
+                    writer.WriteLine("530 Register failed");
+                    ResponseStatus(sessionID, $"Register failed");
                 }
             }
             return 0;
