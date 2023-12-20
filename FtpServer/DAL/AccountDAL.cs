@@ -46,5 +46,20 @@ namespace MyFtpServer.DAL
                 return true;
             }
         }
+
+        public bool ResetPassword(ResetPasswordRequest request)
+        {
+            using (var db = new FileStorageDBContext())
+            {
+                var account = db.Accounts.FirstOrDefault(a => a.Username == request.Email);
+                if (account == null)
+                {
+                    return false;
+                }
+                account.Password = request.NewPassword;
+                db.SaveChanges();
+                return true;
+            }
+        }
     }
 }

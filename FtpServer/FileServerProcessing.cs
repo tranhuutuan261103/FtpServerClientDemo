@@ -52,6 +52,11 @@ namespace MyFtpServer
                 filePath = HandleDuplicatedFileName(filePath);
             }
 
+            if (Directory.Exists(Path.GetDirectoryName(filePath)) == false)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            }
+
             NetworkStream ns = _socket.GetStream();
             int blocksize = 1024;
             byte[] buffer = new byte[blocksize];

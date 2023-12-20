@@ -43,9 +43,9 @@
             // panel_Container
             // 
             panel_Container.Dock = DockStyle.Bottom;
-            panel_Container.Location = new Point(0, 200);
+            panel_Container.Location = new Point(0, 140);
             panel_Container.Name = "panel_Container";
-            panel_Container.Size = new Size(420, 320);
+            panel_Container.Size = new Size(420, 380);
             panel_Container.TabIndex = 0;
             // 
             // controlBox_Close

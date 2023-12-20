@@ -40,14 +40,20 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges10 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges11 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges12 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges13 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges14 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges15 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges16 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             btn_Submit = new Guna.UI2.WinForms.Guna2Button();
-            textBox_Username = new Guna.UI2.WinForms.Guna2TextBox();
-            textBox_Password = new Guna.UI2.WinForms.Guna2TextBox();
-            textBox_ConfirmPassword = new Guna.UI2.WinForms.Guna2TextBox();
+            txt_Email = new Guna.UI2.WinForms.Guna2TextBox();
+            txt_Password = new Guna.UI2.WinForms.Guna2TextBox();
+            txt_ConfirmPassword = new Guna.UI2.WinForms.Guna2TextBox();
             guna2HtmlLabel1 = new Guna.UI2.WinForms.Guna2HtmlLabel();
             label_GoToLogin = new Guna.UI2.WinForms.Guna2HtmlLabel();
-            textBox_FirstName = new Guna.UI2.WinForms.Guna2TextBox();
-            textBox_LastName = new Guna.UI2.WinForms.Guna2TextBox();
+            txt_FirstName = new Guna.UI2.WinForms.Guna2TextBox();
+            txt_LastName = new Guna.UI2.WinForms.Guna2TextBox();
+            txt_OTP = new Guna.UI2.WinForms.Guna2TextBox();
+            btn_OTP = new Guna.UI2.WinForms.Guna2Button();
             SuspendLayout();
             // 
             // btn_Submit
@@ -60,81 +66,86 @@
             btn_Submit.DisabledState.ForeColor = Color.FromArgb(141, 141, 141);
             btn_Submit.Font = new Font("Segoe UI", 13.8F, FontStyle.Regular, GraphicsUnit.Point);
             btn_Submit.ForeColor = Color.White;
-            btn_Submit.Location = new Point(70, 250);
+            btn_Submit.Location = new Point(70, 307);
             btn_Submit.Name = "btn_Submit";
             btn_Submit.ShadowDecoration.CustomizableEdges = customizableEdges2;
             btn_Submit.Size = new Size(280, 50);
-            btn_Submit.TabIndex = 0;
+            btn_Submit.TabIndex = 8;
             btn_Submit.Text = "Sign up";
             btn_Submit.Click += btn_Submit_Click;
             // 
-            // textBox_Username
+            // txt_Email
             // 
-            textBox_Username.CustomizableEdges = customizableEdges3;
-            textBox_Username.DefaultText = "";
-            textBox_Username.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
-            textBox_Username.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
-            textBox_Username.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
-            textBox_Username.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
-            textBox_Username.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
-            textBox_Username.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            textBox_Username.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
-            textBox_Username.Location = new Point(70, 60);
-            textBox_Username.Margin = new Padding(3, 4, 3, 4);
-            textBox_Username.Name = "textBox_Username";
-            textBox_Username.PasswordChar = '\0';
-            textBox_Username.PlaceholderText = "Username";
-            textBox_Username.SelectedText = "";
-            textBox_Username.ShadowDecoration.CustomizableEdges = customizableEdges4;
-            textBox_Username.Size = new Size(280, 40);
-            textBox_Username.TabIndex = 1;
+            txt_Email.CustomizableEdges = customizableEdges3;
+            txt_Email.DefaultText = "";
+            txt_Email.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txt_Email.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txt_Email.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txt_Email.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txt_Email.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_Email.Font = new Font("Microsoft Sans Serif", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_Email.ForeColor = Color.Black;
+            txt_Email.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_Email.Location = new Point(70, 60);
+            txt_Email.Margin = new Padding(5, 6, 5, 6);
+            txt_Email.Name = "txt_Email";
+            txt_Email.PasswordChar = '\0';
+            txt_Email.PlaceholderText = "Email";
+            txt_Email.SelectedText = "";
+            txt_Email.ShadowDecoration.CustomizableEdges = customizableEdges4;
+            txt_Email.Size = new Size(280, 40);
+            txt_Email.TabIndex = 3;
             // 
-            // textBox_Password
+            // txt_Password
             // 
-            textBox_Password.CustomizableEdges = customizableEdges5;
-            textBox_Password.DefaultText = "";
-            textBox_Password.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
-            textBox_Password.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
-            textBox_Password.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
-            textBox_Password.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
-            textBox_Password.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
-            textBox_Password.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            textBox_Password.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
-            textBox_Password.Location = new Point(70, 120);
-            textBox_Password.Margin = new Padding(3, 4, 3, 4);
-            textBox_Password.Name = "textBox_Password";
-            textBox_Password.PasswordChar = '*';
-            textBox_Password.PlaceholderText = "Password";
-            textBox_Password.SelectedText = "";
-            textBox_Password.ShadowDecoration.CustomizableEdges = customizableEdges6;
-            textBox_Password.Size = new Size(280, 40);
-            textBox_Password.TabIndex = 2;
+            txt_Password.CustomizableEdges = customizableEdges5;
+            txt_Password.DefaultText = "";
+            txt_Password.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txt_Password.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txt_Password.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txt_Password.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txt_Password.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_Password.Font = new Font("Microsoft Sans Serif", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_Password.ForeColor = Color.Black;
+            txt_Password.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_Password.Location = new Point(70, 170);
+            txt_Password.Margin = new Padding(5, 6, 5, 6);
+            txt_Password.Name = "txt_Password";
+            txt_Password.PasswordChar = '●';
+            txt_Password.PlaceholderText = "Password";
+            txt_Password.SelectedText = "";
+            txt_Password.ShadowDecoration.CustomizableEdges = customizableEdges6;
+            txt_Password.Size = new Size(280, 40);
+            txt_Password.TabIndex = 5;
+            txt_Password.UseSystemPasswordChar = true;
             // 
-            // textBox_ConfirmPassword
+            // txt_ConfirmPassword
             // 
-            textBox_ConfirmPassword.CustomizableEdges = customizableEdges7;
-            textBox_ConfirmPassword.DefaultText = "";
-            textBox_ConfirmPassword.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
-            textBox_ConfirmPassword.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
-            textBox_ConfirmPassword.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
-            textBox_ConfirmPassword.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
-            textBox_ConfirmPassword.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
-            textBox_ConfirmPassword.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            textBox_ConfirmPassword.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
-            textBox_ConfirmPassword.Location = new Point(70, 180);
-            textBox_ConfirmPassword.Margin = new Padding(3, 4, 3, 4);
-            textBox_ConfirmPassword.Name = "textBox_ConfirmPassword";
-            textBox_ConfirmPassword.PasswordChar = '*';
-            textBox_ConfirmPassword.PlaceholderText = "Confirm password";
-            textBox_ConfirmPassword.SelectedText = "";
-            textBox_ConfirmPassword.ShadowDecoration.CustomizableEdges = customizableEdges8;
-            textBox_ConfirmPassword.Size = new Size(280, 40);
-            textBox_ConfirmPassword.TabIndex = 3;
+            txt_ConfirmPassword.CustomizableEdges = customizableEdges7;
+            txt_ConfirmPassword.DefaultText = "";
+            txt_ConfirmPassword.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txt_ConfirmPassword.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txt_ConfirmPassword.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txt_ConfirmPassword.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txt_ConfirmPassword.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_ConfirmPassword.Font = new Font("Microsoft Sans Serif", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_ConfirmPassword.ForeColor = Color.Black;
+            txt_ConfirmPassword.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_ConfirmPassword.Location = new Point(70, 220);
+            txt_ConfirmPassword.Margin = new Padding(5, 6, 5, 6);
+            txt_ConfirmPassword.Name = "txt_ConfirmPassword";
+            txt_ConfirmPassword.PasswordChar = '●';
+            txt_ConfirmPassword.PlaceholderText = "Confirm password";
+            txt_ConfirmPassword.SelectedText = "";
+            txt_ConfirmPassword.ShadowDecoration.CustomizableEdges = customizableEdges8;
+            txt_ConfirmPassword.Size = new Size(280, 40);
+            txt_ConfirmPassword.TabIndex = 6;
+            txt_ConfirmPassword.UseSystemPasswordChar = true;
             // 
             // guna2HtmlLabel1
             // 
             guna2HtmlLabel1.BackColor = Color.Transparent;
-            guna2HtmlLabel1.Location = new Point(121, 224);
+            guna2HtmlLabel1.Location = new Point(121, 281);
             guna2HtmlLabel1.Name = "guna2HtmlLabel1";
             guna2HtmlLabel1.Size = new Size(117, 22);
             guna2HtmlLabel1.TabIndex = 4;
@@ -143,69 +154,113 @@
             // label_GoToLogin
             // 
             label_GoToLogin.BackColor = Color.Transparent;
-            label_GoToLogin.Location = new Point(244, 224);
+            label_GoToLogin.Location = new Point(244, 281);
             label_GoToLogin.Name = "label_GoToLogin";
             label_GoToLogin.Size = new Size(40, 22);
             label_GoToLogin.TabIndex = 5;
             label_GoToLogin.Text = "<a>Login</a>";
             label_GoToLogin.Click += label_GoToLogin_Click;
             // 
-            // textBox_FirstName
+            // txt_FirstName
             // 
-            textBox_FirstName.CustomizableEdges = customizableEdges9;
-            textBox_FirstName.DefaultText = "";
-            textBox_FirstName.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
-            textBox_FirstName.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
-            textBox_FirstName.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
-            textBox_FirstName.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
-            textBox_FirstName.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
-            textBox_FirstName.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            textBox_FirstName.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
-            textBox_FirstName.Location = new Point(70, 0);
-            textBox_FirstName.Margin = new Padding(3, 4, 3, 4);
-            textBox_FirstName.Name = "textBox_FirstName";
-            textBox_FirstName.PasswordChar = '\0';
-            textBox_FirstName.PlaceholderText = "First name";
-            textBox_FirstName.SelectedText = "";
-            textBox_FirstName.ShadowDecoration.CustomizableEdges = customizableEdges10;
-            textBox_FirstName.Size = new Size(130, 40);
-            textBox_FirstName.TabIndex = 6;
+            txt_FirstName.CustomizableEdges = customizableEdges9;
+            txt_FirstName.DefaultText = "";
+            txt_FirstName.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txt_FirstName.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txt_FirstName.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txt_FirstName.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txt_FirstName.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_FirstName.Font = new Font("Microsoft Sans Serif", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_FirstName.ForeColor = Color.Black;
+            txt_FirstName.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_FirstName.Location = new Point(70, 0);
+            txt_FirstName.Margin = new Padding(8);
+            txt_FirstName.Name = "txt_FirstName";
+            txt_FirstName.PasswordChar = '\0';
+            txt_FirstName.PlaceholderText = "First name";
+            txt_FirstName.SelectedText = "";
+            txt_FirstName.ShadowDecoration.CustomizableEdges = customizableEdges10;
+            txt_FirstName.Size = new Size(130, 40);
+            txt_FirstName.TabIndex = 1;
             // 
-            // textBox_LastName
+            // txt_LastName
             // 
-            textBox_LastName.CustomizableEdges = customizableEdges11;
-            textBox_LastName.DefaultText = "";
-            textBox_LastName.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
-            textBox_LastName.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
-            textBox_LastName.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
-            textBox_LastName.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
-            textBox_LastName.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
-            textBox_LastName.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            textBox_LastName.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
-            textBox_LastName.Location = new Point(220, 0);
-            textBox_LastName.Margin = new Padding(3, 4, 3, 4);
-            textBox_LastName.Name = "textBox_LastName";
-            textBox_LastName.PasswordChar = '\0';
-            textBox_LastName.PlaceholderText = "Last name";
-            textBox_LastName.SelectedText = "";
-            textBox_LastName.ShadowDecoration.CustomizableEdges = customizableEdges12;
-            textBox_LastName.Size = new Size(130, 40);
-            textBox_LastName.TabIndex = 7;
+            txt_LastName.CustomizableEdges = customizableEdges11;
+            txt_LastName.DefaultText = "";
+            txt_LastName.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txt_LastName.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txt_LastName.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txt_LastName.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txt_LastName.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_LastName.Font = new Font("Microsoft Sans Serif", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_LastName.ForeColor = Color.Black;
+            txt_LastName.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_LastName.Location = new Point(220, 0);
+            txt_LastName.Margin = new Padding(8, 7, 8, 7);
+            txt_LastName.Name = "txt_LastName";
+            txt_LastName.PasswordChar = '\0';
+            txt_LastName.PlaceholderText = "Last name";
+            txt_LastName.SelectedText = "";
+            txt_LastName.ShadowDecoration.CustomizableEdges = customizableEdges12;
+            txt_LastName.Size = new Size(130, 40);
+            txt_LastName.TabIndex = 2;
+            // 
+            // txt_OTP
+            // 
+            txt_OTP.CustomizableEdges = customizableEdges13;
+            txt_OTP.DefaultText = "";
+            txt_OTP.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txt_OTP.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txt_OTP.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txt_OTP.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txt_OTP.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_OTP.Font = new Font("Microsoft Sans Serif", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_OTP.ForeColor = Color.Black;
+            txt_OTP.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_OTP.Location = new Point(70, 110);
+            txt_OTP.Margin = new Padding(5, 6, 5, 6);
+            txt_OTP.Name = "txt_OTP";
+            txt_OTP.PasswordChar = '\0';
+            txt_OTP.PlaceholderText = "Mã OTP";
+            txt_OTP.SelectedText = "";
+            txt_OTP.ShadowDecoration.CustomizableEdges = customizableEdges14;
+            txt_OTP.Size = new Size(140, 40);
+            txt_OTP.TabIndex = 4;
+            txt_OTP.KeyPress += txt_OTP_KeyPress;
+            // 
+            // btn_OTP
+            // 
+            btn_OTP.CustomizableEdges = customizableEdges15;
+            btn_OTP.DisabledState.BorderColor = Color.DarkGray;
+            btn_OTP.DisabledState.CustomBorderColor = Color.DarkGray;
+            btn_OTP.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
+            btn_OTP.DisabledState.ForeColor = Color.FromArgb(141, 141, 141);
+            btn_OTP.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btn_OTP.ForeColor = Color.White;
+            btn_OTP.Location = new Point(225, 110);
+            btn_OTP.Name = "btn_OTP";
+            btn_OTP.ShadowDecoration.CustomizableEdges = customizableEdges16;
+            btn_OTP.Size = new Size(125, 40);
+            btn_OTP.TabIndex = 7;
+            btn_OTP.Text = "Gửi mã OTP";
+            btn_OTP.Click += btn_OTP_Click;
             // 
             // RegisterControl
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            Controls.Add(textBox_LastName);
-            Controls.Add(textBox_FirstName);
+            Controls.Add(btn_OTP);
+            Controls.Add(txt_OTP);
+            Controls.Add(txt_LastName);
+            Controls.Add(txt_FirstName);
             Controls.Add(label_GoToLogin);
             Controls.Add(guna2HtmlLabel1);
-            Controls.Add(textBox_ConfirmPassword);
-            Controls.Add(textBox_Password);
-            Controls.Add(textBox_Username);
+            Controls.Add(txt_ConfirmPassword);
+            Controls.Add(txt_Password);
+            Controls.Add(txt_Email);
             Controls.Add(btn_Submit);
             Name = "RegisterControl";
-            Size = new Size(420, 320);
+            Size = new Size(420, 380);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -213,12 +268,14 @@
         #endregion
 
         private Guna.UI2.WinForms.Guna2Button btn_Submit;
-        private Guna.UI2.WinForms.Guna2TextBox textBox_Username;
-        private Guna.UI2.WinForms.Guna2TextBox textBox_Password;
-        private Guna.UI2.WinForms.Guna2TextBox textBox_ConfirmPassword;
+        private Guna.UI2.WinForms.Guna2TextBox txt_Email;
+        private Guna.UI2.WinForms.Guna2TextBox txt_Password;
+        private Guna.UI2.WinForms.Guna2TextBox txt_ConfirmPassword;
         private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel1;
         private Guna.UI2.WinForms.Guna2HtmlLabel label_GoToLogin;
-        private Guna.UI2.WinForms.Guna2TextBox textBox_FirstName;
-        private Guna.UI2.WinForms.Guna2TextBox textBox_LastName;
+        private Guna.UI2.WinForms.Guna2TextBox txt_FirstName;
+        private Guna.UI2.WinForms.Guna2TextBox txt_LastName;
+        private Guna.UI2.WinForms.Guna2TextBox txt_OTP;
+        private Guna.UI2.WinForms.Guna2Button btn_OTP;
     }
 }
