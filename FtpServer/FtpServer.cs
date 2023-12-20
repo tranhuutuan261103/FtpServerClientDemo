@@ -64,6 +64,8 @@ namespace MyFtpServer
             IPEndPoint iPEndPoint = (IPEndPoint)tcpClient.Client.RemoteEndPoint;
 
             ResponseStatus(sessionID, $"220 FTP Server already for {iPEndPoint.Address}:{iPEndPoint.Port}");
+
+            int idAccount = Authenticate(sessionID, reader, writer);
             
             TcpListener tcpListener = new TcpListener(IPAddress.Parse(_host), _passivePort);
             int passivePort;
@@ -137,7 +139,7 @@ namespace MyFtpServer
                             continue;
                         }
                         Directory.CreateDirectory(_rootPath + folderPath);*/
-                        FileStorage_DAL dal = new FileStorage_DAL();
+                        FileStorageDAL dal = new FileStorageDAL();
                         if (dal.IsDirectory(remoteFolderPath) == false)
                         {
                             Console.WriteLine(remoteFolderPath);
@@ -145,7 +147,7 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"550 Directory already exists");
                             continue;
                         }
-                        string id = dal.CreateNewFolder(remoteFolderPath, folderName);
+                        string id = dal.CreateNewFolder(idAccount, remoteFolderPath, folderName);
                         writer.WriteLine($"257 {id}");
                         ResponseStatus(sessionID, $"257 Directory created");
                     }
@@ -155,36 +157,8 @@ namespace MyFtpServer
 
                         string idParent = remoteFolderPath;
 
-                        FileStorage_DAL dal = new FileStorage_DAL();
-                        List<FileInfor> list = dal.GetFileInfors(idParent);
-
-                        /*
-                        List<FileInfor> list = new List<FileInfor>();
-                        string[] directories = Directory.GetDirectories(_rootPath + remoteFolderPath);
-                        foreach (var directory in directories)
-                        {
-                            DirectoryInfo dirInfo = new DirectoryInfo(directory);
-                            list.Add(new FileInfor()
-                            {
-                                Name = dirInfo.Name,
-                                Length = 0,
-                                LastWriteTime = dirInfo.LastWriteTime,
-                                IsDirectory = true
-                            });
-                        }
-                        string[] files = Directory.GetFiles(_rootPath + remoteFolderPath);
-
-                        foreach (var file in files)
-                        {
-                            FileInfo fileInfo = new FileInfo(file);
-                            list.Add(new FileInfor()
-                            {
-                                Name = fileInfo.Name,
-                                Length = fileInfo.Length,
-                                LastWriteTime = fileInfo.LastWriteTime,
-                                IsDirectory = false
-                            });
-                        }*/
+                        FileStorageDAL dal = new FileStorageDAL();
+                        List<FileInfor> list = dal.GetFileInfors(idAccount, idParent);
 
                         // Check Tcp Listener
                         if (tcpListener == null)
@@ -211,7 +185,7 @@ namespace MyFtpServer
                         //string filePath = string.Join(" ", parts, 1, parts.Length - 1);
                         //string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
                         Console.WriteLine(remoteFolderPath);
-                        FileStorage_DAL dal = new FileStorage_DAL();
+                        FileStorageDAL dal = new FileStorageDAL();
                         string fullPath = _rootPath + dal.GetFilePath(remoteFolderPath);
 
                         if (!File.Exists(fullPath))
@@ -248,7 +222,7 @@ namespace MyFtpServer
                     }
                     else if (command == "STOR")
                     {
-                        FileStorage_DAL dal = new FileStorage_DAL();
+                        FileStorageDAL dal = new FileStorageDAL();
                         if (dal.IsDirectory(remoteFolderPath) == false)
                         {
                             writer.WriteLine("550 Couldn't open the file or directory");
@@ -257,7 +231,7 @@ namespace MyFtpServer
                         }
 
                         string fileName = string.Join(" ", parts, 1, parts.Length - 1);
-                        string fullPath = _rootPath + dal.CreateNewFile(remoteFolderPath, fileName);
+                        string fullPath = _rootPath + dal.CreateNewFile(idAccount, remoteFolderPath, fileName);
 
                         if (tcpListener == null)
                             continue;
@@ -358,6 +332,36 @@ namespace MyFtpServer
                 tcpClient.Close();
                 ResponseStatus(sessionID, $"??? FTP Server disconnected with {iPEndPoint.Address}:{iPEndPoint.Port}");
             }
+        }
+
+        private int Authenticate(int sessionID, StreamReader reader, StreamWriter writer)
+        {
+            string command = reader.ReadLine() ?? "USER";
+            if (command.StartsWith("USER"))
+            {
+                string username = command.Substring(5);
+                writer.WriteLine("331 Password required for " + username);
+                ResponseStatus(sessionID, $"331 Password required for {username}");
+                command = reader.ReadLine() ?? "PASS";
+                if (command.StartsWith("PASS"))
+                {
+                    string password = command.Substring(5);
+                    AccountDAL accountDAL = new AccountDAL();
+                    int result = accountDAL.Authenticate(username, password);
+                    if (result != 0)
+                    {
+                        writer.WriteLine("230 User logged in");
+                        ResponseStatus(sessionID, $"230 User logged in");
+                        return result;
+                    }
+                    else
+                    {
+                        writer.WriteLine("530 Not logged in");
+                        ResponseStatus(sessionID, $"530 Not logged in");
+                    }
+                }
+            }
+            return 0;
         }
 
         private int _passivePort;

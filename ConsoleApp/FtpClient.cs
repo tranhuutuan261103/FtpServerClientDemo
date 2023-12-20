@@ -2,6 +2,7 @@
 using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -19,17 +20,35 @@ namespace ConsoleApp
         private List<TaskSession> _mainTaskSessions = new List<TaskSession>();
         private TcpSession[] subTcpSession = new TcpSession[2];
         private List<FileTransferProcessing> _subTaskSessions = new List<FileTransferProcessing>();
-        public FtpClient(string host, int port, TransferProgress process, OnChangeFolderAndFile changeFolderAndFile)
+        public FtpClient(string host, int port)
         {
             _host = host;
             _port = port;
-
-            _mainTcpSession = new TcpSession(_host, _port);
-            _mainTcpSession.Connect();
+            _mainTcpSession = new TcpSession(_host, _port, "", "");
             for (int i = 0; i < subTcpSession.Length; i++)
             {
-                subTcpSession[i] = new TcpSession(_host, _port);
+                subTcpSession[i] = new TcpSession(_host, _port, "", "");
             }
+        }
+
+        public bool Login(string username, string password)
+        {
+            _mainTcpSession.SetUsername(username);
+            _mainTcpSession.SetPassword(password);
+            if (_mainTcpSession.Connect())
+            {
+                for (int i = 0; i < subTcpSession.Length; i++)
+                {
+                    subTcpSession[i].SetUsername(username);
+                    subTcpSession[i].SetPassword(password);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile)
+        {   
             Thread threadMain = new Thread(MainProcess);
             threadMain.Start();
 
