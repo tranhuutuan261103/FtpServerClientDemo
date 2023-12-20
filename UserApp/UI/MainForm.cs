@@ -1,4 +1,5 @@
-﻿using MyClassLibrary.Common;
+﻿using ConsoleApp;
+using MyClassLibrary.Common;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing.Text;
 using System.Windows.Forms;
@@ -13,7 +14,7 @@ namespace UserApp.UI
     {
         private MainForm_BLL MainForm_BLL;
         private InterFont font = new InterFont();
-        public MainForm()
+        public MainForm(FtpClient ftpClient)
         {
             InitializeComponent();
             flowLayoutPanel_ListProcessing.AutoScroll = false;
@@ -21,7 +22,7 @@ namespace UserApp.UI
             flowLayoutPanel_ListProcessing.HorizontalScroll.Visible = false;
             flowLayoutPanel_ListProcessing.HorizontalScroll.Maximum = 0;
             flowLayoutPanel_ListProcessing.AutoScroll = true;
-            MainForm_BLL = new MainForm_BLL(TransferProgress, ChangeFolderAndFileHandler);
+            MainForm_BLL = new MainForm_BLL(ftpClient, TransferProgress, ChangeFolderAndFileHandler);
         }
 
         private void MainForm_Load(object sender, EventArgs e)

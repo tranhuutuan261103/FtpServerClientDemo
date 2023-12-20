@@ -1,4 +1,5 @@
 ﻿using MyClassLibrary;
+using MyClassLibrary.Bean;
 using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,11 @@ namespace ConsoleApp
             {
                 subTcpSession[i] = new TcpSession(_host, _port, "", "");
             }
+        }
+
+        public bool Register(RegisterRequest request)
+        {
+            return _mainTcpSession.Register(request);
         }
 
         public bool Login(string username, string password)
