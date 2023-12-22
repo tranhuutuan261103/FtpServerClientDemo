@@ -1,5 +1,6 @@
 ﻿using MyClassLibrary;
 using MyClassLibrary.Bean;
+using MyClassLibrary.Bean.Account;
 using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
@@ -59,7 +60,7 @@ namespace ConsoleApp
             return false;
         }
 
-        public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile)
+        public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor)
         {   
             Thread threadMain = new Thread(MainProcess);
             threadMain.Start();
@@ -69,6 +70,7 @@ namespace ConsoleApp
 
             progress += process;
             this.changeFolderAndFile += changeFolderAndFile;
+            this.onGetAccountInfor += onGetAccountInfor;
         }
 
         private void PushMainTaskSession(TaskSession taskSession)
@@ -162,6 +164,7 @@ namespace ConsoleApp
         private void ExecuteMainTaskSession(TaskSession taskSession)
         {
             FtpClientProcessing fcp = new FtpClientProcessing(_mainTcpSession.GetTcpClient(), TransferProgressHandler, TransferRequestHandler);
+            AccountClientProcessing ap = new AccountClientProcessing(_mainTcpSession.GetTcpClient());
             switch (taskSession.Type)
             {
                 case "LIST":
@@ -178,6 +181,12 @@ namespace ConsoleApp
                 case "UPLOADFOLDER":
                     {
                         fcp.UploadFolder(taskSession.RemotePath, taskSession.LocalPath);
+                    }
+                    break;
+                case "GETACCOUNTINFOR":
+                    {
+                        AccountInfoVM accountInfoVM = ap.GetAccountInfor();
+                        GetAccountInforHandler(accountInfoVM);
                     }
                     break;
                 default:
@@ -272,6 +281,21 @@ namespace ConsoleApp
         {
             TaskSession taskSession = new TaskSession("LIST", remoteFolderPath, "", "");
             PushMainTaskSession(taskSession);
+        }
+
+        // Manage account
+        public void GetAccountInfor()
+        {
+            TaskSession taskSession = new TaskSession("GETACCOUNTINFOR", "", "", "");
+            PushMainTaskSession(taskSession);
+        }
+
+        public delegate void OnGetAccountInfor(AccountInfoVM sender);
+        public event OnGetAccountInfor onGetAccountInfor;
+
+        public void GetAccountInforHandler(AccountInfoVM sender)
+        {
+            onGetAccountInfor?.Invoke(sender);
         }
 
         private object _mainTaskSessionLock = new object();

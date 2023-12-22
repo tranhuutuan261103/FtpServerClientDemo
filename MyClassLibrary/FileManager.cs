@@ -32,6 +32,26 @@ namespace MyClassLibrary
             return _folderPath;
         }
 
+        public string FileSizeToString(long length)
+        {
+            if (length < 1024)
+            {
+                return $"{length} bytes";
+            }
+            else if (length < 1024 * 1024)
+            {
+                return $"{(length / 1024.0):F3} KB";
+            }
+            else if (length < 1024 * 1024 * 1024)
+            {
+                return $"{(length / 1024.0 / 1024.0):F3} MB";
+            }
+            else
+            {
+                return $"{(length / 1024.0 / 1024.0 / 1024.0):F3} GB";
+            }
+        }
+
         public void Dir()
         {
             List<FileInfor> list = new List<FileInfor>();

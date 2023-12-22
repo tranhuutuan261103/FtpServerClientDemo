@@ -174,5 +174,34 @@ namespace MyFtpServer.DAL
                 return id;
             }
         }
+
+        public long GetFileSize(string id, string rootPath)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var file = db.Files.FirstOrDefault(f => f.Id == id);
+                if(file != null)
+                {
+                    string filePath = rootPath + file.FilePath;
+                    return new FileInfo(filePath).Length;
+                }
+                return 0;
+            }
+        }
+
+        public long GetUsedStorage(int idAccount, string rootPath)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var files = db.Files.Where(f => f.IsDeleted == false
+                               && db.FileAccesses.Any(fa => fa.IdAccount == idAccount && fa.IdFile == f.Id)).ToList();
+                long size = 0;
+                foreach(var file in files)
+                {
+                    size += GetFileSize(file.Id, rootPath);
+                }
+                return size;
+            }
+        }
     }
 }

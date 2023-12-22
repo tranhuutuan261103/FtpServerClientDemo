@@ -1,6 +1,8 @@
 ﻿using MyClassLibrary.Bean;
+using MyClassLibrary.Bean.Account;
 using MyClassLibrary.Common;
 using MyFtpServer.DAL;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -312,6 +314,36 @@ namespace MyFtpServer
 
                         if (tcpListener != null)
                             tcpListener.Stop();
+                    } else if (command == "GETACCOUNTINFOR")
+                    {
+                        AccountDAL accountDAL = new AccountDAL();
+                        AccountInfoVM account = accountDAL.GetAccount(idAccount);
+                        if (account == null)
+                        {
+                            writer.WriteLine("550 Account not exist");
+                            ResponseStatus(sessionID, "550 Account not exist");
+                            continue;
+                        }
+                        account.Avatar = accountDAL.GetAvatar(idAccount, _rootPath);
+                        FileStorageDAL fileStorageDAL = new FileStorageDAL();
+                        account.UsedStorage = fileStorageDAL.GetUsedStorage(idAccount, _rootPath);
+
+                        data_channel = tcpListener.AcceptTcpClient();
+                        if (data_channel == null)
+                        {
+                            writer.WriteLine("425 Can't open data connection.");
+                            ResponseStatus(sessionID, $"425 Can't open data connection.");
+                            continue;
+                        }
+
+                        writer.WriteLine("150 Opening data connection");
+                        ResponseStatus(sessionID, $"150 Opening data connection");
+
+                        AccountServerProcessing asp = new AccountServerProcessing(data_channel);
+                        asp.SendAccountInfor(account);
+
+                        writer.WriteLine("226 Transfer complete");
+                        ResponseStatus(sessionID, $"226 Transfer complete");
                     }
                     else if (command == "QUIT")
                     {
@@ -414,6 +446,11 @@ namespace MyFtpServer
                     writer.WriteLine("530 Reset password failed");
                     ResponseStatus(sessionID, $"Reset password failed");
                 }
+            } 
+            else
+            {
+                writer.WriteLine("530 Not logged in");
+                ResponseStatus(sessionID, $"530 Not logged in");
             }
             return 0;
         }

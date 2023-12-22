@@ -1,5 +1,6 @@
 ﻿using ConsoleApp;
 using MyClassLibrary;
+using MyClassLibrary.Bean.Account;
 using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
@@ -15,13 +16,14 @@ namespace UserApp.BLL
         private readonly FtpClient ftpClient;
         private string _remoteFolderPath = "";
 
-        public MainForm_BLL(FtpClient ftpClient, TransferProgress process, OnChangeFolderAndFile changeFolderAndFile)
+        public MainForm_BLL(FtpClient ftpClient, TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor)
         {
             fileManager = new FileManager();
             this.ftpClient = ftpClient;
-            ftpClient.Start(TransferProgressHandler, ChangeFoldersAndFileHandler);
+            ftpClient.Start(TransferProgressHandler, ChangeFoldersAndFileHandler, GetAccountInfor);
             progress += process;
             this.changeFolderAndFile += changeFolderAndFile;
+            this.getAccountInfor += onGetAccountInfor;
         }
 
         public void GetFileInfos()
@@ -78,6 +80,15 @@ namespace UserApp.BLL
                 changeFolderAndFile(fileInfors);
         }
 
+        public delegate void OnGetAccountInfor(AccountInfoVM sender);
+        public event OnGetAccountInfor getAccountInfor;
+
+        private void GetAccountInfor(AccountInfoVM account)
+        {
+            if (account != null)
+                getAccountInfor(account);
+        }
+
         public void Dispose()
         {
             ftpClient.Dispose();
@@ -92,6 +103,12 @@ namespace UserApp.BLL
         {
             string folderName = selectedPath.Substring(selectedPath.LastIndexOf('\\') + 1);
             ftpClient.UploadFolder(folderName, selectedPath);
+        }
+
+        // Manage account
+        public void GetAccountInfor()
+        {
+            ftpClient.GetAccountInfor();
         }
     }
 }
