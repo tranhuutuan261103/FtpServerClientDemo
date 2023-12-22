@@ -25,6 +25,8 @@ namespace UserApp.UI.UserComponent
             RegisterInvoke = registerInvoke;
             SetFormLoginInvoke = setFormLoginInvoke;
             countdownTimer = new System.Windows.Forms.Timer();
+            countdownTimer.Interval = 1000;
+            countdownTimer.Tick += CountdownTimer_Tick;
         }
 
         private void btn_Submit_Click(object sender, EventArgs e)

@@ -14,7 +14,17 @@ namespace MyClassLibrary
 
         public FileManager()
         {
-            _folderPath = @"D:\";
+            // Lấy đường dẫn thư mục UserProfile (thư mục người dùng)
+            string userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            // Kết hợp với tên thư mục tải xuống để có đường dẫn đầy đủ
+            _folderPath = Path.Combine(userProfilePath, "Downloads");
+
+            // Kiểm tra xem thư mục có tồn tại không, nếu không, bạn có thể tạo mới
+            if (!Directory.Exists(_folderPath))
+            {
+                Directory.CreateDirectory(_folderPath);
+            }
         }
 
         public string GetCurrentPath()

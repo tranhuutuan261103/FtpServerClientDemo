@@ -187,9 +187,6 @@ namespace MyFtpServer
                     }
                     else if (command == "RETR")
                     {
-                        //string filePath = string.Join(" ", parts, 1, parts.Length - 1);
-                        //string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
-                        Console.WriteLine(remoteFolderPath);
                         FileStorageDAL dal = new FileStorageDAL();
                         string fullPath = _rootPath + dal.GetFilePath(remoteFolderPath);
 
