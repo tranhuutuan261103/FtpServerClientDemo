@@ -44,8 +44,6 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges12 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges13 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges14 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges15 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges16 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             grid_FileAndFolder = new FlowLayoutPanel();
             btn_Back = new Guna.UI2.WinForms.Guna2Button();
             btn_New = new Guna.UI2.WinForms.Guna2Button();
@@ -61,9 +59,10 @@
             tabPage2 = new TabPage();
             tabPage3 = new TabPage();
             tabPage4 = new TabPage();
+            lbl_CreationDate = new Guna.UI2.WinForms.Guna2HtmlLabel();
+            guna2HtmlLabel5 = new Guna.UI2.WinForms.Guna2HtmlLabel();
             txt_Email = new Guna.UI2.WinForms.Guna2TextBox();
             guna2HtmlLabel4 = new Guna.UI2.WinForms.Guna2HtmlLabel();
-            btn_ChangePassword = new Guna.UI2.WinForms.Guna2Button();
             btn_UpdateProfile = new Guna.UI2.WinForms.Guna2Button();
             lbl_StoragedData = new Guna.UI2.WinForms.Guna2HtmlLabel();
             guna2HtmlLabel3 = new Guna.UI2.WinForms.Guna2HtmlLabel();
@@ -74,8 +73,6 @@
             guna2HtmlLabel1 = new Guna.UI2.WinForms.Guna2HtmlLabel();
             pic_Avatar = new Guna.UI2.WinForms.Guna2CirclePictureBox();
             flowLayoutPanel_ListProcessing = new FlowLayoutPanel();
-            guna2HtmlLabel5 = new Guna.UI2.WinForms.Guna2HtmlLabel();
-            lbl_CreationDate = new Guna.UI2.WinForms.Guna2HtmlLabel();
             guna2ContextMenuStrip_btnNew.SuspendLayout();
             tabControl_Profile.SuspendLayout();
             tabPage1.SuspendLayout();
@@ -279,7 +276,6 @@
             tabPage4.Controls.Add(guna2HtmlLabel5);
             tabPage4.Controls.Add(txt_Email);
             tabPage4.Controls.Add(guna2HtmlLabel4);
-            tabPage4.Controls.Add(btn_ChangePassword);
             tabPage4.Controls.Add(btn_UpdateProfile);
             tabPage4.Controls.Add(lbl_StoragedData);
             tabPage4.Controls.Add(guna2HtmlLabel3);
@@ -295,6 +291,26 @@
             tabPage4.TabIndex = 3;
             tabPage4.Text = "Thông tin tài khoản";
             tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // lbl_CreationDate
+            // 
+            lbl_CreationDate.BackColor = Color.Transparent;
+            lbl_CreationDate.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            lbl_CreationDate.Location = new Point(304, 354);
+            lbl_CreationDate.Name = "lbl_CreationDate";
+            lbl_CreationDate.Size = new Size(153, 30);
+            lbl_CreationDate.TabIndex = 14;
+            lbl_CreationDate.Text = "2023/12/12 0:0:0";
+            // 
+            // guna2HtmlLabel5
+            // 
+            guna2HtmlLabel5.BackColor = Color.Transparent;
+            guna2HtmlLabel5.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            guna2HtmlLabel5.Location = new Point(304, 320);
+            guna2HtmlLabel5.Name = "guna2HtmlLabel5";
+            guna2HtmlLabel5.Size = new Size(121, 30);
+            guna2HtmlLabel5.TabIndex = 13;
+            guna2HtmlLabel5.Text = "Creation date";
             // 
             // txt_Email
             // 
@@ -329,25 +345,9 @@
             guna2HtmlLabel4.TabIndex = 10;
             guna2HtmlLabel4.Text = "Email";
             // 
-            // btn_ChangePassword
-            // 
-            btn_ChangePassword.CustomizableEdges = customizableEdges8;
-            btn_ChangePassword.DisabledState.BorderColor = Color.DarkGray;
-            btn_ChangePassword.DisabledState.CustomBorderColor = Color.DarkGray;
-            btn_ChangePassword.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
-            btn_ChangePassword.DisabledState.ForeColor = Color.FromArgb(141, 141, 141);
-            btn_ChangePassword.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btn_ChangePassword.ForeColor = Color.White;
-            btn_ChangePassword.Location = new Point(488, 423);
-            btn_ChangePassword.Name = "btn_ChangePassword";
-            btn_ChangePassword.ShadowDecoration.CustomizableEdges = customizableEdges9;
-            btn_ChangePassword.Size = new Size(200, 47);
-            btn_ChangePassword.TabIndex = 9;
-            btn_ChangePassword.Text = "Change password";
-            // 
             // btn_UpdateProfile
             // 
-            btn_UpdateProfile.CustomizableEdges = customizableEdges10;
+            btn_UpdateProfile.CustomizableEdges = customizableEdges8;
             btn_UpdateProfile.DisabledState.BorderColor = Color.DarkGray;
             btn_UpdateProfile.DisabledState.CustomBorderColor = Color.DarkGray;
             btn_UpdateProfile.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -357,7 +357,7 @@
             btn_UpdateProfile.ForeColor = Color.White;
             btn_UpdateProfile.Location = new Point(304, 423);
             btn_UpdateProfile.Name = "btn_UpdateProfile";
-            btn_UpdateProfile.ShadowDecoration.CustomizableEdges = customizableEdges11;
+            btn_UpdateProfile.ShadowDecoration.CustomizableEdges = customizableEdges9;
             btn_UpdateProfile.Size = new Size(168, 47);
             btn_UpdateProfile.TabIndex = 8;
             btn_UpdateProfile.Text = "Update profile";
@@ -377,7 +377,7 @@
             // 
             guna2HtmlLabel3.BackColor = Color.Transparent;
             guna2HtmlLabel3.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            guna2HtmlLabel3.Location = new Point(40, 320);
+            guna2HtmlLabel3.Location = new Point(40, 309);
             guna2HtmlLabel3.Name = "guna2HtmlLabel3";
             guna2HtmlLabel3.Size = new Size(128, 30);
             guna2HtmlLabel3.TabIndex = 6;
@@ -405,7 +405,7 @@
             // 
             // txt_LastName
             // 
-            txt_LastName.CustomizableEdges = customizableEdges12;
+            txt_LastName.CustomizableEdges = customizableEdges10;
             txt_LastName.DefaultText = "";
             txt_LastName.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
             txt_LastName.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
@@ -421,13 +421,13 @@
             txt_LastName.PasswordChar = '\0';
             txt_LastName.PlaceholderText = "";
             txt_LastName.SelectedText = "";
-            txt_LastName.ShadowDecoration.CustomizableEdges = customizableEdges13;
+            txt_LastName.ShadowDecoration.CustomizableEdges = customizableEdges11;
             txt_LastName.Size = new Size(250, 40);
             txt_LastName.TabIndex = 3;
             // 
             // txt_FirstName
             // 
-            txt_FirstName.CustomizableEdges = customizableEdges14;
+            txt_FirstName.CustomizableEdges = customizableEdges12;
             txt_FirstName.DefaultText = "";
             txt_FirstName.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
             txt_FirstName.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
@@ -443,7 +443,7 @@
             txt_FirstName.PasswordChar = '\0';
             txt_FirstName.PlaceholderText = "";
             txt_FirstName.SelectedText = "";
-            txt_FirstName.ShadowDecoration.CustomizableEdges = customizableEdges15;
+            txt_FirstName.ShadowDecoration.CustomizableEdges = customizableEdges13;
             txt_FirstName.Size = new Size(250, 40);
             txt_FirstName.TabIndex = 2;
             // 
@@ -464,12 +464,13 @@
             pic_Avatar.InitialImage = (Image)resources.GetObject("pic_Avatar.InitialImage");
             pic_Avatar.Location = new Point(40, 40);
             pic_Avatar.Name = "pic_Avatar";
-            pic_Avatar.ShadowDecoration.CustomizableEdges = customizableEdges16;
+            pic_Avatar.ShadowDecoration.CustomizableEdges = customizableEdges14;
             pic_Avatar.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
             pic_Avatar.Size = new Size(160, 160);
             pic_Avatar.SizeMode = PictureBoxSizeMode.StretchImage;
             pic_Avatar.TabIndex = 0;
             pic_Avatar.TabStop = false;
+            pic_Avatar.Click += pic_Avatar_Click;
             // 
             // flowLayoutPanel_ListProcessing
             // 
@@ -483,26 +484,6 @@
             flowLayoutPanel_ListProcessing.Size = new Size(370, 300);
             flowLayoutPanel_ListProcessing.TabIndex = 1;
             flowLayoutPanel_ListProcessing.Visible = false;
-            // 
-            // guna2HtmlLabel5
-            // 
-            guna2HtmlLabel5.BackColor = Color.Transparent;
-            guna2HtmlLabel5.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            guna2HtmlLabel5.Location = new Point(304, 320);
-            guna2HtmlLabel5.Name = "guna2HtmlLabel5";
-            guna2HtmlLabel5.Size = new Size(121, 30);
-            guna2HtmlLabel5.TabIndex = 13;
-            guna2HtmlLabel5.Text = "Creation date";
-            // 
-            // lbl_CreationDate
-            // 
-            lbl_CreationDate.BackColor = Color.Transparent;
-            lbl_CreationDate.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            lbl_CreationDate.Location = new Point(304, 354);
-            lbl_CreationDate.Name = "lbl_CreationDate";
-            lbl_CreationDate.Size = new Size(153, 30);
-            lbl_CreationDate.TabIndex = 14;
-            lbl_CreationDate.Text = "2023/12/12 0:0:0";
             // 
             // MainForm
             // 
@@ -550,7 +531,6 @@
         private Guna.UI2.WinForms.Guna2CirclePictureBox pic_Avatar;
         private Guna.UI2.WinForms.Guna2TextBox txt_Email;
         private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel4;
-        private Guna.UI2.WinForms.Guna2Button btn_ChangePassword;
         private Guna.UI2.WinForms.Guna2Button btn_UpdateProfile;
         private Guna.UI2.WinForms.Guna2HtmlLabel lbl_StoragedData;
         private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel3;

@@ -65,6 +65,35 @@ namespace ConsoleApp
             return new AccountInfoVM();
         }
 
+        public void UpdateAccountInfor(AccountInfoVM account)
+        {
+            string command, response;
+            command = "PASV";
+            _writer.WriteLine(command);
+            response = _reader.ReadLine() ?? "";
+            if (response.StartsWith("227 ") == true)
+            {
+                IPEndPoint server_data_endpoint = GetServerEndpoint(response);
+                command = "UPDATEACCOUNTINFOR";
+                _writer.WriteLine(command);
+                TcpClient data_channel = new TcpClient();
+                data_channel.Connect(server_data_endpoint);
+                response = _reader.ReadLine() ?? "";
+                if (response.StartsWith("150 "))
+                {
+                    NetworkStream ns = data_channel.GetStream();
+                    byte[] buffer = Encoding.UTF8.GetBytes(Newtonsoft.Json.JsonConvert.SerializeObject(account));
+                    ns.Write(buffer, 0, buffer.Length);
+                    ns.Close();
+                    response = _reader.ReadLine() ?? "";
+                    if (response.StartsWith("226 "))
+                    {
+                        data_channel.Close();
+                    }
+                }
+            }
+        }
+
         private IPEndPoint GetServerEndpoint(string response)
         {
             int start = response.IndexOf('(');

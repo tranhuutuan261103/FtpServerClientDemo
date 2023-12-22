@@ -189,6 +189,12 @@ namespace ConsoleApp
                         GetAccountInforHandler(accountInfoVM);
                     }
                     break;
+                case "UPDATEACCOUNTINFOR":
+                    {
+                        AccountInfoVM account = (AccountInfoVM)taskSession.Data;
+                        ap.UpdateAccountInfor(account);
+                    }
+                    break;
                 default:
                     break;
             }
@@ -296,6 +302,12 @@ namespace ConsoleApp
         public void GetAccountInforHandler(AccountInfoVM sender)
         {
             onGetAccountInfor?.Invoke(sender);
+        }
+
+        public void UpdateAccountInfor(AccountInfoVM account)
+        {
+            TaskSession taskSession = new TaskSession("UPDATEACCOUNTINFOR", account);
+            PushMainTaskSession(taskSession);
         }
 
         private object _mainTaskSessionLock = new object();

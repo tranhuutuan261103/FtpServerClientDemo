@@ -110,5 +110,10 @@ namespace UserApp.BLL
         {
             ftpClient.GetAccountInfor();
         }
+
+        public void UpdateAccountInfor(AccountInfoVM account)
+        {
+            ftpClient.UpdateAccountInfor(account);
+        }
     }
 }

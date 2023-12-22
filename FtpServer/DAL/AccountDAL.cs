@@ -97,5 +97,35 @@ namespace MyFtpServer.DAL
                 return System.IO.File.ReadAllBytes(avatarPath).ToList();
             }
         }
+
+        public void UpdateAccount(int idAccount, AccountInfoVM account)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var accountEntity = db.Accounts.FirstOrDefault(a => a.Id == idAccount);
+                if(accountEntity == null)
+                {
+                    return;
+                }
+                accountEntity.FirstName = account.FirstName;
+                accountEntity.LastName = account.LastName;
+                db.SaveChanges();
+            }
+        }
+
+        public bool UpdateAvatar(int idAccount, string avatarPath)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var account = db.Accounts.FirstOrDefault(a => a.Id == idAccount);
+                if(account == null)
+                {
+                    return false;
+                }
+                account.Avatar = avatarPath;
+                db.SaveChanges();
+                return true;
+            }
+        }
     }
 }
