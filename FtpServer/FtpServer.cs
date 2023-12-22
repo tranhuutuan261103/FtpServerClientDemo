@@ -344,8 +344,29 @@ namespace MyFtpServer
 
                         writer.WriteLine("226 Transfer complete");
                         ResponseStatus(sessionID, $"226 Transfer complete");
-                    }
-                    else if (command == "QUIT")
+                    } else if (command == "UPDATEACCOUNTINFOR")
+                    {
+                        data_channel = tcpListener.AcceptTcpClient();
+                        if (data_channel == null)
+                        {
+                            writer.WriteLine("425 Can't open data connection.");
+                            ResponseStatus(sessionID, $"425 Can't open data connection.");
+                            continue;
+                        }
+                        writer.WriteLine("150 Opening data connection");
+                        ResponseStatus(sessionID, $"150 Opening data connection");
+                        AccountServerProcessing asp = new AccountServerProcessing(data_channel);
+                        AccountInfoVM account = asp.ReceiveAccountInfor();
+                        AccountDAL accountDAL = new AccountDAL();
+                        accountDAL.UpdateAccount(idAccount, account);
+                        StoreDataHelper storeDataHelper = new StoreDataHelper();
+                        if (storeDataHelper.SaveDataToFilePath(account.Avatar, _rootPath + @"\avatars\" + idAccount + ".png") == true)
+                        {
+                            accountDAL.UpdateAvatar(idAccount, @"\avatars\" + idAccount + ".png");
+                        }
+                        writer.WriteLine("226 Transfer complete");
+                        ResponseStatus(sessionID, $"226 Transfer complete");
+                    } else if (command == "QUIT")
                     {
                         writer.WriteLine("221 Goodbye");
                         break;

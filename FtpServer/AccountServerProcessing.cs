@@ -27,5 +27,24 @@ namespace MyFtpServer
             ns.Write(bytes, 0, bytes.Length);
             ns.Close();
         }
+
+        public AccountInfoVM ReceiveAccountInfor()
+        {
+            NetworkStream ns = _tcpClient.GetStream();
+            byte[] buffer = new byte[1024];
+            int byteRead;
+            string data = "";
+            while (true)
+            {
+                byteRead = ns.Read(buffer, 0, 1024);
+                data += Encoding.UTF8.GetString(buffer, 0, byteRead);
+                if (byteRead == 0)
+                {
+                    break;
+                }
+            }
+            ns.Close();
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<AccountInfoVM>(data);
+        }
     }
 }

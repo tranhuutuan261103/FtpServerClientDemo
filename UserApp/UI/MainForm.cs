@@ -3,6 +3,7 @@ using MyClassLibrary;
 using MyClassLibrary.Bean.Account;
 using MyClassLibrary.Common;
 using System.Diagnostics.Eventing.Reader;
+using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Windows.Forms;
 using UserApp.BLL;
@@ -41,7 +42,7 @@ namespace UserApp.UI
         {
             if (grid_FileAndFolder.IsHandleCreated && !grid_FileAndFolder.IsDisposed)
             {
-                grid_FileAndFolder.Invoke((MethodInvoker)delegate
+                grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
                 {
                     grid_FileAndFolder.Controls.Clear();
                 });
@@ -51,7 +52,7 @@ namespace UserApp.UI
             {
                 if (grid_FileAndFolder.IsHandleCreated && !grid_FileAndFolder.IsDisposed)
                 {
-                    grid_FileAndFolder.Invoke((MethodInvoker)delegate
+                    grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
                     {
                         grid_FileAndFolder.Controls.Add(new FileControl(item, FileControlHandle));
                     });
@@ -158,6 +159,7 @@ namespace UserApp.UI
         {
             if (e.TabPageIndex == 3)
             {
+                btn_UpdateProfile.Enabled = false;
                 MainForm_BLL.GetAccountInfor();
             }
         }
@@ -167,7 +169,7 @@ namespace UserApp.UI
             FileManager fileManager = new FileManager();
             if (tabControl_Profile.IsHandleCreated && !tabControl_Profile.IsDisposed)
             {
-                tabControl_Profile.Invoke((MethodInvoker)delegate
+                tabControl_Profile.BeginInvoke((MethodInvoker)delegate
                 {
                     txt_Email.Text = accountInfor.Email;
                     txt_FirstName.Text = accountInfor.FirstName;
@@ -207,7 +209,33 @@ namespace UserApp.UI
 
         private void btn_UpdateProfile_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Update profile successfully!", "Update profile", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            AccountInfoVM accountInfo = new AccountInfoVM()
+            {
+                FirstName = txt_FirstName.Text,
+                LastName = txt_LastName.Text,
+            };
+            if (pic_Avatar.Image != null)
+            {
+                // Nén ảnh và giữ dung lượng dưới 500 KB
+                byte[] compressedImageData = ImageHelper.CompressImage(pic_Avatar.Image, 50);
+
+                // Gán ảnh nén vào thông tin tài khoản
+                accountInfo.Avatar = compressedImageData.ToList();
+            }
+
+            MainForm_BLL.UpdateAccountInfor(accountInfo);
+        }
+
+        private void pic_Avatar_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Image Files (*.jpg;*.png;)|*.jpg;*.png;";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                pic_Avatar.Image = Image.FromFile(ofd.FileName);
+            }
+
+            btn_UpdateProfile.Enabled = true;
         }
     }
 }
