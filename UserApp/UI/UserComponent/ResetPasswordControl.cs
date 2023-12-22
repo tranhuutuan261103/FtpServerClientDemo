@@ -24,6 +24,8 @@ namespace UserApp.UI.UserComponent
             ResetPasswordInvoke = resetPasswordDelegate;
             SetFormLoginInvoke = setFormLoginInvoke;
             countdownTimer = new System.Windows.Forms.Timer();
+            countdownTimer.Interval = 1000;
+            countdownTimer.Tick += CountdownTimer_Tick;
         }
 
         private void label_GoToLogin_Click(object sender, EventArgs e)
