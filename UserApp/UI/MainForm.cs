@@ -1,4 +1,6 @@
 ﻿using ConsoleApp;
+using MyClassLibrary;
+using MyClassLibrary.Bean.Account;
 using MyClassLibrary.Common;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing.Text;
@@ -22,7 +24,7 @@ namespace UserApp.UI
             flowLayoutPanel_ListProcessing.HorizontalScroll.Visible = false;
             flowLayoutPanel_ListProcessing.HorizontalScroll.Maximum = 0;
             flowLayoutPanel_ListProcessing.AutoScroll = true;
-            MainForm_BLL = new MainForm_BLL(ftpClient, TransferProgress, ChangeFolderAndFileHandler);
+            MainForm_BLL = new MainForm_BLL(ftpClient, TransferProgress, ChangeFolderAndFileHandler, GetAccountInfor);
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -150,6 +152,62 @@ namespace UserApp.UI
             {
                 flowLayoutPanel_ListProcessing.Visible = true;
             }
+        }
+
+        private void tabControl_Profile_Selecting(object sender, TabControlCancelEventArgs e)
+        {
+            if (e.TabPageIndex == 3)
+            {
+                MainForm_BLL.GetAccountInfor();
+            }
+        }
+
+        private void GetAccountInfor(AccountInfoVM accountInfor)
+        {
+            FileManager fileManager = new FileManager();
+            if (tabControl_Profile.IsHandleCreated && !tabControl_Profile.IsDisposed)
+            {
+                tabControl_Profile.Invoke((MethodInvoker)delegate
+                {
+                    txt_Email.Text = accountInfor.Email;
+                    txt_FirstName.Text = accountInfor.FirstName;
+                    txt_FirstName.TextChanged += txt_DataProfile_TextChanged;
+                    txt_LastName.Text = accountInfor.LastName;
+                    txt_LastName.TextChanged += txt_DataProfile_TextChanged;
+                    lbl_StoragedData.Text = fileManager.FileSizeToString(accountInfor.UsedStorage);
+                    lbl_FullName.Text = accountInfor.FirstName + " " + accountInfor.LastName;
+                    lbl_CreationDate.Text = accountInfor.CreationDate.ToString("yyyy/MM/dd HH:mm");
+                    using (MemoryStream memoryStream = new MemoryStream(accountInfor.Avatar.ToArray()))
+                    {
+                        pic_Avatar.Image = Image.FromStream(memoryStream);
+                    }
+                });
+            }
+            else
+            {
+                txt_Email.Text = accountInfor.Email;
+                txt_FirstName.Text = accountInfor.FirstName;
+                txt_FirstName.TextChanged += txt_DataProfile_TextChanged;
+                txt_LastName.Text = accountInfor.LastName;
+                txt_LastName.TextChanged += txt_DataProfile_TextChanged;
+                lbl_StoragedData.Text = fileManager.FileSizeToString(accountInfor.UsedStorage);
+                lbl_FullName.Text = accountInfor.FirstName + " " + accountInfor.LastName;
+                lbl_CreationDate.Text = accountInfor.CreationDate.ToString("yyyy/MM/dd HH:mm");
+                using (MemoryStream memoryStream = new MemoryStream(accountInfor.Avatar.ToArray()))
+                {
+                    pic_Avatar.Image = Image.FromStream(memoryStream);
+                }
+            }
+        }
+
+        private void txt_DataProfile_TextChanged(object sender, EventArgs e)
+        {
+            btn_UpdateProfile.Enabled = true;
+        }
+
+        private void btn_UpdateProfile_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Update profile successfully!", "Update profile", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

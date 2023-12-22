@@ -1,4 +1,5 @@
 ﻿using MyClassLibrary.Bean;
+using MyClassLibrary.Bean.Account;
 using MyFtpServer.DAL.EF;
 using MyFtpServer.DAL.Entities;
 using System;
@@ -59,6 +60,41 @@ namespace MyFtpServer.DAL
                 account.Password = request.NewPassword;
                 db.SaveChanges();
                 return true;
+            }
+        }
+
+        public AccountInfoVM GetAccount(int idAccount)
+        {
+            using (var db = new FileStorageDBContext())
+            {
+                var account = db.Accounts.FirstOrDefault(a => a.Id == idAccount);
+                if (account == null)
+                {
+                    return null;
+                }
+                return new AccountInfoVM()
+                {
+                    Email = account.Username,
+                    FirstName = account.FirstName,
+                    LastName = account.LastName,
+                    UsedStorage = 0,
+                    CreationDate = account.CreateDate,
+                    Avatar = null
+                };
+            }
+        }
+
+        public List<byte> GetAvatar(int idAccount, string rootPath)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var account = db.Accounts.FirstOrDefault(a => a.Id == idAccount);
+                if(account == null)
+                {
+                    return null;
+                }
+                string avatarPath = rootPath + account.Avatar;
+                return System.IO.File.ReadAllBytes(avatarPath).ToList();
             }
         }
     }
