@@ -1,5 +1,6 @@
 ﻿using MyClassLibrary.Bean;
 using MyClassLibrary.Bean.Account;
+using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
 using MyFtpServer.DAL;
 using Newtonsoft.Json;
@@ -149,6 +150,19 @@ namespace MyFtpServer
                         string id = dal.CreateNewFolder(idAccount, remoteFolderPath, folderName);
                         writer.WriteLine($"257 {id}");
                         ResponseStatus(sessionID, $"257 Directory created");
+                    } else if (command == "GETDETAILFILE")
+                    {
+                        string idFile = string.Join(" ", parts, 1, parts.Length - 1);
+                        FileStorageDAL dal = new FileStorageDAL();
+                        FileDetailVM? fileDetailVM = dal.GetDetailFile(idAccount, idFile, _rootPath);
+                        if (fileDetailVM == null)
+                        {
+                            writer.WriteLine("550 File not found");
+                            ResponseStatus(sessionID, $"550 File not found");
+                            continue;
+                        }
+                        string json = JsonConvert.SerializeObject(fileDetailVM);
+                        writer.WriteLine($"257 {json}");
                     }
                     else if (command == "RNTO")
                     {

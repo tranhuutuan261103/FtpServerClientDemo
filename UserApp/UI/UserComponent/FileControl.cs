@@ -16,9 +16,14 @@ namespace UserApp.UI.UserComponent
 {
     public partial class FileControl : UserControl
     {
-        public FileControl(FileInfor item, FileControlClickHandler fileControlClickHandler, RenameClickHandler renameClickHandler, DeleteClickHandler deleteClickHandler)
+        public FileControl(FileInfor item, 
+            FileControlClickHandler fileControlClickHandler, 
+            ShowDetailFileHandler showDetailFileHandler,
+            RenameClickHandler renameClickHandler, 
+            DeleteClickHandler deleteClickHandler)
         {
             FileControlClick = fileControlClickHandler;
+            ShowDetailFile = showDetailFileHandler;
             RenameClick = renameClickHandler;
             DeleteClick = deleteClickHandler;
             infor = item;
@@ -88,9 +93,12 @@ namespace UserApp.UI.UserComponent
             }
         }
 
+        public delegate void ShowDetailFileHandler(FileInfor sender);
+        public event ShowDetailFileHandler ShowDetailFile;
+
         private void ToolStripMenuItem_Information_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Information");
+            ShowDetailFile(infor);
         }
 
         public delegate void DeleteClickHandler(DeleteFileRequest sender);

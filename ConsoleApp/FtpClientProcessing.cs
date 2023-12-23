@@ -1,5 +1,6 @@
 ﻿using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,6 +66,25 @@ namespace ConsoleApp
                 return true;
             }
             return false;
+        }
+
+        public FileDetailVM? GetDetailFile(string id)
+        {
+            string Command = "", Response = "";
+            Command = string.Format("GETDETAILFILE {0}", id);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("257 ") == true)
+            {
+                string dataJson = Response.Substring(Response.IndexOf(" ") + 1);
+                if (string.IsNullOrEmpty(dataJson) == false)
+                {
+                    FileDetailVM fileDetailVM = JsonConvert.DeserializeObject<FileDetailVM>(dataJson);
+                    return fileDetailVM;
+                }
+                return null;
+            }
+            return null;
         }
 
         public bool RenameFile(RenameFileRequest request)

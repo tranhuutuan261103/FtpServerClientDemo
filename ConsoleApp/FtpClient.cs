@@ -61,7 +61,7 @@ namespace ConsoleApp
             return false;
         }
 
-        public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor)
+        public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile)
         {   
             Thread threadMain = new Thread(MainProcess);
             threadMain.Start();
@@ -72,6 +72,7 @@ namespace ConsoleApp
             progress += process;
             this.changeFolderAndFile += changeFolderAndFile;
             this.onGetAccountInfor += onGetAccountInfor;
+            this.onGetDetailFile += onGetDetailFile;
         }
 
         private void PushMainTaskSession(TaskSession taskSession)
@@ -172,6 +173,16 @@ namespace ConsoleApp
                     {
                         CreateFolderRequest request = (CreateFolderRequest)taskSession.Data;
                         fcp.CreateFolder(request);
+                    }
+                    break;
+                case "GETDETAILFILE":
+                    {
+                        string id = (string)taskSession.Data;
+                        FileDetailVM? fileDetailVM = fcp.GetDetailFile(id);
+                        if (fileDetailVM != null)
+                        {
+                            GetDetailFileHandler(fileDetailVM);
+                        }
                     }
                     break;
                 case "RENAMEFILE":
@@ -281,6 +292,20 @@ namespace ConsoleApp
         public void CreateFolder(CreateFolderRequest request)
         {
             TaskSession taskSession = new TaskSession("CREATEFOLDER", request);
+            PushMainTaskSession(taskSession);
+        }
+
+        public delegate void OnGetDetailFile(FileDetailVM sender);
+        public event OnGetDetailFile onGetDetailFile;
+
+        public void GetDetailFileHandler(FileDetailVM sender)
+        {
+            onGetDetailFile?.Invoke(sender);
+        }
+
+        public void GetDetailFile(string id)
+        {
+            TaskSession taskSession = new TaskSession("GETDETAILFILE", id);
             PushMainTaskSession(taskSession);
         }
 
