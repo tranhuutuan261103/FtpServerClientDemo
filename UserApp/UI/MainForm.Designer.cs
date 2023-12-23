@@ -148,20 +148,21 @@
             guna2ContextMenuStrip_btnNew.RenderStyle.SelectionForeColor = Color.White;
             guna2ContextMenuStrip_btnNew.RenderStyle.SeparatorColor = Color.Gainsboro;
             guna2ContextMenuStrip_btnNew.RenderStyle.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
-            guna2ContextMenuStrip_btnNew.Size = new Size(181, 118);
+            guna2ContextMenuStrip_btnNew.Size = new Size(211, 146);
             // 
             // ToolStripMenuItem_NewFolder
             // 
             ToolStripMenuItem_NewFolder.Name = "ToolStripMenuItem_NewFolder";
             ToolStripMenuItem_NewFolder.Padding = new Padding(0, 8, 0, 8);
-            ToolStripMenuItem_NewFolder.Size = new Size(180, 38);
+            ToolStripMenuItem_NewFolder.Size = new Size(210, 38);
             ToolStripMenuItem_NewFolder.Text = "Thư mục mới";
+            ToolStripMenuItem_NewFolder.Click += ToolStripMenuItem_NewFolder_Click;
             // 
             // ToolStripMenuItem_UploadFile
             // 
             ToolStripMenuItem_UploadFile.Name = "ToolStripMenuItem_UploadFile";
             ToolStripMenuItem_UploadFile.Padding = new Padding(0, 8, 0, 8);
-            ToolStripMenuItem_UploadFile.Size = new Size(180, 38);
+            ToolStripMenuItem_UploadFile.Size = new Size(210, 38);
             ToolStripMenuItem_UploadFile.Text = "Tải tệp lên";
             ToolStripMenuItem_UploadFile.Click += ToolStripMenuItem_UploadFile_Click;
             // 
@@ -169,7 +170,7 @@
             // 
             ToolStripMenuItem_UploadFolder.Name = "ToolStripMenuItem_UploadFolder";
             ToolStripMenuItem_UploadFolder.Padding = new Padding(0, 8, 0, 8);
-            ToolStripMenuItem_UploadFolder.Size = new Size(180, 38);
+            ToolStripMenuItem_UploadFolder.Size = new Size(210, 38);
             ToolStripMenuItem_UploadFolder.Text = "Tải thư mục lên";
             ToolStripMenuItem_UploadFolder.Click += ToolStripMenuItem_UploadFolder_Click;
             // 

@@ -138,14 +138,6 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"501 Syntax error in parameters or arguments");
                             continue;
                         }
-                        /*
-                        if (Directory.Exists(_rootPath + folderPath))
-                        {
-                            writer.WriteLine("550 Directory already exists");
-                            ResponseStatus(sessionID, $"550 Directory already exists");
-                            continue;
-                        }
-                        Directory.CreateDirectory(_rootPath + folderPath);*/
                         FileStorageDAL dal = new FileStorageDAL();
                         if (dal.IsDirectory(remoteFolderPath) == false)
                         {
@@ -157,6 +149,53 @@ namespace MyFtpServer
                         string id = dal.CreateNewFolder(idAccount, remoteFolderPath, folderName);
                         writer.WriteLine($"257 {id}");
                         ResponseStatus(sessionID, $"257 Directory created");
+                    }
+                    else if (command == "RNTO")
+                    {
+                        string newName = string.Join(" ", parts, 1, parts.Length - 1);
+                        if (newName == null)
+                        {
+                            writer.WriteLine("501 Syntax error in parameters or arguments");
+                            ResponseStatus(sessionID, $"501 Syntax error in parameters or arguments");
+                            continue;
+                        }
+                        FileStorageDAL dal = new FileStorageDAL();
+                        string id = dal.RenameFolder(idAccount, remoteFolderPath, newName);
+                        if (id == "")
+                        {
+                            writer.WriteLine("550 Directory already exists");
+                            ResponseStatus(sessionID, $"550 Directory already exists");
+                            continue;
+                        }
+                        writer.WriteLine($"250 {id}");
+                        ResponseStatus(sessionID, $"250 Directory renamed");
+                    } else if (command == "DELE")
+                    {
+                        string idFile = string.Join(" ", parts, 1, parts.Length - 1);
+                        
+                        FileStorageDAL dal = new FileStorageDAL();
+                        string id = dal.DeleteFile(idAccount, idFile);
+                        if (id == "")
+                        {
+                            writer.WriteLine("550 File not found");
+                            ResponseStatus(sessionID, $"550 File not found");
+                            continue;
+                        }
+                        writer.WriteLine($"250 {id}");
+                        ResponseStatus(sessionID, $"250 File deleted");
+                    } else if (command == "RMD")
+                    {
+                        string idFolder = string.Join(" ", parts, 1, parts.Length - 1);
+
+                        FileStorageDAL dal = new FileStorageDAL();
+                        string id = dal.DeleteFolder(idAccount, idFolder);
+                        if (id == "")
+                        {
+                            writer.WriteLine("550 Directory not found");
+                            ResponseStatus(sessionID, $"550 Directory not found");
+                            continue;
+                        }
+                        writer.WriteLine($"250 {id}");
                     }
                     else if (command == "MLSD")
                     {

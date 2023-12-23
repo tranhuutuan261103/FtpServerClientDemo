@@ -203,5 +203,71 @@ namespace MyFtpServer.DAL
                 return size;
             }
         }
+
+        public string RenameFolder(int idAccount, string remoteFolderPath, string newName)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var folder = db.Folders.FirstOrDefault(f => f.Id == remoteFolderPath);
+                if(folder != null)
+                {
+                    folder.Name = newName;
+                    if(db.SaveChanges() == 0)
+                    {
+                        return "";
+                    }
+                    return folder.Id;
+                } else
+                {
+                    var file = db.Files.FirstOrDefault(f => f.Id == remoteFolderPath);
+                    if(file != null)
+                    {
+                        file.Name = newName;
+                        if(db.SaveChanges() == 0)
+                        {
+                            return "";
+                        }
+                        return file.Id;
+                    }
+                }
+                return "";
+            }
+        }
+
+        public string DeleteFile(int idAccount, string fileId)
+        {
+            using (var db = new FileStorageDBContext())
+            {
+                var file = db.Files.FirstOrDefault(f => f.Id == fileId);
+                if (file != null)
+                {
+                    file.IsDeleted = true;
+                    if (db.SaveChanges() == 0)
+                    {
+                        return "";
+                    }
+                    return file.Id;
+                }
+                return "";
+            }
+        }
+
+        public string DeleteFolder(int idAccount, string folderId)
+        {
+            using (var db = new FileStorageDBContext())
+            {
+                var folder = db.Folders.FirstOrDefault(f => f.Id == folderId);
+                if (folder != null)
+                {
+                    folder.IsDeleted = true;
+                    if (db.SaveChanges() == 0)
+                    {
+                        return "";
+                    }
+                    return folder.Id;
+                }
+                return "";
+            }
+        }
     }
 }
