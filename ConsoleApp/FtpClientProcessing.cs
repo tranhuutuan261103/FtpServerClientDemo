@@ -1,4 +1,5 @@
-﻿using MyClassLibrary.Common;
+﻿using MyClassLibrary.Bean.File;
+using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,6 +49,63 @@ namespace ConsoleApp
                 return tokens[1];
             }
             return "";
+        }
+        public bool CreateFolder(CreateFolderRequest request)
+        {
+            if (SetRemoteFolderPath(request.ParentFolderId) == false)
+            {
+                return false;
+            }
+            string Command = "", Response = "";
+            Command = string.Format("MKD {0}", request.FolderName);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("257 ") == true)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool RenameFile(RenameFileRequest request)
+        {
+            if (SetRemoteFolderPath(request.Id) == false)
+            {
+                return false;
+            }
+            string Command = "", Response = "";
+            Command = string.Format("RNTO {0}", request.NewName);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("250 ") == true)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public void DeleteFile(DeleteFileRequest request)
+        {
+            string Command, Response;
+            Command = string.Format("DELE {0}", request.Id);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("250 ") == true)
+            {
+                return;
+            }
+        }
+
+        public void DeleteFolder(DeleteFileRequest request)
+        {
+            string Command, Response;
+            Command = string.Format("RMD {0}", request.Id);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("250 ") == true)
+            {
+                return;
+            }
         }
 
         public string CreateNewRemoteFolder(string remoteFolderName)

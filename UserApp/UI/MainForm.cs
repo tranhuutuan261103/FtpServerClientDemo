@@ -1,6 +1,7 @@
 ﻿using ConsoleApp;
 using MyClassLibrary;
 using MyClassLibrary.Bean.Account;
+using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing.Imaging;
@@ -54,7 +55,7 @@ namespace UserApp.UI
                 {
                     grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
                     {
-                        grid_FileAndFolder.Controls.Add(new FileControl(item, FileControlHandle));
+                        grid_FileAndFolder.Controls.Add(new FileControl(item, FileControlHandle, RenameFileHandler, DeleteFileHandler));
                     });
                 }
             }
@@ -118,6 +119,40 @@ namespace UserApp.UI
         private void btn_Back_Click(object sender, EventArgs e)
         {
             MainForm_BLL.Back();
+        }
+        private void ToolStripMenuItem_NewFolder_Click(object sender, EventArgs e)
+        {
+            using (InputDialog inputDialog = new InputDialog())
+            {
+                inputDialog.Title = "Create new folder";
+                inputDialog.Message = "Are you sure you want to create a new folder?";
+                DialogResult result = inputDialog.ShowDialog();
+
+                if (result == DialogResult.OK)
+                {
+                    string inputText = inputDialog.InputText;
+                    if (inputText != "")
+                    {
+                        MainForm_BLL.CreateFolder(inputText);
+                    }
+                }
+            }
+        }
+        private void RenameFileHandler(RenameFileRequest sender)
+        {
+            MainForm_BLL.RenameFile(sender);
+        }
+
+        private void DeleteFileHandler(DeleteFileRequest sender)
+        {
+            if (sender.RequestType == DeleteFileRequestType.File)
+            {
+                MainForm_BLL.DeleteFile(sender);
+            }
+            else if (sender.RequestType == DeleteFileRequestType.Folder)
+            {
+                MainForm_BLL.DeleteFolder(sender);
+            }
         }
 
         private void btn_Upload_Click(object sender, EventArgs e)

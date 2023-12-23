@@ -1,6 +1,7 @@
 ﻿using MyClassLibrary;
 using MyClassLibrary.Bean;
 using MyClassLibrary.Bean.Account;
+using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
@@ -167,6 +168,30 @@ namespace ConsoleApp
             AccountClientProcessing ap = new AccountClientProcessing(_mainTcpSession.GetTcpClient());
             switch (taskSession.Type)
             {
+                case "CREATEFOLDER":
+                    {
+                        CreateFolderRequest request = (CreateFolderRequest)taskSession.Data;
+                        fcp.CreateFolder(request);
+                    }
+                    break;
+                case "RENAMEFILE":
+                    {
+                        RenameFileRequest request = (RenameFileRequest)taskSession.Data;
+                        fcp.RenameFile(request);
+                    }
+                    break;
+                case "DELETEFILE":
+                    {
+                        DeleteFileRequest request = (DeleteFileRequest)taskSession.Data;
+                        fcp.DeleteFile(request);
+                    }
+                    break;
+                case "DELETEFOLDER":
+                    {
+                        DeleteFileRequest request = (DeleteFileRequest)taskSession.Data;
+                        fcp.DeleteFolder(request);
+                    }
+                    break;
                 case "LIST":
                     {
                         List<FileInfor> fileInfors = fcp.ListRemoteFoldersAndFiles(taskSession.RemotePath);
@@ -251,6 +276,30 @@ namespace ConsoleApp
             {
                 tcpSession.Dispose();
             }
+        }
+
+        public void CreateFolder(CreateFolderRequest request)
+        {
+            TaskSession taskSession = new TaskSession("CREATEFOLDER", request);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void RenameFile(RenameFileRequest request)
+        {
+            TaskSession taskSession = new TaskSession("RENAMEFILE", request);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void DeleteFile(DeleteFileRequest request)
+        {
+            TaskSession taskSession = new TaskSession("DELETEFILE", request);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void DeleteFolder(DeleteFileRequest request)
+        {
+            TaskSession taskSession = new TaskSession("DELETEFOLDER", request);
+            PushMainTaskSession(taskSession);
         }
 
         public void Download(string remoteFileId, string localPath, string localFileName)

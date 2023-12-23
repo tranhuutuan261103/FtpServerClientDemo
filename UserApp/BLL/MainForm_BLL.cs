@@ -1,6 +1,7 @@
 ﻿using ConsoleApp;
 using MyClassLibrary;
 using MyClassLibrary.Bean.Account;
+using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,30 @@ namespace UserApp.BLL
         {
             ftpClient.ListRemoteFolderAndFiles("");
         }
+        public void CreateFolder(string inputText)
+        {
+            CreateFolderRequest request = new CreateFolderRequest()
+            {
+                FolderName = inputText,
+                ParentFolderId = _remoteFolderPath
+            };
+            ftpClient.CreateFolder(request);
+        }
 
+        public void RenameFile(RenameFileRequest sender)
+        {
+            ftpClient.RenameFile(sender);
+        }
+
+        public void DeleteFile(DeleteFileRequest sender)
+        {
+            ftpClient.DeleteFile(sender);
+        }
+
+        public void DeleteFolder(DeleteFileRequest sender)
+        {
+            ftpClient.DeleteFolder(sender);
+        }
         public void Download(FileInfor fileInfor)
         {
             ftpClient.Download(fileInfor.Id, fileManager.GetCurrentPath(), fileInfor.Name);
