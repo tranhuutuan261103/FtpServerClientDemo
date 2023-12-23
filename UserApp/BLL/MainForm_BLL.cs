@@ -17,14 +17,15 @@ namespace UserApp.BLL
         private readonly FtpClient ftpClient;
         private string _remoteFolderPath = "";
 
-        public MainForm_BLL(FtpClient ftpClient, TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor)
+        public MainForm_BLL(FtpClient ftpClient, TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile)
         {
             fileManager = new FileManager();
             this.ftpClient = ftpClient;
-            ftpClient.Start(TransferProgressHandler, ChangeFoldersAndFileHandler, GetAccountInfor);
+            ftpClient.Start(TransferProgressHandler, ChangeFoldersAndFileHandler, GetAccountInfor, OnGetDetailFileHandler);
             progress += process;
             this.changeFolderAndFile += changeFolderAndFile;
             this.getAccountInfor += onGetAccountInfor;
+            this.getDetailFile += onGetDetailFile;
         }
 
         public void GetFileInfos()
@@ -39,6 +40,19 @@ namespace UserApp.BLL
                 ParentFolderId = _remoteFolderPath
             };
             ftpClient.CreateFolder(request);
+        }
+
+        public delegate void OnGetDetailFile(FileDetailVM fileDetailVM);
+        public event OnGetDetailFile getDetailFile;
+
+        private void OnGetDetailFileHandler(FileDetailVM fileDetailVM)
+        {
+            getDetailFile(fileDetailVM);
+        }
+
+        public void GetDetailFile(string id)
+        {
+            ftpClient.GetDetailFile(id);
         }
 
         public void RenameFile(RenameFileRequest sender)

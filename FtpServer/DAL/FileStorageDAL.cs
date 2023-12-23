@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
 using MyFtpServer.DAL.EF;
 using MyFtpServer.DAL.Entities;
@@ -172,6 +173,63 @@ namespace MyFtpServer.DAL
                     return "";
                 }
                 return id;
+            }
+        }
+
+        public FileDetailVM? GetDetailFile(int idAccount, string idFile, string rootPath)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var file = db.Files.FirstOrDefault(f => f.Id == idFile);
+                if(file != null)
+                {
+                    var fileDetail = new FileDetailVM()
+                    {
+                        Id = file.Id,
+                        Name = file.Name,
+                        CreatedTime = file.CreationDate,
+                        Type = FileInforType.File,
+                        Length = new FileInfo(rootPath + file.FilePath).Length,
+                        FileOwner = "none",
+                    };
+                    var fileAccess = db.FileAccesses.FirstOrDefault(fa => fa.IdFile == idFile && fa.IdAccess == 1);
+                    
+                    if(fileAccess != null)
+                    {
+                        var owner = db.Accounts.FirstOrDefault(a => a.Id == fileAccess.IdAccount);
+                        if (owner != null)
+                        {
+                            fileDetail.FileOwner = owner.Username;
+                        }
+                    }
+                    return fileDetail;
+                } else
+                {
+                    var folder = db.Folders.FirstOrDefault(f => f.Id == idFile);
+                    if(folder != null)
+                    {
+                        var fileDetail = new FileDetailVM()
+                        {
+                            Id = folder.Id,
+                            Name = folder.Name,
+                            CreatedTime = folder.CreationDate,
+                            Type = FileInforType.Folder,
+                            Length = 0,
+                            FileOwner = "none",
+                        };
+                        var folderAccess = db.FolderAccesses.FirstOrDefault(fa => fa.IdFolder == idFile && fa.IdAccess == 1);
+                        if(folderAccess != null)
+                        {
+                            var owner = db.Accounts.FirstOrDefault(a => a.Id == folderAccess.IdAccount);
+                            if(owner != null)
+                            {
+                                fileDetail.FileOwner = owner.Username;
+                            }
+                        }
+                        return fileDetail;
+                    }
+                }
+                return null;
             }
         }
 

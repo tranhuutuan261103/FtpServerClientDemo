@@ -26,7 +26,7 @@ namespace UserApp.UI
             flowLayoutPanel_ListProcessing.HorizontalScroll.Visible = false;
             flowLayoutPanel_ListProcessing.HorizontalScroll.Maximum = 0;
             flowLayoutPanel_ListProcessing.AutoScroll = true;
-            MainForm_BLL = new MainForm_BLL(ftpClient, TransferProgress, ChangeFolderAndFileHandler, GetAccountInfor);
+            MainForm_BLL = new MainForm_BLL(ftpClient, TransferProgress, ChangeFolderAndFileHandler, GetAccountInfor, GetDetailFileHandler);
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -55,7 +55,7 @@ namespace UserApp.UI
                 {
                     grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
                     {
-                        grid_FileAndFolder.Controls.Add(new FileControl(item, FileControlHandle, RenameFileHandler, DeleteFileHandler));
+                        grid_FileAndFolder.Controls.Add(new FileControl(item, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler));
                     });
                 }
             }
@@ -138,6 +138,28 @@ namespace UserApp.UI
                 }
             }
         }
+
+        private void ShowDetailFile(FileInfor fileInfor)
+        {
+            if (fileInfor == null)
+            {
+                return;
+            }
+            MainForm_BLL.GetDetailFile(fileInfor.Id);
+        }
+
+        private void GetDetailFileHandler(FileDetailVM fileInfor)
+        {
+            if (fileInfor == null)
+            {
+                return;
+            }
+            using (DetailFileForm detailFileForm = new DetailFileForm(fileInfor))
+            {
+                detailFileForm.ShowDialog();
+            }
+        }
+
         private void RenameFileHandler(RenameFileRequest sender)
         {
             MainForm_BLL.RenameFile(sender);
