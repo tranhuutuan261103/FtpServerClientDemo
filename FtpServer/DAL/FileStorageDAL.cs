@@ -17,18 +17,181 @@ namespace MyFtpServer.DAL
     {
         public FileStorageDAL() { }
 
-        public List<FileInfor> GetFileInfors(int idAccount, string idParent)
+        // Đệ quy truy vấn để tìm quyền truy cập của thư mục cha
+        private int GetParentAccess(int idAccount, string idParent)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var folderAccess = db.FolderAccesses
+                    .Where(fa => fa.IdAccount == idAccount && fa.IdFolder == idParent).FirstOrDefault();
+                if(folderAccess != null)
+                {
+                    return folderAccess.IdAccess;
+                }
+                var folder = db.Folders.FirstOrDefault(f => f.Id == idParent);
+                if(folder != null)
+                {
+                    if (folder.IdParent == null)
+                    {
+                        return 0;
+                    }
+                    return GetParentAccess(idAccount, folder.IdParent);
+                }
+                return 0;
+            }
+        }
+
+        public FileInforPackage GetFileInfors(int idAccount, string idParent)
         {
             using(var db = new FileStorageDBContext())
             {
                 // Get all subfiles
-                var files = db.Files
+                var folderAccess = db.FolderAccesses
+                    .Where(fa => fa.IdAccount == idAccount
+                    && (idParent == "") ? true : fa.IdFolder == idParent
+                    ).FirstOrDefault();
+
+                if (folderAccess != null && folderAccess.IdAccess == 1)
+                {
+                    var files = db.Files
                     .Where(f => f.IdParent == (idParent.IsNullOrEmpty() ? null : idParent) && f.IsDeleted == false
                     && db.FileAccesses
                     .Any(fa => fa.IdAccount == idAccount && fa.IdFile == f.Id)
                     ).ToList();
+                    var fileInfors = new List<FileInfor>();
+                    foreach (var file in files)
+                    {
+                        var fileInfor = new FileInfor()
+                        {
+                            Id = file.Id,
+                            Name = file.Name,
+                            IsDirectory = false,
+                        };
+                        fileInfors.Add(fileInfor);
+                    }
+
+                    // Get all subfolders
+                    var folders = db.Folders
+                        .Where(f => f.IdParent == (idParent.IsNullOrEmpty() ? null : idParent) && f.IsDeleted == false
+                        && db.FolderAccesses
+                        .Any(fa => fa.IdAccount == idAccount && fa.IdFolder == f.Id)).ToList();
+                    foreach (var folder in folders)
+                    {
+                        var fileInfor = new FileInfor()
+                        {
+                            Id = folder.Id,
+                            Name = folder.Name,
+                            IsDirectory = true,
+                        };
+                        fileInfors.Add(fileInfor);
+                    }
+                    return new FileInforPackage()
+                    {
+                        Category = Category.Owner,
+                        fileInfors = fileInfors
+                    };
+                }
+                return new FileInforPackage();
+            }
+        }
+
+        public FileInforPackage GetSharedFilePackage(int idAccount, string idParent)
+        {
+            if (idParent == null)
+            {
+                idParent = "";
+            }
+            using(var db = new FileStorageDBContext())
+            {
+                if (idParent == "")
+                {
+                    var files = db.Files
+                    .Where(f => f.IsDeleted == false
+                    && db.FileAccesses
+                    .Any(fa => fa.IdAccount == idAccount && fa.IdFile == f.Id && (fa.IdAccess == 2 || fa.IdAccess == 3 ))).ToList();
+                    var fileInfors = new List<FileInfor>();
+                    foreach (var file in files)
+                    {
+                        var fileInfor = new FileInfor()
+                        {
+                            Id = file.Id,
+                            Name = file.Name,
+                            IsDirectory = false,
+                        };
+                        fileInfors.Add(fileInfor);
+                    }
+                    var folders = db.Folders
+                        .Where(f => f.IsDeleted == false
+                        && db.FolderAccesses
+                        .Any(fa => fa.IdAccount == idAccount && fa.IdFolder == f.Id && (fa.IdAccess == 2 || fa.IdAccess == 3))).ToList();
+                    foreach (var folder in folders)
+                    {
+                        var fileInfor = new FileInfor()
+                        {
+                            Id = folder.Id,
+                            Name = folder.Name,
+                            IsDirectory = true,
+                        };
+                        fileInfors.Add(fileInfor);
+                    }
+
+                    return new FileInforPackage()
+                    {
+                        Category = Category.Shared,
+                        fileInfors = fileInfors
+                    };
+                } else
+                {
+                    var files = db.Files
+                    .Where(f => f.IdParent == idParent && f.IsDeleted == false).ToList();
+                    var fileInfors = new List<FileInfor>();
+                    foreach (var file in files)
+                    {
+                        var fileInfor = new FileInfor()
+                        {
+                            Id = file.Id,
+                            Name = file.Name,
+                            IsDirectory = false,
+                        };
+                        fileInfors.Add(fileInfor);
+                    }
+                    // Get all subfolders
+                    var folders = db.Folders
+                        .Where(f => f.IdParent == idParent && f.IsDeleted == false).ToList();
+                    foreach (var folder in folders)
+                    {
+                        var fileInfor = new FileInfor()
+                        {
+                            Id = folder.Id,
+                            Name = folder.Name,
+                            IsDirectory = true,
+                        };
+                        fileInfors.Add(fileInfor);
+                    }
+                    return new FileInforPackage()
+                    {
+                        Category = Category.Shared,
+                        fileInfors = fileInfors
+                    };
+                }
+            }
+        }
+
+        public FileInforPackage GetCanDownloadFilePackage(int idAccount, string idParent)
+        {
+            int accessAbility = GetParentAccess(idAccount, idParent);
+            if (accessAbility == 0)
+            {
+                return new FileInforPackage();
+            }
+            using (var db = new FileStorageDBContext())
+            {
+                var files = db.Files
+                    .Where(f => f.IdParent == idParent && f.IsDeleted == false
+                    && db.FileAccesses
+                    .Any(fa => fa.IdAccount == idAccount && fa.IdFile == f.Id && fa.IdAccess == 2)).ToList();
                 var fileInfors = new List<FileInfor>();
-                foreach(var file in files)
+                foreach (var file in files)
                 {
                     var fileInfor = new FileInfor()
                     {
@@ -38,13 +201,12 @@ namespace MyFtpServer.DAL
                     };
                     fileInfors.Add(fileInfor);
                 }
-
                 // Get all subfolders
                 var folders = db.Folders
-                    .Where(f => f.IdParent == (idParent.IsNullOrEmpty() ? null : idParent) && f.IsDeleted == false
+                    .Where(f => f.IdParent == idParent && f.IsDeleted == false
                     && db.FolderAccesses
-                    .Any(fa => fa.IdAccount == idAccount && fa.IdFolder == f.Id) ).ToList();
-                foreach(var folder in folders)
+                    .Any(fa => fa.IdAccount == idAccount && fa.IdFolder == f.Id && fa.IdAccess == 2)).ToList();
+                foreach (var folder in folders)
                 {
                     var fileInfor = new FileInfor()
                     {
@@ -54,7 +216,11 @@ namespace MyFtpServer.DAL
                     };
                     fileInfors.Add(fileInfor);
                 }
-                return fileInfors;
+                return new FileInforPackage()
+                {
+                    Category = Category.CanDownload,
+                    fileInfors = fileInfors
+                };
             }
         }
 
@@ -91,10 +257,15 @@ namespace MyFtpServer.DAL
 
         public string CreateNewFile(int idAccount, string idParent, string name)
         {
+            int realIdAccount = idAccount;
+            if (idParent != null && idParent != "")
+            {
+                realIdAccount = GetRealIdAccount(idParent);
+            }
             using(var db = new FileStorageDBContext())
             {
                 string id = Guid.NewGuid().ToString();
-                string filePath = $"/{idAccount}/" + id + name.Substring(name.LastIndexOf("."));
+                string filePath = $"/{realIdAccount}/" + id + name.Substring(name.LastIndexOf("."));
                 var file = new File()
                 {
                     Id = id,
@@ -112,7 +283,7 @@ namespace MyFtpServer.DAL
                 var fileAccess = new FileAccess()
                 {
                     IdFile = id,
-                    IdAccount = idAccount,
+                    IdAccount = realIdAccount,
                     IdAccess = 1,
                 };
                 db.FileAccesses.Add(fileAccess);
@@ -121,6 +292,19 @@ namespace MyFtpServer.DAL
                     return "";
                 }
                 return filePath;
+            }
+        }
+
+        private int GetRealIdAccount(string idParent)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var folderAccess = db.FolderAccesses.FirstOrDefault(fa => fa.IdFolder == idParent && fa.IdAccess == 1);
+                if(folderAccess != null)
+                {
+                    return folderAccess.IdAccount;
+                }
+                return -1;
             }
         }
 
@@ -147,6 +331,15 @@ namespace MyFtpServer.DAL
 
         public string CreateNewFolder(int idAccount, string idParent, string name)
         {
+            int realIdAccount = idAccount;
+            if(idParent != null && idParent != "")
+            {
+                realIdAccount = GetRealIdAccount(idParent);
+            }
+            if (realIdAccount == -1)
+            {
+                return "";
+            }
             using(var db = new FileStorageDBContext())
             {
                 string id = Guid.NewGuid().ToString();
@@ -164,7 +357,7 @@ namespace MyFtpServer.DAL
                 }
                 db.FolderAccesses.Add(new FolderAccess()
                 {
-                    IdAccount = idAccount,
+                    IdAccount = realIdAccount,
                     IdFolder = id,
                     IdAccess = 1,
                 });
@@ -513,6 +706,20 @@ namespace MyFtpServer.DAL
                     return false;
                 }
             }
+        }
+
+        public bool CheckCanUpload(int idAccount, string remoteFolderPath)
+        {
+            if (remoteFolderPath == null || remoteFolderPath == "")
+            {
+                return true;
+            }
+            int idAccess = GetParentAccess(idAccount, remoteFolderPath);
+            if (idAccess == 1 || idAccess == 2)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

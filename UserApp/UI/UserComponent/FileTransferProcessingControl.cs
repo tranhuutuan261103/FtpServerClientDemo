@@ -20,7 +20,6 @@ namespace UserApp.UI.UserComponent
         {
             InitializeComponent();
             this.processing = processing;
-            UpdateUI();
         }
 
         private FileTransferProcessing processing;
@@ -33,7 +32,6 @@ namespace UserApp.UI.UserComponent
         public void UpdateUI()
 
         {
-
             if (processing != null)
 
             {

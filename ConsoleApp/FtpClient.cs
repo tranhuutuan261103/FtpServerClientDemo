@@ -218,9 +218,25 @@ namespace ConsoleApp
                         fcp.UpdateFileAccess(request);
                     }
                     break;
+                case "GETLISTSHAREDFILE":
+                    {
+                        GetListFileRequest request = new GetListFileRequest()
+                        {
+                            IdParent = (string)taskSession.Data ?? "",
+                            IdAccess = IdAccess.Shared
+                        };
+                        FileInforPackage fileInfors = fcp.GetFileInforPackage(request);
+                        ChangeFolderAndFileHandler(fileInfors);
+                    }
+                    break;
                 case "LIST":
                     {
-                        List<FileInfor> fileInfors = fcp.ListRemoteFoldersAndFiles(taskSession.RemotePath);
+                        GetListFileRequest request = new GetListFileRequest()
+                        {
+                            IdParent = (string)taskSession.Data ?? "",
+                            IdAccess = IdAccess.Owner
+                        };
+                        FileInforPackage fileInfors = fcp.GetFileInforPackage(request);
                         ChangeFolderAndFileHandler(fileInfors);
                     }
                     break;
@@ -231,7 +247,11 @@ namespace ConsoleApp
                     break;
                 case "UPLOADFOLDER":
                     {
-                        fcp.UploadFolder(taskSession.RemotePath, taskSession.LocalPath);
+                        UploadFolderRequest uploadFolderRequest = (UploadFolderRequest)taskSession.Data;
+                        if (fcp.CheckCanUpload(uploadFolderRequest.ParentFolderId) == true) 
+                        {
+                            fcp.UploadFolder(uploadFolderRequest.FolderName, uploadFolderRequest.FullLocalPath);
+                        }
                     }
                     break;
                 case "GETACCOUNTINFOR":
@@ -258,7 +278,15 @@ namespace ConsoleApp
             switch (command)
             {
                 case "STOR":
-                    fcp.SendFile(request, tcpSessionClient);
+                    if (fcp.CheckCanUpload(request.RemotePath) == true)
+                    {
+                        fcp.SendFile(request, tcpSessionClient);
+                    }
+                    else
+                    {
+                        request.Status = FileTransferProcessingStatus.Failed;
+                        TransferProgressHandler(request);
+                    }
                     break;
                 case "EXPRESSUPLOAD":
                     fcp.ExpressSendFile(request, tcpSessionClient);
@@ -282,10 +310,10 @@ namespace ConsoleApp
             progress?.Invoke(sender);
         }
 
-        public delegate void OnChangeFolderAndFile(List<FileInfor> sender);
+        public delegate void OnChangeFolderAndFile(FileInforPackage sender);
         public event OnChangeFolderAndFile changeFolderAndFile;
 
-        public void ChangeFolderAndFileHandler(List<FileInfor> sender)
+        public void ChangeFolderAndFileHandler(FileInforPackage sender)
         {
             changeFolderAndFile?.Invoke(sender);
         }
@@ -366,15 +394,15 @@ namespace ConsoleApp
             PushSubTaskSession(taskSession);
         }
 
-        public void UploadFolder(string remoteFolderPath, string localFolderPath)
+        public void UploadFolder(UploadFolderRequest request)
         {
-            TaskSession taskSession = new TaskSession("UPLOADFOLDER", remoteFolderPath, "", localFolderPath);
+            TaskSession taskSession = new TaskSession("UPLOADFOLDER", request);
             PushMainTaskSession(taskSession);
         }
 
         public void ListRemoteFolderAndFiles(string remoteFolderPath)
         {
-            TaskSession taskSession = new TaskSession("LIST", remoteFolderPath, "", "");
+            TaskSession taskSession = new TaskSession("LIST", remoteFolderPath);
             PushMainTaskSession(taskSession);
         }
 
@@ -416,6 +444,12 @@ namespace ConsoleApp
         public void UpdateFileAccess(List<FileAccessVM> fileAccessVMs)
         {
             TaskSession taskSession = new TaskSession("UPDATEFILEACCESS", fileAccessVMs);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void ChangeSharedFolder(string idFolder)
+        {
+            TaskSession taskSession = new TaskSession("GETLISTSHAREDFILE", idFolder);
             PushMainTaskSession(taskSession);
         }
 

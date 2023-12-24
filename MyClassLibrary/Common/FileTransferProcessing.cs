@@ -14,7 +14,7 @@ namespace MyClassLibrary.Common
         public string Type { get; set; } = "";
         public string RemotePath { get; set; } = "";
         public string LocalPath { get; set; } = "";
-        public FileTransferProcessingStatus Status { get; set; }
+        public FileTransferProcessingStatus Status { get; set; } = FileTransferProcessingStatus.Waiting;
         public long FileSize { get; set; }
         public long FileSizeTransfered { get; set; }
 

@@ -242,10 +242,26 @@ namespace MyFtpServer
                     {
                         // Get list file and folder
 
-                        string idParent = remoteFolderPath;
+                        string json = string.Join(" ", parts, 1, parts.Length - 1);
+                        GetListFileRequest request1 = JsonConvert.DeserializeObject<GetListFileRequest>(json);
 
                         FileStorageDAL dal = new FileStorageDAL();
-                        List<FileInfor> list = dal.GetFileInfors(idAccount, idParent);
+                        FileInforPackage fileInforPackage = new FileInforPackage();
+                        if (request1 != null)
+                        {
+                            if (request1.IdAccess == IdAccess.Owner)
+                            {
+                                fileInforPackage = dal.GetFileInfors(idAccount, request1.IdParent);
+                            }
+                            else if (request1.IdAccess == IdAccess.Shared)
+                            {
+                                fileInforPackage = dal.GetSharedFilePackage(idAccount, request1.IdParent);
+                            }
+                            else if (request1.IdAccess == IdAccess.CanDownload)
+                            {
+                                fileInforPackage = dal.GetCanDownloadFilePackage(idAccount, request1.IdParent);
+                            }
+                        }
 
                         // Check Tcp Listener
                         if (tcpListener == null)
@@ -260,7 +276,7 @@ namespace MyFtpServer
                         FileServerProcessing processing = new FileServerProcessing(data_channel);
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, "150 Opening data connection");
-                        processing.SendList(list);
+                        processing.SendFileInforPackage(fileInforPackage);
 
                         writer.WriteLine("226 Transfer complete");
                         ResponseStatus(sessionID, "226 Transfer complete");
@@ -303,6 +319,19 @@ namespace MyFtpServer
                         ResponseStatus(sessionID, $"226 Transfer complete");
                         if (tcpListener != null)
                             tcpListener.Stop();
+                    } else if (command == "CHECKCANUPLOAD")
+                    {
+                        FileStorageDAL dal = new FileStorageDAL();
+                        if (dal.CheckCanUpload(idAccount, remoteFolderPath) == true)
+                        {
+                            writer.WriteLine("200 Oke");
+                            ResponseStatus(sessionID, $"200 Oke");
+                        }
+                        else
+                        {
+                            writer.WriteLine("550 Can't upload");
+                            ResponseStatus(sessionID, $"550 Can't upload");
+                        }
                     }
                     else if (command == "STOR")
                     {
