@@ -61,7 +61,7 @@ namespace ConsoleApp
             return false;
         }
 
-        public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile)
+        public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile, OnGetListFileAccess onGetListFileAccess)
         {   
             Thread threadMain = new Thread(MainProcess);
             threadMain.Start();
@@ -73,6 +73,7 @@ namespace ConsoleApp
             this.changeFolderAndFile += changeFolderAndFile;
             this.onGetAccountInfor += onGetAccountInfor;
             this.onGetDetailFile += onGetDetailFile;
+            this.onGetListFileAccess += onGetListFileAccess;
         }
 
         private void PushMainTaskSession(TaskSession taskSession)
@@ -181,7 +182,8 @@ namespace ConsoleApp
                         FileDetailVM? fileDetailVM = fcp.GetDetailFile(id);
                         if (fileDetailVM != null)
                         {
-                            GetDetailFileHandler(fileDetailVM);
+                            List<FileAccessVM> fileAccessVMs = fcp.GetListFileAccess(id);
+                            GetDetailFileHandler(fileDetailVM, fileAccessVMs);
                         }
                     }
                     break;
@@ -201,6 +203,19 @@ namespace ConsoleApp
                     {
                         DeleteFileRequest request = (DeleteFileRequest)taskSession.Data;
                         fcp.DeleteFolder(request);
+                    }
+                    break;
+                case "GETLISTFILEACCESS":
+                    {
+                        string id = (string)taskSession.Data;
+                        List<FileAccessVM> fileAccessVMs = fcp.GetListFileAccess(id);
+                        GetListFileAccessHandler(fileAccessVMs);
+                    }
+                    break;
+                case "UPDATEFILEACCESS":
+                    {
+                        List<FileAccessVM> request = (List<FileAccessVM>)taskSession.Data;
+                        fcp.UpdateFileAccess(request);
                     }
                     break;
                 case "LIST":
@@ -295,12 +310,12 @@ namespace ConsoleApp
             PushMainTaskSession(taskSession);
         }
 
-        public delegate void OnGetDetailFile(FileDetailVM sender);
+        public delegate void OnGetDetailFile(FileDetailVM sender, List<FileAccessVM> fileAccessVMs);
         public event OnGetDetailFile onGetDetailFile;
 
-        public void GetDetailFileHandler(FileDetailVM sender)
+        public void GetDetailFileHandler(FileDetailVM sender, List<FileAccessVM> fileAccessVMs)
         {
-            onGetDetailFile?.Invoke(sender);
+            onGetDetailFile?.Invoke(sender, fileAccessVMs);
         }
 
         public void GetDetailFile(string id)
@@ -381,6 +396,26 @@ namespace ConsoleApp
         public void UpdateAccountInfor(AccountInfoVM account)
         {
             TaskSession taskSession = new TaskSession("UPDATEACCOUNTINFOR", account);
+            PushMainTaskSession(taskSession);
+        }
+
+        // Manage file access
+        public delegate void OnGetListFileAccess(List<FileAccessVM> sender);
+        public event OnGetListFileAccess onGetListFileAccess;
+
+        public void GetListFileAccessHandler(List<FileAccessVM> sender)
+        {
+            onGetListFileAccess?.Invoke(sender);
+        }
+        public void GetListFileAccess(string idFile)
+        {
+            TaskSession taskSession = new TaskSession("GETLISTFILEACCESS", idFile);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void UpdateFileAccess(List<FileAccessVM> fileAccessVMs)
+        {
+            TaskSession taskSession = new TaskSession("UPDATEFILEACCESS", fileAccessVMs);
             PushMainTaskSession(taskSession);
         }
 

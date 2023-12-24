@@ -32,7 +32,11 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges4 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            flowLayoutPanel1 = new FlowLayoutPanel();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges5 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges6 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges8 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            flowLayoutPanel_ListProfile = new FlowLayoutPanel();
             lbl_Name = new Guna.UI2.WinForms.Guna2HtmlLabel();
             lbl_Owner = new Guna.UI2.WinForms.Guna2HtmlLabel();
             lbl_OwnerData = new Guna.UI2.WinForms.Guna2HtmlLabel();
@@ -42,17 +46,20 @@
             lbl_SizeData = new Guna.UI2.WinForms.Guna2HtmlLabel();
             lbl_CreatedTime = new Guna.UI2.WinForms.Guna2HtmlLabel();
             lbl_CreatedTimeData = new Guna.UI2.WinForms.Guna2HtmlLabel();
-            lbl_AccessAbility = new Guna.UI2.WinForms.Guna2HtmlLabel();
-            cbb_AccessAbility = new Guna.UI2.WinForms.Guna2ComboBox();
             btn_Oke = new Guna.UI2.WinForms.Guna2Button();
+            txt_Email = new Guna.UI2.WinForms.Guna2TextBox();
+            lbl_AccessAbility = new Guna.UI2.WinForms.Guna2HtmlLabel();
+            btn_Add = new Guna.UI2.WinForms.Guna2Button();
+            cbb_AccessAbility = new Guna.UI2.WinForms.Guna2ComboBox();
             SuspendLayout();
             // 
-            // flowLayoutPanel1
+            // flowLayoutPanel_ListProfile
             // 
-            flowLayoutPanel1.Location = new Point(12, 66);
-            flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(300, 325);
-            flowLayoutPanel1.TabIndex = 0;
+            flowLayoutPanel_ListProfile.BorderStyle = BorderStyle.FixedSingle;
+            flowLayoutPanel_ListProfile.Location = new Point(12, 90);
+            flowLayoutPanel_ListProfile.Name = "flowLayoutPanel_ListProfile";
+            flowLayoutPanel_ListProfile.Size = new Size(300, 301);
+            flowLayoutPanel_ListProfile.TabIndex = 0;
             // 
             // lbl_Name
             // 
@@ -144,36 +151,9 @@
             lbl_CreatedTimeData.TabIndex = 9;
             lbl_CreatedTimeData.Text = "2023/12/12 12:00:00";
             // 
-            // lbl_AccessAbility
-            // 
-            lbl_AccessAbility.BackColor = Color.Transparent;
-            lbl_AccessAbility.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point);
-            lbl_AccessAbility.Location = new Point(345, 255);
-            lbl_AccessAbility.Name = "lbl_AccessAbility";
-            lbl_AccessAbility.Size = new Size(137, 30);
-            lbl_AccessAbility.TabIndex = 10;
-            lbl_AccessAbility.Text = "Access ability:";
-            // 
-            // cbb_AccessAbility
-            // 
-            cbb_AccessAbility.BackColor = Color.Transparent;
-            cbb_AccessAbility.CustomizableEdges = customizableEdges1;
-            cbb_AccessAbility.DrawMode = DrawMode.OwnerDrawFixed;
-            cbb_AccessAbility.DropDownStyle = ComboBoxStyle.DropDownList;
-            cbb_AccessAbility.FocusedColor = Color.FromArgb(94, 148, 255);
-            cbb_AccessAbility.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
-            cbb_AccessAbility.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
-            cbb_AccessAbility.ForeColor = Color.FromArgb(68, 88, 112);
-            cbb_AccessAbility.ItemHeight = 30;
-            cbb_AccessAbility.Location = new Point(345, 291);
-            cbb_AccessAbility.Name = "cbb_AccessAbility";
-            cbb_AccessAbility.ShadowDecoration.CustomizableEdges = customizableEdges2;
-            cbb_AccessAbility.Size = new Size(300, 36);
-            cbb_AccessAbility.TabIndex = 11;
-            // 
             // btn_Oke
             // 
-            btn_Oke.CustomizableEdges = customizableEdges3;
+            btn_Oke.CustomizableEdges = customizableEdges1;
             btn_Oke.DisabledState.BorderColor = Color.DarkGray;
             btn_Oke.DisabledState.CustomBorderColor = Color.DarkGray;
             btn_Oke.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -182,19 +162,89 @@
             btn_Oke.ForeColor = Color.White;
             btn_Oke.Location = new Point(427, 348);
             btn_Oke.Name = "btn_Oke";
-            btn_Oke.ShadowDecoration.CustomizableEdges = customizableEdges4;
+            btn_Oke.ShadowDecoration.CustomizableEdges = customizableEdges2;
             btn_Oke.Size = new Size(142, 43);
             btn_Oke.TabIndex = 12;
             btn_Oke.Text = "Oke";
+            btn_Oke.Click += btn_Oke_Click;
+            // 
+            // txt_Email
+            // 
+            txt_Email.CustomizableEdges = customizableEdges3;
+            txt_Email.DefaultText = "";
+            txt_Email.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txt_Email.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txt_Email.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txt_Email.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txt_Email.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_Email.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_Email.ForeColor = Color.Black;
+            txt_Email.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_Email.Location = new Point(12, 42);
+            txt_Email.Margin = new Padding(4, 6, 4, 6);
+            txt_Email.Name = "txt_Email";
+            txt_Email.PasswordChar = '\0';
+            txt_Email.PlaceholderText = "";
+            txt_Email.SelectedText = "";
+            txt_Email.ShadowDecoration.CustomizableEdges = customizableEdges4;
+            txt_Email.Size = new Size(251, 41);
+            txt_Email.TabIndex = 13;
+            // 
+            // lbl_AccessAbility
+            // 
+            lbl_AccessAbility.BackColor = Color.Transparent;
+            lbl_AccessAbility.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point);
+            lbl_AccessAbility.Location = new Point(345, 247);
+            lbl_AccessAbility.Name = "lbl_AccessAbility";
+            lbl_AccessAbility.Size = new Size(137, 30);
+            lbl_AccessAbility.TabIndex = 14;
+            lbl_AccessAbility.Text = "Access ability:";
+            // 
+            // btn_Add
+            // 
+            btn_Add.CustomizableEdges = customizableEdges5;
+            btn_Add.DisabledState.BorderColor = Color.DarkGray;
+            btn_Add.DisabledState.CustomBorderColor = Color.DarkGray;
+            btn_Add.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
+            btn_Add.DisabledState.ForeColor = Color.FromArgb(141, 141, 141);
+            btn_Add.FillColor = Color.ForestGreen;
+            btn_Add.Font = new Font("Segoe UI", 16.2F, FontStyle.Bold, GraphicsUnit.Point);
+            btn_Add.ForeColor = Color.White;
+            btn_Add.Location = new Point(270, 42);
+            btn_Add.Name = "btn_Add";
+            btn_Add.ShadowDecoration.CustomizableEdges = customizableEdges6;
+            btn_Add.Size = new Size(42, 41);
+            btn_Add.TabIndex = 15;
+            btn_Add.Text = "+";
+            btn_Add.Click += btn_Add_Click;
+            // 
+            // cbb_AccessAbility
+            // 
+            cbb_AccessAbility.BackColor = Color.Transparent;
+            cbb_AccessAbility.CustomizableEdges = customizableEdges7;
+            cbb_AccessAbility.DrawMode = DrawMode.OwnerDrawFixed;
+            cbb_AccessAbility.DropDownStyle = ComboBoxStyle.DropDownList;
+            cbb_AccessAbility.FocusedColor = Color.FromArgb(94, 148, 255);
+            cbb_AccessAbility.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            cbb_AccessAbility.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            cbb_AccessAbility.ForeColor = Color.Black;
+            cbb_AccessAbility.ItemHeight = 30;
+            cbb_AccessAbility.Location = new Point(345, 289);
+            cbb_AccessAbility.Name = "cbb_AccessAbility";
+            cbb_AccessAbility.ShadowDecoration.CustomizableEdges = customizableEdges8;
+            cbb_AccessAbility.Size = new Size(303, 36);
+            cbb_AccessAbility.TabIndex = 16;
             // 
             // DetailFileForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(682, 403);
-            Controls.Add(btn_Oke);
             Controls.Add(cbb_AccessAbility);
+            Controls.Add(btn_Add);
             Controls.Add(lbl_AccessAbility);
+            Controls.Add(txt_Email);
+            Controls.Add(btn_Oke);
             Controls.Add(lbl_CreatedTimeData);
             Controls.Add(lbl_CreatedTime);
             Controls.Add(lbl_SizeData);
@@ -204,7 +254,7 @@
             Controls.Add(lbl_OwnerData);
             Controls.Add(lbl_Owner);
             Controls.Add(lbl_Name);
-            Controls.Add(flowLayoutPanel1);
+            Controls.Add(flowLayoutPanel_ListProfile);
             Name = "DetailFileForm";
             StartPosition = FormStartPosition.CenterParent;
             Text = "DetailForm";
@@ -216,7 +266,7 @@
 
         #endregion
 
-        private FlowLayoutPanel flowLayoutPanel1;
+        private FlowLayoutPanel flowLayoutPanel_ListProfile;
         private Guna.UI2.WinForms.Guna2HtmlLabel lbl_Name;
         private Guna.UI2.WinForms.Guna2HtmlLabel lbl_Owner;
         private Guna.UI2.WinForms.Guna2HtmlLabel lbl_OwnerData;
@@ -226,8 +276,10 @@
         private Guna.UI2.WinForms.Guna2HtmlLabel lbl_SizeData;
         private Guna.UI2.WinForms.Guna2HtmlLabel lbl_CreatedTime;
         private Guna.UI2.WinForms.Guna2HtmlLabel lbl_CreatedTimeData;
-        private Guna.UI2.WinForms.Guna2HtmlLabel lbl_AccessAbility;
-        private Guna.UI2.WinForms.Guna2ComboBox cbb_AccessAbility;
         private Guna.UI2.WinForms.Guna2Button btn_Oke;
+        private Guna.UI2.WinForms.Guna2TextBox txt_Email;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lbl_AccessAbility;
+        private Guna.UI2.WinForms.Guna2Button btn_Add;
+        private Guna.UI2.WinForms.Guna2ComboBox cbb_AccessAbility;
     }
 }

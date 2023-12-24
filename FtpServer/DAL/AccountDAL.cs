@@ -91,10 +91,17 @@ namespace MyFtpServer.DAL
                 var account = db.Accounts.FirstOrDefault(a => a.Id == idAccount);
                 if(account == null)
                 {
-                    return null;
+                    return new List<byte>();
                 }
                 string avatarPath = rootPath + account.Avatar;
-                return System.IO.File.ReadAllBytes(avatarPath).ToList();
+                try
+                {
+                    return System.IO.File.ReadAllBytes(avatarPath).ToList();
+                }
+                catch(Exception)
+                {
+                    return new List<byte>();
+                }
             }
         }
 

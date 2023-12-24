@@ -21,7 +21,7 @@ namespace UserApp.BLL
         {
             fileManager = new FileManager();
             this.ftpClient = ftpClient;
-            ftpClient.Start(TransferProgressHandler, ChangeFoldersAndFileHandler, GetAccountInfor, OnGetDetailFileHandler);
+            ftpClient.Start(TransferProgressHandler, ChangeFoldersAndFileHandler, GetAccountInfor, OnGetDetailFileHandler, OnGetListFileAccessHandler);
             progress += process;
             this.changeFolderAndFile += changeFolderAndFile;
             this.getAccountInfor += onGetAccountInfor;
@@ -42,12 +42,12 @@ namespace UserApp.BLL
             ftpClient.CreateFolder(request);
         }
 
-        public delegate void OnGetDetailFile(FileDetailVM fileDetailVM);
+        public delegate void OnGetDetailFile(FileDetailVM fileDetailVM, List<FileAccessVM> fileAccessVMs);
         public event OnGetDetailFile getDetailFile;
 
-        private void OnGetDetailFileHandler(FileDetailVM fileDetailVM)
+        private void OnGetDetailFileHandler(FileDetailVM fileDetailVM, List<FileAccessVM> fileAccessVMs)
         {
-            getDetailFile(fileDetailVM);
+            getDetailFile(fileDetailVM, fileAccessVMs);
         }
 
         public void GetDetailFile(string id)
@@ -152,6 +152,24 @@ namespace UserApp.BLL
         public void UpdateAccountInfor(AccountInfoVM account)
         {
             ftpClient.UpdateAccountInfor(account);
+        }
+
+        // File access
+        public delegate void OnGetListFileAccess(List<FileAccessVM> sender);
+        public event OnGetListFileAccess onGetListFileAccess;
+
+        private void OnGetListFileAccessHandler(List<FileAccessVM> fileAccessVMs)
+        {
+            onGetListFileAccess(fileAccessVMs);
+        }
+        public void GetListFileAccess(string idFile)
+        {
+            ftpClient.GetListFileAccess(idFile);
+        }
+
+        public void UpdateFileAccess(List<FileAccessVM> fileAccessVMs)
+        {
+            ftpClient.UpdateFileAccess(fileAccessVMs);
         }
     }
 }
