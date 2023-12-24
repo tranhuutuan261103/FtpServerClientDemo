@@ -1,5 +1,9 @@
-﻿using MyClassLibrary.Common;
+﻿using MyClassLibrary.Bean;
+using MyClassLibrary.Bean.Account;
+using MyClassLibrary.Bean.File;
+using MyClassLibrary.Common;
 using MyFtpServer.DAL;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -64,6 +68,12 @@ namespace MyFtpServer
             IPEndPoint iPEndPoint = (IPEndPoint)tcpClient.Client.RemoteEndPoint;
 
             ResponseStatus(sessionID, $"220 FTP Server already for {iPEndPoint.Address}:{iPEndPoint.Port}");
+
+            int idAccount;
+            do
+            {
+                idAccount = Authenticate(sessionID, reader, writer);
+            } while (idAccount == 0);
             
             TcpListener tcpListener = new TcpListener(IPAddress.Parse(_host), _passivePort);
             int passivePort;
@@ -129,15 +139,7 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"501 Syntax error in parameters or arguments");
                             continue;
                         }
-                        /*
-                        if (Directory.Exists(_rootPath + folderPath))
-                        {
-                            writer.WriteLine("550 Directory already exists");
-                            ResponseStatus(sessionID, $"550 Directory already exists");
-                            continue;
-                        }
-                        Directory.CreateDirectory(_rootPath + folderPath);*/
-                        FileStorage_DAL dal = new FileStorage_DAL();
+                        FileStorageDAL dal = new FileStorageDAL();
                         if (dal.IsDirectory(remoteFolderPath) == false)
                         {
                             Console.WriteLine(remoteFolderPath);
@@ -145,9 +147,96 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"550 Directory already exists");
                             continue;
                         }
-                        string id = dal.CreateNewFolder(remoteFolderPath, folderName);
+                        string id = dal.CreateNewFolder(idAccount, remoteFolderPath, folderName);
                         writer.WriteLine($"257 {id}");
                         ResponseStatus(sessionID, $"257 Directory created");
+                    } else if (command == "GETDETAILFILE")
+                    {
+                        string idFile = string.Join(" ", parts, 1, parts.Length - 1);
+                        FileStorageDAL dal = new FileStorageDAL();
+                        FileDetailVM? fileDetailVM = dal.GetDetailFile(idAccount, idFile, _rootPath);
+                        if (fileDetailVM == null)
+                        {
+                            writer.WriteLine("550 File not found");
+                            ResponseStatus(sessionID, $"550 File not found");
+                            continue;
+                        }
+                        string json = JsonConvert.SerializeObject(fileDetailVM);
+                        writer.WriteLine($"257 {json}");
+                    }
+                    else if (command == "RNTO")
+                    {
+                        string newName = string.Join(" ", parts, 1, parts.Length - 1);
+                        if (newName == null)
+                        {
+                            writer.WriteLine("501 Syntax error in parameters or arguments");
+                            ResponseStatus(sessionID, $"501 Syntax error in parameters or arguments");
+                            continue;
+                        }
+                        FileStorageDAL dal = new FileStorageDAL();
+                        string id = dal.RenameFolder(idAccount, remoteFolderPath, newName);
+                        if (id == "")
+                        {
+                            writer.WriteLine("550 Directory already exists");
+                            ResponseStatus(sessionID, $"550 Directory already exists");
+                            continue;
+                        }
+                        writer.WriteLine($"250 {id}");
+                        ResponseStatus(sessionID, $"250 Directory renamed");
+                    } else if (command == "DELE")
+                    {
+                        string idFile = string.Join(" ", parts, 1, parts.Length - 1);
+                        
+                        FileStorageDAL dal = new FileStorageDAL();
+                        string id = dal.DeleteFile(idAccount, idFile);
+                        if (id == "")
+                        {
+                            writer.WriteLine("550 File not found");
+                            ResponseStatus(sessionID, $"550 File not found");
+                            continue;
+                        }
+                        writer.WriteLine($"250 {id}");
+                        ResponseStatus(sessionID, $"250 File deleted");
+                    } else if (command == "RMD")
+                    {
+                        string idFolder = string.Join(" ", parts, 1, parts.Length - 1);
+
+                        FileStorageDAL dal = new FileStorageDAL();
+                        string id = dal.DeleteFolder(idAccount, idFolder);
+                        if (id == "")
+                        {
+                            writer.WriteLine("550 Directory not found");
+                            ResponseStatus(sessionID, $"550 Directory not found");
+                            continue;
+                        }
+                        writer.WriteLine($"250 {id}");
+                    }
+                    else if (command == "GETLISTFILEACCESS")
+                    {
+                        string idFile = string.Join(" ", parts, 1, parts.Length - 1);
+                        FileStorageDAL dal = new FileStorageDAL();
+                        List<FileAccessVM>? list = dal.GetListFileAccess(idAccount, idFile, _rootPath);
+                        if (list == null)
+                        {
+                            writer.WriteLine("550 File not found");
+                            ResponseStatus(sessionID, $"550 File not found");
+                            continue;
+                        }
+                        string json = JsonConvert.SerializeObject(list);
+                        writer.WriteLine($"257 {json}");
+                    }
+                    else if (command == "UPDATEFILEACCESS")
+                    {
+                        string json = string.Join(" ", parts, 1, parts.Length - 1);
+                        List<FileAccessVM> list = JsonConvert.DeserializeObject<List<FileAccessVM>>(json);
+                        FileStorageDAL dal = new FileStorageDAL();
+                        if (dal.UpdateFileAccess(idAccount, list) == false)
+                        {
+                            writer.WriteLine("550 File not found");
+                            ResponseStatus(sessionID, $"550 File not found");
+                            continue;
+                        }
+                        writer.WriteLine($"257 Oke");
                     }
                     else if (command == "MLSD")
                     {
@@ -155,36 +244,8 @@ namespace MyFtpServer
 
                         string idParent = remoteFolderPath;
 
-                        FileStorage_DAL dal = new FileStorage_DAL();
-                        List<FileInfor> list = dal.GetFileInfors(idParent);
-
-                        /*
-                        List<FileInfor> list = new List<FileInfor>();
-                        string[] directories = Directory.GetDirectories(_rootPath + remoteFolderPath);
-                        foreach (var directory in directories)
-                        {
-                            DirectoryInfo dirInfo = new DirectoryInfo(directory);
-                            list.Add(new FileInfor()
-                            {
-                                Name = dirInfo.Name,
-                                Length = 0,
-                                LastWriteTime = dirInfo.LastWriteTime,
-                                IsDirectory = true
-                            });
-                        }
-                        string[] files = Directory.GetFiles(_rootPath + remoteFolderPath);
-
-                        foreach (var file in files)
-                        {
-                            FileInfo fileInfo = new FileInfo(file);
-                            list.Add(new FileInfor()
-                            {
-                                Name = fileInfo.Name,
-                                Length = fileInfo.Length,
-                                LastWriteTime = fileInfo.LastWriteTime,
-                                IsDirectory = false
-                            });
-                        }*/
+                        FileStorageDAL dal = new FileStorageDAL();
+                        List<FileInfor> list = dal.GetFileInfors(idAccount, idParent);
 
                         // Check Tcp Listener
                         if (tcpListener == null)
@@ -208,10 +269,7 @@ namespace MyFtpServer
                     }
                     else if (command == "RETR")
                     {
-                        //string filePath = string.Join(" ", parts, 1, parts.Length - 1);
-                        //string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
-                        Console.WriteLine(remoteFolderPath);
-                        FileStorage_DAL dal = new FileStorage_DAL();
+                        FileStorageDAL dal = new FileStorageDAL();
                         string fullPath = _rootPath + dal.GetFilePath(remoteFolderPath);
 
                         if (!File.Exists(fullPath))
@@ -248,7 +306,7 @@ namespace MyFtpServer
                     }
                     else if (command == "STOR")
                     {
-                        FileStorage_DAL dal = new FileStorage_DAL();
+                        FileStorageDAL dal = new FileStorageDAL();
                         if (dal.IsDirectory(remoteFolderPath) == false)
                         {
                             writer.WriteLine("550 Couldn't open the file or directory");
@@ -257,7 +315,7 @@ namespace MyFtpServer
                         }
 
                         string fileName = string.Join(" ", parts, 1, parts.Length - 1);
-                        string fullPath = _rootPath + dal.CreateNewFile(remoteFolderPath, fileName);
+                        string fullPath = _rootPath + dal.CreateNewFile(idAccount, remoteFolderPath, fileName);
 
                         if (tcpListener == null)
                             continue;
@@ -336,8 +394,59 @@ namespace MyFtpServer
 
                         if (tcpListener != null)
                             tcpListener.Stop();
-                    }
-                    else if (command == "QUIT")
+                    } else if (command == "GETACCOUNTINFOR")
+                    {
+                        AccountDAL accountDAL = new AccountDAL();
+                        AccountInfoVM account = accountDAL.GetAccount(idAccount);
+                        if (account == null)
+                        {
+                            writer.WriteLine("550 Account not exist");
+                            ResponseStatus(sessionID, "550 Account not exist");
+                            continue;
+                        }
+                        account.Avatar = accountDAL.GetAvatar(idAccount, _rootPath);
+                        FileStorageDAL fileStorageDAL = new FileStorageDAL();
+                        account.UsedStorage = fileStorageDAL.GetUsedStorage(idAccount, _rootPath);
+
+                        data_channel = tcpListener.AcceptTcpClient();
+                        if (data_channel == null)
+                        {
+                            writer.WriteLine("425 Can't open data connection.");
+                            ResponseStatus(sessionID, $"425 Can't open data connection.");
+                            continue;
+                        }
+
+                        writer.WriteLine("150 Opening data connection");
+                        ResponseStatus(sessionID, $"150 Opening data connection");
+
+                        AccountServerProcessing asp = new AccountServerProcessing(data_channel);
+                        asp.SendAccountInfor(account);
+
+                        writer.WriteLine("226 Transfer complete");
+                        ResponseStatus(sessionID, $"226 Transfer complete");
+                    } else if (command == "UPDATEACCOUNTINFOR")
+                    {
+                        data_channel = tcpListener.AcceptTcpClient();
+                        if (data_channel == null)
+                        {
+                            writer.WriteLine("425 Can't open data connection.");
+                            ResponseStatus(sessionID, $"425 Can't open data connection.");
+                            continue;
+                        }
+                        writer.WriteLine("150 Opening data connection");
+                        ResponseStatus(sessionID, $"150 Opening data connection");
+                        AccountServerProcessing asp = new AccountServerProcessing(data_channel);
+                        AccountInfoVM account = asp.ReceiveAccountInfor();
+                        AccountDAL accountDAL = new AccountDAL();
+                        accountDAL.UpdateAccount(idAccount, account);
+                        StoreDataHelper storeDataHelper = new StoreDataHelper();
+                        if (storeDataHelper.SaveDataToFilePath(account.Avatar, _rootPath + @"\avatars\" + idAccount + ".png") == true)
+                        {
+                            accountDAL.UpdateAvatar(idAccount, @"\avatars\" + idAccount + ".png");
+                        }
+                        writer.WriteLine("226 Transfer complete");
+                        ResponseStatus(sessionID, $"226 Transfer complete");
+                    } else if (command == "QUIT")
                     {
                         writer.WriteLine("221 Goodbye");
                         break;
@@ -358,6 +467,93 @@ namespace MyFtpServer
                 tcpClient.Close();
                 ResponseStatus(sessionID, $"??? FTP Server disconnected with {iPEndPoint.Address}:{iPEndPoint.Port}");
             }
+        }
+
+        private int Authenticate(int sessionID, StreamReader reader, StreamWriter writer)
+        {
+            string command = reader.ReadLine() ?? "USER";
+            if (command.StartsWith("USER"))
+            {
+                string username = command.Substring(5);
+                writer.WriteLine("331 Password required for " + username);
+                ResponseStatus(sessionID, $"331 Password required for {username}");
+                command = reader.ReadLine() ?? "PASS";
+                if (command.StartsWith("PASS"))
+                {
+                    string password = command.Substring(5);
+                    AccountDAL accountDAL = new AccountDAL();
+                    int result = accountDAL.Authenticate(username, password);
+                    if (result != 0)
+                    {
+                        writer.WriteLine("230 User logged in");
+                        ResponseStatus(sessionID, $"230 User logged in");
+                        return result;
+                    }
+                    else
+                    {
+                        writer.WriteLine("530 Not logged in");
+                        ResponseStatus(sessionID, $"530 Not logged in");
+                    }
+                }
+            } else if (command.StartsWith("REGISTER"))
+            {
+                string json = command.Substring(9);
+
+                RegisterRequest request = Newtonsoft.Json.JsonConvert.DeserializeObject<RegisterRequest>(json) ?? null;
+
+                if (request == null)
+                {
+                    writer.WriteLine("530 Register failed");
+                    ResponseStatus(sessionID, $"Register failed");
+                    return 0;
+                }
+                
+                AccountDAL accountDAL = new AccountDAL();
+                bool result = accountDAL.Register(request);
+                if (result != false)
+                {
+                    writer.WriteLine("230 Register successful");
+                    ResponseStatus(sessionID, $"230 Register successful");
+                    return 0;
+                }
+                else
+                {
+                    writer.WriteLine("530 Register failed");
+                    ResponseStatus(sessionID, $"Register failed");
+                }
+            } else if (command.StartsWith("RESETPASSWORD"))
+            {
+                string json = command.Substring(14);
+
+                ResetPasswordRequest request = Newtonsoft.Json.JsonConvert.DeserializeObject<ResetPasswordRequest>(json) ?? null;
+
+                if (request == null)
+                {
+                    writer.WriteLine("530 Reset password failed");
+                    ResponseStatus(sessionID, $"Reset password failed");
+                    return 0;
+                }
+
+                AccountDAL accountDAL = new AccountDAL();
+                bool result = accountDAL.ResetPassword(request);
+                if (result != false)
+                {
+                    writer.WriteLine("230 Reset password successful");
+                    ResponseStatus(sessionID, $"230 Reset password successful");
+                    return 0;
+                }
+                else
+                {
+                    writer.WriteLine("530 Reset password failed");
+                    ResponseStatus(sessionID, $"Reset password failed");
+                }
+            } 
+            else
+            {
+                writer.WriteLine("530 Not logged in");
+                ResponseStatus(sessionID, $"530 Not logged in");
+            }
+            return 0;
         }
 
         private int _passivePort;

@@ -12,6 +12,7 @@ namespace MyClassLibrary.Common
         public string FileName { get; set; } = "";
         public string RemotePath { get; set; } = "";
         public string LocalPath { get; set; } = "";
+        public object Data { get; set; }
 
         public TaskSession(string type, string remotePath, string fileName, string localPath)
         {
@@ -19,6 +20,13 @@ namespace MyClassLibrary.Common
             FileName = fileName;
             RemotePath = remotePath;
             LocalPath = localPath;
+            Data = new object();
+        }
+
+        public TaskSession(string type, object obj)
+        {
+            Type = type;
+            Data = obj;
         }
     }
 }

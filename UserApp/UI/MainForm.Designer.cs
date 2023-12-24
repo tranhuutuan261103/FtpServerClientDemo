@@ -35,6 +35,15 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges4 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges5 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges6 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges8 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges9 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges10 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges11 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges12 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges13 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges14 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             grid_FileAndFolder = new FlowLayoutPanel();
             btn_Back = new Guna.UI2.WinForms.Guna2Button();
             btn_New = new Guna.UI2.WinForms.Guna2Button();
@@ -45,15 +54,30 @@
             guna2Elipse_ForMenuStrip = new Guna.UI2.WinForms.Guna2Elipse(components);
             guna2Elipse_Panel = new Guna.UI2.WinForms.Guna2Elipse(components);
             btn_TransferInfor = new Guna.UI2.WinForms.Guna2CircleButton();
-            guna2TabControl1 = new Guna.UI2.WinForms.Guna2TabControl();
+            tabControl_Profile = new Guna.UI2.WinForms.Guna2TabControl();
             tabPage1 = new TabPage();
             tabPage2 = new TabPage();
             tabPage3 = new TabPage();
             tabPage4 = new TabPage();
+            lbl_CreationDate = new Guna.UI2.WinForms.Guna2HtmlLabel();
+            guna2HtmlLabel5 = new Guna.UI2.WinForms.Guna2HtmlLabel();
+            txt_Email = new Guna.UI2.WinForms.Guna2TextBox();
+            guna2HtmlLabel4 = new Guna.UI2.WinForms.Guna2HtmlLabel();
+            btn_UpdateProfile = new Guna.UI2.WinForms.Guna2Button();
+            lbl_StoragedData = new Guna.UI2.WinForms.Guna2HtmlLabel();
+            guna2HtmlLabel3 = new Guna.UI2.WinForms.Guna2HtmlLabel();
+            lbl_FullName = new Label();
+            guna2HtmlLabel2 = new Guna.UI2.WinForms.Guna2HtmlLabel();
+            txt_LastName = new Guna.UI2.WinForms.Guna2TextBox();
+            txt_FirstName = new Guna.UI2.WinForms.Guna2TextBox();
+            guna2HtmlLabel1 = new Guna.UI2.WinForms.Guna2HtmlLabel();
+            pic_Avatar = new Guna.UI2.WinForms.Guna2CirclePictureBox();
             flowLayoutPanel_ListProcessing = new FlowLayoutPanel();
             guna2ContextMenuStrip_btnNew.SuspendLayout();
-            guna2TabControl1.SuspendLayout();
+            tabControl_Profile.SuspendLayout();
             tabPage1.SuspendLayout();
+            tabPage4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pic_Avatar).BeginInit();
             SuspendLayout();
             // 
             // grid_FileAndFolder
@@ -124,20 +148,21 @@
             guna2ContextMenuStrip_btnNew.RenderStyle.SelectionForeColor = Color.White;
             guna2ContextMenuStrip_btnNew.RenderStyle.SeparatorColor = Color.Gainsboro;
             guna2ContextMenuStrip_btnNew.RenderStyle.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
-            guna2ContextMenuStrip_btnNew.Size = new Size(181, 118);
+            guna2ContextMenuStrip_btnNew.Size = new Size(211, 146);
             // 
             // ToolStripMenuItem_NewFolder
             // 
             ToolStripMenuItem_NewFolder.Name = "ToolStripMenuItem_NewFolder";
             ToolStripMenuItem_NewFolder.Padding = new Padding(0, 8, 0, 8);
-            ToolStripMenuItem_NewFolder.Size = new Size(180, 38);
+            ToolStripMenuItem_NewFolder.Size = new Size(210, 38);
             ToolStripMenuItem_NewFolder.Text = "Thư mục mới";
+            ToolStripMenuItem_NewFolder.Click += ToolStripMenuItem_NewFolder_Click;
             // 
             // ToolStripMenuItem_UploadFile
             // 
             ToolStripMenuItem_UploadFile.Name = "ToolStripMenuItem_UploadFile";
             ToolStripMenuItem_UploadFile.Padding = new Padding(0, 8, 0, 8);
-            ToolStripMenuItem_UploadFile.Size = new Size(180, 38);
+            ToolStripMenuItem_UploadFile.Size = new Size(210, 38);
             ToolStripMenuItem_UploadFile.Text = "Tải tệp lên";
             ToolStripMenuItem_UploadFile.Click += ToolStripMenuItem_UploadFile_Click;
             // 
@@ -145,7 +170,7 @@
             // 
             ToolStripMenuItem_UploadFolder.Name = "ToolStripMenuItem_UploadFolder";
             ToolStripMenuItem_UploadFolder.Padding = new Padding(0, 8, 0, 8);
-            ToolStripMenuItem_UploadFolder.Size = new Size(180, 38);
+            ToolStripMenuItem_UploadFolder.Size = new Size(210, 38);
             ToolStripMenuItem_UploadFolder.Text = "Tải thư mục lên";
             ToolStripMenuItem_UploadFolder.Click += ToolStripMenuItem_UploadFolder_Click;
             // 
@@ -180,37 +205,38 @@
             btn_TransferInfor.TabIndex = 4;
             btn_TransferInfor.MouseClick += btn_TransferInfor_MouseClick;
             // 
-            // guna2TabControl1
+            // tabControl_Profile
             // 
-            guna2TabControl1.Alignment = TabAlignment.Left;
-            guna2TabControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            guna2TabControl1.Controls.Add(tabPage1);
-            guna2TabControl1.Controls.Add(tabPage2);
-            guna2TabControl1.Controls.Add(tabPage3);
-            guna2TabControl1.Controls.Add(tabPage4);
-            guna2TabControl1.ItemSize = new Size(180, 40);
-            guna2TabControl1.Location = new Point(0, 81);
-            guna2TabControl1.Name = "guna2TabControl1";
-            guna2TabControl1.SelectedIndex = 0;
-            guna2TabControl1.Size = new Size(1032, 572);
-            guna2TabControl1.TabButtonHoverState.BorderColor = Color.Empty;
-            guna2TabControl1.TabButtonHoverState.FillColor = Color.FromArgb(40, 52, 70);
-            guna2TabControl1.TabButtonHoverState.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            guna2TabControl1.TabButtonHoverState.ForeColor = Color.White;
-            guna2TabControl1.TabButtonHoverState.InnerColor = Color.FromArgb(40, 52, 70);
-            guna2TabControl1.TabButtonIdleState.BorderColor = Color.Empty;
-            guna2TabControl1.TabButtonIdleState.FillColor = Color.FromArgb(33, 42, 57);
-            guna2TabControl1.TabButtonIdleState.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            guna2TabControl1.TabButtonIdleState.ForeColor = Color.FromArgb(156, 160, 167);
-            guna2TabControl1.TabButtonIdleState.InnerColor = Color.FromArgb(33, 42, 57);
-            guna2TabControl1.TabButtonSelectedState.BorderColor = Color.Empty;
-            guna2TabControl1.TabButtonSelectedState.FillColor = Color.FromArgb(29, 37, 49);
-            guna2TabControl1.TabButtonSelectedState.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            guna2TabControl1.TabButtonSelectedState.ForeColor = Color.White;
-            guna2TabControl1.TabButtonSelectedState.InnerColor = Color.FromArgb(76, 132, 255);
-            guna2TabControl1.TabButtonSize = new Size(180, 40);
-            guna2TabControl1.TabIndex = 5;
-            guna2TabControl1.TabMenuBackColor = Color.FromArgb(233, 244, 255);
+            tabControl_Profile.Alignment = TabAlignment.Left;
+            tabControl_Profile.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            tabControl_Profile.Controls.Add(tabPage1);
+            tabControl_Profile.Controls.Add(tabPage2);
+            tabControl_Profile.Controls.Add(tabPage3);
+            tabControl_Profile.Controls.Add(tabPage4);
+            tabControl_Profile.ItemSize = new Size(180, 40);
+            tabControl_Profile.Location = new Point(0, 81);
+            tabControl_Profile.Name = "tabControl_Profile";
+            tabControl_Profile.SelectedIndex = 0;
+            tabControl_Profile.Size = new Size(1032, 572);
+            tabControl_Profile.TabButtonHoverState.BorderColor = Color.Empty;
+            tabControl_Profile.TabButtonHoverState.FillColor = Color.FromArgb(40, 52, 70);
+            tabControl_Profile.TabButtonHoverState.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            tabControl_Profile.TabButtonHoverState.ForeColor = Color.White;
+            tabControl_Profile.TabButtonHoverState.InnerColor = Color.FromArgb(40, 52, 70);
+            tabControl_Profile.TabButtonIdleState.BorderColor = Color.Empty;
+            tabControl_Profile.TabButtonIdleState.FillColor = Color.FromArgb(33, 42, 57);
+            tabControl_Profile.TabButtonIdleState.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            tabControl_Profile.TabButtonIdleState.ForeColor = Color.FromArgb(156, 160, 167);
+            tabControl_Profile.TabButtonIdleState.InnerColor = Color.FromArgb(33, 42, 57);
+            tabControl_Profile.TabButtonSelectedState.BorderColor = Color.Empty;
+            tabControl_Profile.TabButtonSelectedState.FillColor = Color.FromArgb(29, 37, 49);
+            tabControl_Profile.TabButtonSelectedState.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            tabControl_Profile.TabButtonSelectedState.ForeColor = Color.White;
+            tabControl_Profile.TabButtonSelectedState.InnerColor = Color.FromArgb(76, 132, 255);
+            tabControl_Profile.TabButtonSize = new Size(180, 40);
+            tabControl_Profile.TabIndex = 1;
+            tabControl_Profile.TabMenuBackColor = Color.FromArgb(233, 244, 255);
+            tabControl_Profile.Selecting += tabControl_Profile_Selecting;
             // 
             // tabPage1
             // 
@@ -247,12 +273,205 @@
             // 
             // tabPage4
             // 
+            tabPage4.Controls.Add(lbl_CreationDate);
+            tabPage4.Controls.Add(guna2HtmlLabel5);
+            tabPage4.Controls.Add(txt_Email);
+            tabPage4.Controls.Add(guna2HtmlLabel4);
+            tabPage4.Controls.Add(btn_UpdateProfile);
+            tabPage4.Controls.Add(lbl_StoragedData);
+            tabPage4.Controls.Add(guna2HtmlLabel3);
+            tabPage4.Controls.Add(lbl_FullName);
+            tabPage4.Controls.Add(guna2HtmlLabel2);
+            tabPage4.Controls.Add(txt_LastName);
+            tabPage4.Controls.Add(txt_FirstName);
+            tabPage4.Controls.Add(guna2HtmlLabel1);
+            tabPage4.Controls.Add(pic_Avatar);
             tabPage4.Location = new Point(184, 4);
             tabPage4.Name = "tabPage4";
             tabPage4.Size = new Size(844, 564);
             tabPage4.TabIndex = 3;
             tabPage4.Text = "Thông tin tài khoản";
             tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // lbl_CreationDate
+            // 
+            lbl_CreationDate.BackColor = Color.Transparent;
+            lbl_CreationDate.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            lbl_CreationDate.Location = new Point(304, 354);
+            lbl_CreationDate.Name = "lbl_CreationDate";
+            lbl_CreationDate.Size = new Size(153, 30);
+            lbl_CreationDate.TabIndex = 14;
+            lbl_CreationDate.Text = "2023/12/12 0:0:0";
+            // 
+            // guna2HtmlLabel5
+            // 
+            guna2HtmlLabel5.BackColor = Color.Transparent;
+            guna2HtmlLabel5.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            guna2HtmlLabel5.Location = new Point(304, 320);
+            guna2HtmlLabel5.Name = "guna2HtmlLabel5";
+            guna2HtmlLabel5.Size = new Size(121, 30);
+            guna2HtmlLabel5.TabIndex = 13;
+            guna2HtmlLabel5.Text = "Creation date";
+            // 
+            // txt_Email
+            // 
+            txt_Email.CustomizableEdges = customizableEdges6;
+            txt_Email.DefaultText = "";
+            txt_Email.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txt_Email.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txt_Email.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txt_Email.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txt_Email.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_Email.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_Email.ForeColor = Color.Black;
+            txt_Email.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_Email.Location = new Point(304, 258);
+            txt_Email.Margin = new Padding(4, 6, 4, 6);
+            txt_Email.Name = "txt_Email";
+            txt_Email.PasswordChar = '\0';
+            txt_Email.PlaceholderText = "";
+            txt_Email.ReadOnly = true;
+            txt_Email.SelectedText = "";
+            txt_Email.ShadowDecoration.CustomizableEdges = customizableEdges7;
+            txt_Email.Size = new Size(350, 40);
+            txt_Email.TabIndex = 11;
+            // 
+            // guna2HtmlLabel4
+            // 
+            guna2HtmlLabel4.BackColor = Color.Transparent;
+            guna2HtmlLabel4.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            guna2HtmlLabel4.Location = new Point(304, 219);
+            guna2HtmlLabel4.Name = "guna2HtmlLabel4";
+            guna2HtmlLabel4.Size = new Size(50, 30);
+            guna2HtmlLabel4.TabIndex = 10;
+            guna2HtmlLabel4.Text = "Email";
+            // 
+            // btn_UpdateProfile
+            // 
+            btn_UpdateProfile.CustomizableEdges = customizableEdges8;
+            btn_UpdateProfile.DisabledState.BorderColor = Color.DarkGray;
+            btn_UpdateProfile.DisabledState.CustomBorderColor = Color.DarkGray;
+            btn_UpdateProfile.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
+            btn_UpdateProfile.DisabledState.ForeColor = Color.FromArgb(141, 141, 141);
+            btn_UpdateProfile.Enabled = false;
+            btn_UpdateProfile.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            btn_UpdateProfile.ForeColor = Color.White;
+            btn_UpdateProfile.Location = new Point(304, 423);
+            btn_UpdateProfile.Name = "btn_UpdateProfile";
+            btn_UpdateProfile.ShadowDecoration.CustomizableEdges = customizableEdges9;
+            btn_UpdateProfile.Size = new Size(168, 47);
+            btn_UpdateProfile.TabIndex = 8;
+            btn_UpdateProfile.Text = "Update profile";
+            btn_UpdateProfile.Click += btn_UpdateProfile_Click;
+            // 
+            // lbl_StoragedData
+            // 
+            lbl_StoragedData.BackColor = Color.Transparent;
+            lbl_StoragedData.Font = new Font("Segoe UI", 28.2F, FontStyle.Regular, GraphicsUnit.Point);
+            lbl_StoragedData.Location = new Point(40, 345);
+            lbl_StoragedData.Name = "lbl_StoragedData";
+            lbl_StoragedData.Size = new Size(68, 64);
+            lbl_StoragedData.TabIndex = 7;
+            lbl_StoragedData.Text = "0 B";
+            // 
+            // guna2HtmlLabel3
+            // 
+            guna2HtmlLabel3.BackColor = Color.Transparent;
+            guna2HtmlLabel3.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            guna2HtmlLabel3.Location = new Point(40, 309);
+            guna2HtmlLabel3.Name = "guna2HtmlLabel3";
+            guna2HtmlLabel3.Size = new Size(128, 30);
+            guna2HtmlLabel3.TabIndex = 6;
+            guna2HtmlLabel3.Text = "Storaged data";
+            // 
+            // lbl_FullName
+            // 
+            lbl_FullName.Font = new Font("Segoe UI", 13.8F, FontStyle.Regular, GraphicsUnit.Point);
+            lbl_FullName.Location = new Point(0, 221);
+            lbl_FullName.Name = "lbl_FullName";
+            lbl_FullName.Size = new Size(240, 30);
+            lbl_FullName.TabIndex = 5;
+            lbl_FullName.Text = "User";
+            lbl_FullName.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // guna2HtmlLabel2
+            // 
+            guna2HtmlLabel2.BackColor = Color.Transparent;
+            guna2HtmlLabel2.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            guna2HtmlLabel2.Location = new Point(304, 128);
+            guna2HtmlLabel2.Name = "guna2HtmlLabel2";
+            guna2HtmlLabel2.Size = new Size(90, 30);
+            guna2HtmlLabel2.TabIndex = 4;
+            guna2HtmlLabel2.Text = "Last name";
+            // 
+            // txt_LastName
+            // 
+            txt_LastName.CustomizableEdges = customizableEdges10;
+            txt_LastName.DefaultText = "";
+            txt_LastName.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txt_LastName.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txt_LastName.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txt_LastName.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txt_LastName.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_LastName.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_LastName.ForeColor = Color.Black;
+            txt_LastName.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_LastName.Location = new Point(304, 167);
+            txt_LastName.Margin = new Padding(4, 6, 4, 6);
+            txt_LastName.Name = "txt_LastName";
+            txt_LastName.PasswordChar = '\0';
+            txt_LastName.PlaceholderText = "";
+            txt_LastName.SelectedText = "";
+            txt_LastName.ShadowDecoration.CustomizableEdges = customizableEdges11;
+            txt_LastName.Size = new Size(250, 40);
+            txt_LastName.TabIndex = 3;
+            // 
+            // txt_FirstName
+            // 
+            txt_FirstName.CustomizableEdges = customizableEdges12;
+            txt_FirstName.DefaultText = "";
+            txt_FirstName.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txt_FirstName.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txt_FirstName.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txt_FirstName.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txt_FirstName.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_FirstName.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_FirstName.ForeColor = Color.Black;
+            txt_FirstName.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_FirstName.Location = new Point(304, 75);
+            txt_FirstName.Margin = new Padding(4, 5, 4, 5);
+            txt_FirstName.Name = "txt_FirstName";
+            txt_FirstName.PasswordChar = '\0';
+            txt_FirstName.PlaceholderText = "";
+            txt_FirstName.SelectedText = "";
+            txt_FirstName.ShadowDecoration.CustomizableEdges = customizableEdges13;
+            txt_FirstName.Size = new Size(250, 40);
+            txt_FirstName.TabIndex = 2;
+            // 
+            // guna2HtmlLabel1
+            // 
+            guna2HtmlLabel1.BackColor = Color.Transparent;
+            guna2HtmlLabel1.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            guna2HtmlLabel1.Location = new Point(304, 40);
+            guna2HtmlLabel1.Name = "guna2HtmlLabel1";
+            guna2HtmlLabel1.Size = new Size(85, 27);
+            guna2HtmlLabel1.TabIndex = 1;
+            guna2HtmlLabel1.Text = "First name";
+            // 
+            // pic_Avatar
+            // 
+            pic_Avatar.BorderStyle = BorderStyle.FixedSingle;
+            pic_Avatar.ImageRotate = 0F;
+            pic_Avatar.InitialImage = (Image)resources.GetObject("pic_Avatar.InitialImage");
+            pic_Avatar.Location = new Point(40, 40);
+            pic_Avatar.Name = "pic_Avatar";
+            pic_Avatar.ShadowDecoration.CustomizableEdges = customizableEdges14;
+            pic_Avatar.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
+            pic_Avatar.Size = new Size(160, 160);
+            pic_Avatar.SizeMode = PictureBoxSizeMode.StretchImage;
+            pic_Avatar.TabIndex = 0;
+            pic_Avatar.TabStop = false;
+            pic_Avatar.Click += pic_Avatar_Click;
             // 
             // flowLayoutPanel_ListProcessing
             // 
@@ -274,7 +493,7 @@
             BackColor = Color.FromArgb(233, 244, 255);
             ClientSize = new Size(1032, 653);
             Controls.Add(flowLayoutPanel_ListProcessing);
-            Controls.Add(guna2TabControl1);
+            Controls.Add(tabControl_Profile);
             Controls.Add(btn_TransferInfor);
             Controls.Add(btn_New);
             Name = "MainForm";
@@ -284,8 +503,11 @@
             FormClosed += MainForm_FormClosed;
             Load += MainForm_Load;
             guna2ContextMenuStrip_btnNew.ResumeLayout(false);
-            guna2TabControl1.ResumeLayout(false);
+            tabControl_Profile.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
+            tabPage4.ResumeLayout(false);
+            tabPage4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pic_Avatar).EndInit();
             ResumeLayout(false);
         }
 
@@ -301,11 +523,24 @@
         private Guna.UI2.WinForms.Guna2Elipse guna2Elipse_ForMenuStrip;
         private Guna.UI2.WinForms.Guna2Elipse guna2Elipse_Panel;
         private Guna.UI2.WinForms.Guna2CircleButton btn_TransferInfor;
-        private Guna.UI2.WinForms.Guna2TabControl guna2TabControl1;
+        private Guna.UI2.WinForms.Guna2TabControl tabControl_Profile;
         private TabPage tabPage1;
         private TabPage tabPage2;
         private TabPage tabPage3;
         private TabPage tabPage4;
         private FlowLayoutPanel flowLayoutPanel_ListProcessing;
+        private Guna.UI2.WinForms.Guna2CirclePictureBox pic_Avatar;
+        private Guna.UI2.WinForms.Guna2TextBox txt_Email;
+        private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel4;
+        private Guna.UI2.WinForms.Guna2Button btn_UpdateProfile;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lbl_StoragedData;
+        private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel3;
+        private Label lbl_FullName;
+        private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel2;
+        private Guna.UI2.WinForms.Guna2TextBox txt_LastName;
+        private Guna.UI2.WinForms.Guna2TextBox txt_FirstName;
+        private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel1;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lbl_CreationDate;
+        private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel5;
     }
 }

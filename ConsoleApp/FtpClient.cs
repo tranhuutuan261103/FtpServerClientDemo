@@ -1,7 +1,11 @@
 ﻿using MyClassLibrary;
+using MyClassLibrary.Bean;
+using MyClassLibrary.Bean.Account;
+using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -19,17 +23,46 @@ namespace ConsoleApp
         private List<TaskSession> _mainTaskSessions = new List<TaskSession>();
         private TcpSession[] subTcpSession = new TcpSession[2];
         private List<FileTransferProcessing> _subTaskSessions = new List<FileTransferProcessing>();
-        public FtpClient(string host, int port, TransferProgress process, OnChangeFolderAndFile changeFolderAndFile)
+        public FtpClient(string host, int port)
         {
             _host = host;
             _port = port;
-
-            _mainTcpSession = new TcpSession(_host, _port);
-            _mainTcpSession.Connect();
+            _mainTcpSession = new TcpSession(_host, _port, "", "");
             for (int i = 0; i < subTcpSession.Length; i++)
             {
-                subTcpSession[i] = new TcpSession(_host, _port);
+                subTcpSession[i] = new TcpSession(_host, _port, "", "");
             }
+        }
+
+        public bool Register(RegisterRequest request)
+        {
+            return _mainTcpSession.Register(request);
+        }
+
+        public bool ResetPassword(ResetPasswordRequest request)
+        {
+            return _mainTcpSession.ResetPassword(request);
+        }
+
+
+        public bool Login(string username, string password)
+        {
+            _mainTcpSession.SetUsername(username);
+            _mainTcpSession.SetPassword(password);
+            if (_mainTcpSession.Connect())
+            {
+                for (int i = 0; i < subTcpSession.Length; i++)
+                {
+                    subTcpSession[i].SetUsername(username);
+                    subTcpSession[i].SetPassword(password);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile, OnGetListFileAccess onGetListFileAccess)
+        {   
             Thread threadMain = new Thread(MainProcess);
             threadMain.Start();
 
@@ -38,6 +71,9 @@ namespace ConsoleApp
 
             progress += process;
             this.changeFolderAndFile += changeFolderAndFile;
+            this.onGetAccountInfor += onGetAccountInfor;
+            this.onGetDetailFile += onGetDetailFile;
+            this.onGetListFileAccess += onGetListFileAccess;
         }
 
         private void PushMainTaskSession(TaskSession taskSession)
@@ -131,8 +167,57 @@ namespace ConsoleApp
         private void ExecuteMainTaskSession(TaskSession taskSession)
         {
             FtpClientProcessing fcp = new FtpClientProcessing(_mainTcpSession.GetTcpClient(), TransferProgressHandler, TransferRequestHandler);
+            AccountClientProcessing ap = new AccountClientProcessing(_mainTcpSession.GetTcpClient());
             switch (taskSession.Type)
             {
+                case "CREATEFOLDER":
+                    {
+                        CreateFolderRequest request = (CreateFolderRequest)taskSession.Data;
+                        fcp.CreateFolder(request);
+                    }
+                    break;
+                case "GETDETAILFILE":
+                    {
+                        string id = (string)taskSession.Data;
+                        FileDetailVM? fileDetailVM = fcp.GetDetailFile(id);
+                        if (fileDetailVM != null)
+                        {
+                            List<FileAccessVM> fileAccessVMs = fcp.GetListFileAccess(id);
+                            GetDetailFileHandler(fileDetailVM, fileAccessVMs);
+                        }
+                    }
+                    break;
+                case "RENAMEFILE":
+                    {
+                        RenameFileRequest request = (RenameFileRequest)taskSession.Data;
+                        fcp.RenameFile(request);
+                    }
+                    break;
+                case "DELETEFILE":
+                    {
+                        DeleteFileRequest request = (DeleteFileRequest)taskSession.Data;
+                        fcp.DeleteFile(request);
+                    }
+                    break;
+                case "DELETEFOLDER":
+                    {
+                        DeleteFileRequest request = (DeleteFileRequest)taskSession.Data;
+                        fcp.DeleteFolder(request);
+                    }
+                    break;
+                case "GETLISTFILEACCESS":
+                    {
+                        string id = (string)taskSession.Data;
+                        List<FileAccessVM> fileAccessVMs = fcp.GetListFileAccess(id);
+                        GetListFileAccessHandler(fileAccessVMs);
+                    }
+                    break;
+                case "UPDATEFILEACCESS":
+                    {
+                        List<FileAccessVM> request = (List<FileAccessVM>)taskSession.Data;
+                        fcp.UpdateFileAccess(request);
+                    }
+                    break;
                 case "LIST":
                     {
                         List<FileInfor> fileInfors = fcp.ListRemoteFoldersAndFiles(taskSession.RemotePath);
@@ -147,6 +232,18 @@ namespace ConsoleApp
                 case "UPLOADFOLDER":
                     {
                         fcp.UploadFolder(taskSession.RemotePath, taskSession.LocalPath);
+                    }
+                    break;
+                case "GETACCOUNTINFOR":
+                    {
+                        AccountInfoVM accountInfoVM = ap.GetAccountInfor();
+                        GetAccountInforHandler(accountInfoVM);
+                    }
+                    break;
+                case "UPDATEACCOUNTINFOR":
+                    {
+                        AccountInfoVM account = (AccountInfoVM)taskSession.Data;
+                        ap.UpdateAccountInfor(account);
                     }
                     break;
                 default:
@@ -207,6 +304,44 @@ namespace ConsoleApp
             }
         }
 
+        public void CreateFolder(CreateFolderRequest request)
+        {
+            TaskSession taskSession = new TaskSession("CREATEFOLDER", request);
+            PushMainTaskSession(taskSession);
+        }
+
+        public delegate void OnGetDetailFile(FileDetailVM sender, List<FileAccessVM> fileAccessVMs);
+        public event OnGetDetailFile onGetDetailFile;
+
+        public void GetDetailFileHandler(FileDetailVM sender, List<FileAccessVM> fileAccessVMs)
+        {
+            onGetDetailFile?.Invoke(sender, fileAccessVMs);
+        }
+
+        public void GetDetailFile(string id)
+        {
+            TaskSession taskSession = new TaskSession("GETDETAILFILE", id);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void RenameFile(RenameFileRequest request)
+        {
+            TaskSession taskSession = new TaskSession("RENAMEFILE", request);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void DeleteFile(DeleteFileRequest request)
+        {
+            TaskSession taskSession = new TaskSession("DELETEFILE", request);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void DeleteFolder(DeleteFileRequest request)
+        {
+            TaskSession taskSession = new TaskSession("DELETEFOLDER", request);
+            PushMainTaskSession(taskSession);
+        }
+
         public void Download(string remoteFileId, string localPath, string localFileName)
         {
             FileTransferProcessing taskSession = new FileTransferProcessing("RETR", remoteFileId, localFileName, localPath);
@@ -240,6 +375,47 @@ namespace ConsoleApp
         public void ListRemoteFolderAndFiles(string remoteFolderPath)
         {
             TaskSession taskSession = new TaskSession("LIST", remoteFolderPath, "", "");
+            PushMainTaskSession(taskSession);
+        }
+
+        // Manage account
+        public void GetAccountInfor()
+        {
+            TaskSession taskSession = new TaskSession("GETACCOUNTINFOR", "", "", "");
+            PushMainTaskSession(taskSession);
+        }
+
+        public delegate void OnGetAccountInfor(AccountInfoVM sender);
+        public event OnGetAccountInfor onGetAccountInfor;
+
+        public void GetAccountInforHandler(AccountInfoVM sender)
+        {
+            onGetAccountInfor?.Invoke(sender);
+        }
+
+        public void UpdateAccountInfor(AccountInfoVM account)
+        {
+            TaskSession taskSession = new TaskSession("UPDATEACCOUNTINFOR", account);
+            PushMainTaskSession(taskSession);
+        }
+
+        // Manage file access
+        public delegate void OnGetListFileAccess(List<FileAccessVM> sender);
+        public event OnGetListFileAccess onGetListFileAccess;
+
+        public void GetListFileAccessHandler(List<FileAccessVM> sender)
+        {
+            onGetListFileAccess?.Invoke(sender);
+        }
+        public void GetListFileAccess(string idFile)
+        {
+            TaskSession taskSession = new TaskSession("GETLISTFILEACCESS", idFile);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void UpdateFileAccess(List<FileAccessVM> fileAccessVMs)
+        {
+            TaskSession taskSession = new TaskSession("UPDATEFILEACCESS", fileAccessVMs);
             PushMainTaskSession(taskSession);
         }
 

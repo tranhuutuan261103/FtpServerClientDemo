@@ -1,4 +1,5 @@
-﻿using MyClassLibrary.Common;
+﻿using MyClassLibrary.Bean.File;
+using MyClassLibrary.Common;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -15,9 +16,16 @@ namespace UserApp.UI.UserComponent
 {
     public partial class FileControl : UserControl
     {
-        public FileControl(FileInfor item, FileControlClickHandler fileControlClickHandler)
+        public FileControl(FileInfor item, 
+            FileControlClickHandler fileControlClickHandler, 
+            ShowDetailFileHandler showDetailFileHandler,
+            RenameClickHandler renameClickHandler, 
+            DeleteClickHandler deleteClickHandler)
         {
             FileControlClick = fileControlClickHandler;
+            ShowDetailFile = showDetailFileHandler;
+            RenameClick = renameClickHandler;
+            DeleteClick = deleteClickHandler;
             infor = item;
             InitializeComponent();
             UpdateInforUI(item);
@@ -48,19 +56,69 @@ namespace UserApp.UI.UserComponent
             FileControlClick(fileControlRequest, e);
         }
 
+        public delegate void RenameClickHandler(RenameFileRequest sender);
+        public event RenameClickHandler RenameClick;
+
         private void ToolStripMenuItem_Rename_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Rename");
+            using (InputDialog inputDialog = new InputDialog())
+            {
+                inputDialog.Title = "Rename";
+                inputDialog.Message = "Are you sure you want to rename?";
+                if (infor.IsDirectory == true)
+                {
+                    inputDialog.InputText = infor.Name;
+                } else
+                {
+                    inputDialog.InputText = infor.Name.Substring(0, infor.Name.LastIndexOf('.'));
+                }
+                
+                if (inputDialog.ShowDialog() == DialogResult.OK)
+                {
+                    if (inputDialog.InputText == infor.Name || inputDialog.InputText == "")
+                    {
+                        return;
+                    }
+                    RenameFileRequest request = new RenameFileRequest()
+                    {
+                        Id = infor.Id,
+                        NewName = inputDialog.InputText,
+                    };
+                    if (infor.IsDirectory == false)
+                    {
+                        request.NewName += infor.Name.Substring(infor.Name.LastIndexOf('.'));
+                    }
+                    RenameClick(request);
+                }
+            }
         }
+
+        public delegate void ShowDetailFileHandler(FileInfor sender);
+        public event ShowDetailFileHandler ShowDetailFile;
 
         private void ToolStripMenuItem_Information_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Information");
+            ShowDetailFile(infor);
         }
+
+        public delegate void DeleteClickHandler(DeleteFileRequest sender);
+        public event DeleteClickHandler DeleteClick;
 
         private void ToolStripMenuItem_Remove_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Remove");
+            DeleteFileRequest request = new DeleteFileRequest()
+            {
+                Id = infor.Id,
+            };
+            if (infor.IsDirectory == true)
+            {
+                request.RequestType = DeleteFileRequestType.Folder;
+            }
+            else
+            {
+                request.RequestType = DeleteFileRequestType.File;
+            }
+            DeleteClick(request);
         }
 
         public void UpdateInforUI(FileInfor fileInfor)

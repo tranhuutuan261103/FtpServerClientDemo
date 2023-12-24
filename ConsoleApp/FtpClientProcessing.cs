@@ -1,4 +1,6 @@
-﻿using MyClassLibrary.Common;
+﻿using MyClassLibrary.Bean.File;
+using MyClassLibrary.Common;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,6 +50,114 @@ namespace ConsoleApp
                 return tokens[1];
             }
             return "";
+        }
+        public bool CreateFolder(CreateFolderRequest request)
+        {
+            if (SetRemoteFolderPath(request.ParentFolderId) == false)
+            {
+                return false;
+            }
+            string Command = "", Response = "";
+            Command = string.Format("MKD {0}", request.FolderName);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("257 ") == true)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public FileDetailVM? GetDetailFile(string id)
+        {
+            string Command = "", Response = "";
+            Command = string.Format("GETDETAILFILE {0}", id);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("257 ") == true)
+            {
+                string dataJson = Response.Substring(Response.IndexOf(" ") + 1);
+                if (string.IsNullOrEmpty(dataJson) == false)
+                {
+                    FileDetailVM fileDetailVM = JsonConvert.DeserializeObject<FileDetailVM>(dataJson);
+                    return fileDetailVM;
+                }
+                return null;
+            }
+            return null;
+        }
+
+        public bool RenameFile(RenameFileRequest request)
+        {
+            if (SetRemoteFolderPath(request.Id) == false)
+            {
+                return false;
+            }
+            string Command = "", Response = "";
+            Command = string.Format("RNTO {0}", request.NewName);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("250 ") == true)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public void DeleteFile(DeleteFileRequest request)
+        {
+            string Command, Response;
+            Command = string.Format("DELE {0}", request.Id);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("250 ") == true)
+            {
+                return;
+            }
+        }
+
+        public void DeleteFolder(DeleteFileRequest request)
+        {
+            string Command, Response;
+            Command = string.Format("RMD {0}", request.Id);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("250 ") == true)
+            {
+                return;
+            }
+        }
+
+        public List<FileAccessVM> GetListFileAccess(string id)
+        {
+            string Command = "", Response = "";
+            Command = string.Format("GETLISTFILEACCESS {0}", id);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("257 ") == true)
+            {
+                string dataJson = Response.Substring(Response.IndexOf(" ") + 1);
+                if (string.IsNullOrEmpty(dataJson) == false)
+                {
+                    List<FileAccessVM> fileAccessVMs = JsonConvert.DeserializeObject<List<FileAccessVM>>(dataJson);
+                    return fileAccessVMs;
+                }
+                return new List<FileAccessVM>();
+            }
+            return new List<FileAccessVM>();
+        }
+
+        public bool UpdateFileAccess(List<FileAccessVM> request)
+        {
+            string Command, Response;
+            Command = string.Format("UPDATEFILEACCESS {0}", JsonConvert.SerializeObject(request));
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("257 ") == true)
+            {
+                return true;
+            }
+            return false;
         }
 
         public string CreateNewRemoteFolder(string remoteFolderName)

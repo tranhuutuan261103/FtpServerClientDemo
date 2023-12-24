@@ -1,5 +1,7 @@
 ﻿using ConsoleApp;
 using MyClassLibrary;
+using MyClassLibrary.Bean.Account;
+using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
@@ -15,19 +17,58 @@ namespace UserApp.BLL
         private readonly FtpClient ftpClient;
         private string _remoteFolderPath = "";
 
-        public MainForm_BLL(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile)
+        public MainForm_BLL(FtpClient ftpClient, TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile)
         {
-            fileManager = new FileManager(@"D:\FileClient");
-            ftpClient = new FtpClient("127.0.0.1", 1234, TransferProgressHandler, ChangeFoldersAndFileHandler);
+            fileManager = new FileManager();
+            this.ftpClient = ftpClient;
+            ftpClient.Start(TransferProgressHandler, ChangeFoldersAndFileHandler, GetAccountInfor, OnGetDetailFileHandler, OnGetListFileAccessHandler);
             progress += process;
             this.changeFolderAndFile += changeFolderAndFile;
+            this.getAccountInfor += onGetAccountInfor;
+            this.getDetailFile += onGetDetailFile;
         }
 
         public void GetFileInfos()
         {
             ftpClient.ListRemoteFolderAndFiles("");
         }
+        public void CreateFolder(string inputText)
+        {
+            CreateFolderRequest request = new CreateFolderRequest()
+            {
+                FolderName = inputText,
+                ParentFolderId = _remoteFolderPath
+            };
+            ftpClient.CreateFolder(request);
+        }
 
+        public delegate void OnGetDetailFile(FileDetailVM fileDetailVM, List<FileAccessVM> fileAccessVMs);
+        public event OnGetDetailFile getDetailFile;
+
+        private void OnGetDetailFileHandler(FileDetailVM fileDetailVM, List<FileAccessVM> fileAccessVMs)
+        {
+            getDetailFile(fileDetailVM, fileAccessVMs);
+        }
+
+        public void GetDetailFile(string id)
+        {
+            ftpClient.GetDetailFile(id);
+        }
+
+        public void RenameFile(RenameFileRequest sender)
+        {
+            ftpClient.RenameFile(sender);
+        }
+
+        public void DeleteFile(DeleteFileRequest sender)
+        {
+            ftpClient.DeleteFile(sender);
+        }
+
+        public void DeleteFolder(DeleteFileRequest sender)
+        {
+            ftpClient.DeleteFolder(sender);
+        }
         public void Download(FileInfor fileInfor)
         {
             ftpClient.Download(fileInfor.Id, fileManager.GetCurrentPath(), fileInfor.Name);
@@ -77,6 +118,15 @@ namespace UserApp.BLL
                 changeFolderAndFile(fileInfors);
         }
 
+        public delegate void OnGetAccountInfor(AccountInfoVM sender);
+        public event OnGetAccountInfor getAccountInfor;
+
+        private void GetAccountInfor(AccountInfoVM account)
+        {
+            if (account != null)
+                getAccountInfor(account);
+        }
+
         public void Dispose()
         {
             ftpClient.Dispose();
@@ -91,6 +141,35 @@ namespace UserApp.BLL
         {
             string folderName = selectedPath.Substring(selectedPath.LastIndexOf('\\') + 1);
             ftpClient.UploadFolder(folderName, selectedPath);
+        }
+
+        // Manage account
+        public void GetAccountInfor()
+        {
+            ftpClient.GetAccountInfor();
+        }
+
+        public void UpdateAccountInfor(AccountInfoVM account)
+        {
+            ftpClient.UpdateAccountInfor(account);
+        }
+
+        // File access
+        public delegate void OnGetListFileAccess(List<FileAccessVM> sender);
+        public event OnGetListFileAccess onGetListFileAccess;
+
+        private void OnGetListFileAccessHandler(List<FileAccessVM> fileAccessVMs)
+        {
+            onGetListFileAccess(fileAccessVMs);
+        }
+        public void GetListFileAccess(string idFile)
+        {
+            ftpClient.GetListFileAccess(idFile);
+        }
+
+        public void UpdateFileAccess(List<FileAccessVM> fileAccessVMs)
+        {
+            ftpClient.UpdateFileAccess(fileAccessVMs);
         }
     }
 }
