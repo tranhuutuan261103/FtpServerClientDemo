@@ -38,12 +38,39 @@ namespace UserApp.UI.UserComponent
 
         private void FileControl_DoubleClick(object sender, EventArgs e)
         {
-            FileControlRequest fileControlRequest = new FileControlRequest()
+            string panelName = "";
+            try
             {
-                fileInfor = infor,
-                type = FileControlRequestType.ChangeFolder,
-            };
-            FileControlClick(fileControlRequest, e);
+                if (Parent != null)
+                {
+                    panelName = Parent.Name;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            catch (Exception)
+            {
+                return;
+            }
+            if (panelName == "grid_FileAndFolder")
+            {
+                FileControlRequest fileControlRequest = new FileControlRequest()
+                {
+                    fileInfor = infor,
+                    type = FileControlRequestType.ChangeFolder,
+                };
+                FileControlClick(fileControlRequest, e);
+            } else if (panelName == "grid_ListFileAndFolderShared")
+            {
+                FileControlRequest fileControlRequest = new FileControlRequest()
+                {
+                    fileInfor = infor,
+                    type = FileControlRequestType.ChangeSharedFolder,
+                };
+                FileControlClick(fileControlRequest, e);
+            }
         }
 
         private void ToolStripMenuItem_Download_Click(object sender, EventArgs e)

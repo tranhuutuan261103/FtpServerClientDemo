@@ -57,6 +57,7 @@
             tabControl_Profile = new Guna.UI2.WinForms.Guna2TabControl();
             tabPage1 = new TabPage();
             tabPage2 = new TabPage();
+            grid_ListFileAndFolderShared = new FlowLayoutPanel();
             tabPage3 = new TabPage();
             tabPage4 = new TabPage();
             lbl_CreationDate = new Guna.UI2.WinForms.Guna2HtmlLabel();
@@ -73,9 +74,11 @@
             guna2HtmlLabel1 = new Guna.UI2.WinForms.Guna2HtmlLabel();
             pic_Avatar = new Guna.UI2.WinForms.Guna2CirclePictureBox();
             flowLayoutPanel_ListProcessing = new FlowLayoutPanel();
+            guna2Elipse1 = new Guna.UI2.WinForms.Guna2Elipse(components);
             guna2ContextMenuStrip_btnNew.SuspendLayout();
             tabControl_Profile.SuspendLayout();
             tabPage1.SuspendLayout();
+            tabPage2.SuspendLayout();
             tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pic_Avatar).BeginInit();
             SuspendLayout();
@@ -131,7 +134,7 @@
             btn_New.ShadowDecoration.Shadow = new Padding(0, 0, 5, 5);
             btn_New.Size = new Size(93, 63);
             btn_New.TabIndex = 3;
-            btn_New.Text = "Mới";
+            btn_New.Text = "New";
             btn_New.Click += btn_Upload_Click;
             // 
             // guna2ContextMenuStrip_btnNew
@@ -148,30 +151,30 @@
             guna2ContextMenuStrip_btnNew.RenderStyle.SelectionForeColor = Color.White;
             guna2ContextMenuStrip_btnNew.RenderStyle.SeparatorColor = Color.Gainsboro;
             guna2ContextMenuStrip_btnNew.RenderStyle.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
-            guna2ContextMenuStrip_btnNew.Size = new Size(211, 146);
+            guna2ContextMenuStrip_btnNew.Size = new Size(172, 118);
             // 
             // ToolStripMenuItem_NewFolder
             // 
             ToolStripMenuItem_NewFolder.Name = "ToolStripMenuItem_NewFolder";
             ToolStripMenuItem_NewFolder.Padding = new Padding(0, 8, 0, 8);
-            ToolStripMenuItem_NewFolder.Size = new Size(210, 38);
-            ToolStripMenuItem_NewFolder.Text = "Thư mục mới";
+            ToolStripMenuItem_NewFolder.Size = new Size(171, 38);
+            ToolStripMenuItem_NewFolder.Text = "New folder";
             ToolStripMenuItem_NewFolder.Click += ToolStripMenuItem_NewFolder_Click;
             // 
             // ToolStripMenuItem_UploadFile
             // 
             ToolStripMenuItem_UploadFile.Name = "ToolStripMenuItem_UploadFile";
             ToolStripMenuItem_UploadFile.Padding = new Padding(0, 8, 0, 8);
-            ToolStripMenuItem_UploadFile.Size = new Size(210, 38);
-            ToolStripMenuItem_UploadFile.Text = "Tải tệp lên";
+            ToolStripMenuItem_UploadFile.Size = new Size(171, 38);
+            ToolStripMenuItem_UploadFile.Text = "Upload file";
             ToolStripMenuItem_UploadFile.Click += ToolStripMenuItem_UploadFile_Click;
             // 
             // ToolStripMenuItem_UploadFolder
             // 
             ToolStripMenuItem_UploadFolder.Name = "ToolStripMenuItem_UploadFolder";
             ToolStripMenuItem_UploadFolder.Padding = new Padding(0, 8, 0, 8);
-            ToolStripMenuItem_UploadFolder.Size = new Size(210, 38);
-            ToolStripMenuItem_UploadFolder.Text = "Tải thư mục lên";
+            ToolStripMenuItem_UploadFolder.Size = new Size(171, 38);
+            ToolStripMenuItem_UploadFolder.Text = "Upload folder";
             ToolStripMenuItem_UploadFolder.Click += ToolStripMenuItem_UploadFolder_Click;
             // 
             // guna2Elipse_ForMenuStrip
@@ -250,17 +253,28 @@
             tabPage1.Padding = new Padding(3);
             tabPage1.Size = new Size(844, 564);
             tabPage1.TabIndex = 0;
-            tabPage1.Text = "Drive của tôi";
+            tabPage1.Text = "My Drive";
             // 
             // tabPage2
             // 
+            tabPage2.BackColor = Color.FromArgb(233, 244, 255);
+            tabPage2.Controls.Add(grid_ListFileAndFolderShared);
             tabPage2.Location = new Point(184, 4);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
             tabPage2.Size = new Size(844, 564);
             tabPage2.TabIndex = 1;
-            tabPage2.Text = "Được chia sẻ với tôi";
-            tabPage2.UseVisualStyleBackColor = true;
+            tabPage2.Text = "Shared";
+            // 
+            // grid_ListFileAndFolderShared
+            // 
+            grid_ListFileAndFolderShared.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            grid_ListFileAndFolderShared.BackColor = Color.White;
+            grid_ListFileAndFolderShared.Location = new Point(37, 61);
+            grid_ListFileAndFolderShared.Name = "grid_ListFileAndFolderShared";
+            grid_ListFileAndFolderShared.Padding = new Padding(30);
+            grid_ListFileAndFolderShared.Size = new Size(772, 476);
+            grid_ListFileAndFolderShared.TabIndex = 0;
             // 
             // tabPage3
             // 
@@ -268,7 +282,7 @@
             tabPage3.Name = "tabPage3";
             tabPage3.Size = new Size(844, 564);
             tabPage3.TabIndex = 2;
-            tabPage3.Text = "Có gắn dấu sao";
+            tabPage3.Text = "My favorite";
             tabPage3.UseVisualStyleBackColor = true;
             // 
             // tabPage4
@@ -290,7 +304,7 @@
             tabPage4.Name = "tabPage4";
             tabPage4.Size = new Size(844, 564);
             tabPage4.TabIndex = 3;
-            tabPage4.Text = "Thông tin tài khoản";
+            tabPage4.Text = "Profile";
             tabPage4.UseVisualStyleBackColor = true;
             // 
             // lbl_CreationDate
@@ -486,6 +500,11 @@
             flowLayoutPanel_ListProcessing.TabIndex = 1;
             flowLayoutPanel_ListProcessing.Visible = false;
             // 
+            // guna2Elipse1
+            // 
+            guna2Elipse1.BorderRadius = 48;
+            guna2Elipse1.TargetControl = grid_ListFileAndFolderShared;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -505,6 +524,7 @@
             guna2ContextMenuStrip_btnNew.ResumeLayout(false);
             tabControl_Profile.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
+            tabPage2.ResumeLayout(false);
             tabPage4.ResumeLayout(false);
             tabPage4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pic_Avatar).EndInit();
@@ -542,5 +562,7 @@
         private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel1;
         private Guna.UI2.WinForms.Guna2HtmlLabel lbl_CreationDate;
         private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel5;
+        private FlowLayoutPanel grid_ListFileAndFolderShared;
+        private Guna.UI2.WinForms.Guna2Elipse guna2Elipse1;
     }
 }

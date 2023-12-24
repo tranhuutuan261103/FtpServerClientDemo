@@ -20,7 +20,8 @@ namespace UserApp.UI
     {
         private FileDetailVM _fileInforVM;
         public List<FileAccessVM> _fileAccessVMs = new List<FileAccessVM>();
-        public DetailFileForm(FileDetailVM fileInforVM, List<FileAccessVM> fileAccessVMs)
+        private string _email;
+        public DetailFileForm(FileDetailVM fileInforVM, List<FileAccessVM> fileAccessVMs, string email)
         {
             InitializeComponent();
             flowLayoutPanel_ListProfile.AutoScroll = false;
@@ -30,6 +31,7 @@ namespace UserApp.UI
             flowLayoutPanel_ListProfile.AutoScroll = true;
             _fileInforVM = fileInforVM;
             _fileAccessVMs = fileAccessVMs;
+            _email = email;
             SetAccessAbility();
             UpdateUI();
         }
@@ -65,6 +67,15 @@ namespace UserApp.UI
         {
             if (_fileInforVM != null)
             {
+                bool isVisibledCheckBox = true;
+                if (_fileInforVM.FileOwner != _email)
+                {
+                    btn_Add.Visible = false;
+                    txt_Email.Visible = false;
+                    cbb_AccessAbility.Visible = false;
+                    lbl_AccessAbility.Visible = false;
+                    isVisibledCheckBox = false;
+                }
                 lbl_Name.Text = _fileInforVM.Name;
                 lbl_OwnerData.Text = _fileInforVM.FileOwner;
                 lbl_TypeData.Text = _fileInforVM.Type.ToString();
@@ -84,7 +95,7 @@ namespace UserApp.UI
                     {
                         continue;
                     }
-                    ProfileControl profileControl = new ProfileControl(fileAccessVM);
+                    ProfileControl profileControl = new ProfileControl(fileAccessVM, isVisibledCheckBox);
                     flowLayoutPanel_ListProfile.Controls.Add(profileControl);
                 }
             }
@@ -121,7 +132,7 @@ namespace UserApp.UI
                         IdAccount = 0
                     };
                     _fileAccessVMs.Add(fileAccessVM);
-                    ProfileControl profileControl = new ProfileControl(fileAccessVM);
+                    ProfileControl profileControl = new ProfileControl(fileAccessVM, true);
                     flowLayoutPanel_ListProfile.Controls.Add(profileControl);
                     txt_Email.Text = "";
                 }

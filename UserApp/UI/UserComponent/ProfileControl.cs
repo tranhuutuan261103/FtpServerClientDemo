@@ -14,15 +14,18 @@ namespace UserApp.UI.UserComponent
     public partial class ProfileControl : UserControl
     {
         private FileAccessVM _fileAccessVM;
-        public ProfileControl(FileAccessVM fileAccessVM)
+        private bool _isVisibledCheckBox;
+        public ProfileControl(FileAccessVM fileAccessVM, bool isVisibledCheckBox)
         {
             InitializeComponent();
             _fileAccessVM = fileAccessVM;
+            _isVisibledCheckBox = isVisibledCheckBox;
             UpdateUI();
         }
 
         private void UpdateUI()
         {
+            checkBox.Visible = _isVisibledCheckBox;
             if (_fileAccessVM != null)
             {
                 lbl_Email.Text = _fileAccessVM.Email;

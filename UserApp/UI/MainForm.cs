@@ -18,7 +18,8 @@ namespace UserApp.UI
     {
         private MainForm_BLL MainForm_BLL;
         private InterFont font = new InterFont();
-        public MainForm(FtpClient ftpClient)
+        private string _email;
+        public MainForm(FtpClient ftpClient, string email)
         {
             InitializeComponent();
             flowLayoutPanel_ListProcessing.AutoScroll = false;
@@ -26,6 +27,7 @@ namespace UserApp.UI
             flowLayoutPanel_ListProcessing.HorizontalScroll.Visible = false;
             flowLayoutPanel_ListProcessing.HorizontalScroll.Maximum = 0;
             flowLayoutPanel_ListProcessing.AutoScroll = true;
+            _email = email;
             MainForm_BLL = new MainForm_BLL(ftpClient, TransferProgress, ChangeFolderAndFileHandler, GetAccountInfor, GetDetailFileHandler);
         }
 
@@ -34,29 +36,52 @@ namespace UserApp.UI
             MainForm_BLL.GetFileInfos();
         }
 
-        private void ChangeFolderAndFileHandler(List<FileInfor> sender)
+        private void ChangeFolderAndFileHandler(FileInforPackage sender)
         {
             UpdateGridFileAndFolder(sender);
         }
 
-        private void UpdateGridFileAndFolder(List<FileInfor> fileInfors)
+        private void UpdateGridFileAndFolder(FileInforPackage fileInforPackage)
         {
-            if (grid_FileAndFolder.IsHandleCreated && !grid_FileAndFolder.IsDisposed)
-            {
-                grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
-                {
-                    grid_FileAndFolder.Controls.Clear();
-                });
-            }
-
-            foreach (var item in fileInfors)
+            if (fileInforPackage.Category == Category.Owner)
             {
                 if (grid_FileAndFolder.IsHandleCreated && !grid_FileAndFolder.IsDisposed)
                 {
                     grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
                     {
-                        grid_FileAndFolder.Controls.Add(new FileControl(item, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler));
+                        grid_FileAndFolder.Controls.Clear();
                     });
+                }
+
+                foreach (var item in fileInforPackage.fileInfors)
+                {
+                    if (grid_FileAndFolder.IsHandleCreated && !grid_FileAndFolder.IsDisposed)
+                    {
+                        grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
+                        {
+                            grid_FileAndFolder.Controls.Add(new FileControl(item, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler));
+                        });
+                    }
+                }
+            }
+            else if (fileInforPackage.Category == Category.Shared)
+            {
+                if (grid_ListFileAndFolderShared.IsHandleCreated && !grid_ListFileAndFolderShared.IsDisposed)
+                {
+                    grid_ListFileAndFolderShared.BeginInvoke((MethodInvoker)delegate
+                    {
+                        grid_ListFileAndFolderShared.Controls.Clear();
+                    });
+                }
+                foreach (var item in fileInforPackage.fileInfors)
+                {
+                    if (grid_ListFileAndFolderShared.IsHandleCreated && !grid_ListFileAndFolderShared.IsDisposed)
+                    {
+                        grid_ListFileAndFolderShared.BeginInvoke((MethodInvoker)delegate
+                        {
+                            grid_ListFileAndFolderShared.Controls.Add(new FileControl(item, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler));
+                        });
+                    }
                 }
             }
         }
@@ -69,6 +94,13 @@ namespace UserApp.UI
                 if (request.fileInfor.IsDirectory == true)
                 {
                     MainForm_BLL.ChangeFolder(request.fileInfor.Id);
+                }
+            }
+            else if (request.type == FileControlRequestType.ChangeSharedFolder)
+            {
+                if (request.fileInfor.IsDirectory == true)
+                {
+                    MainForm_BLL.ChangeSharedFolder(request.fileInfor.Id);
                 }
             }
             else if (request.type == FileControlRequestType.Download)
@@ -92,7 +124,9 @@ namespace UserApp.UI
                 {
                     flowLayoutPanel_ListProcessing.Invoke((MethodInvoker)delegate
                     {
-                        flowLayoutPanel_ListProcessing.Controls.Add(new FileTransferProcessingControl(sender));
+                        var control = new FileTransferProcessingControl(sender);
+                        flowLayoutPanel_ListProcessing.Controls.Add(control);
+                        control.UpdateUI();
                     });
                 }
                 else
@@ -154,7 +188,7 @@ namespace UserApp.UI
             {
                 return;
             }
-            DetailFileForm detailFileForm = new DetailFileForm(fileInfor, fileAccessVMs);
+            DetailFileForm detailFileForm = new DetailFileForm(fileInfor, fileAccessVMs, _email);
             if (detailFileForm.ShowDialog() == DialogResult.OK)
             {
                 MainForm_BLL.UpdateFileAccess(detailFileForm.GetFileAccessVMs());
@@ -210,12 +244,20 @@ namespace UserApp.UI
             else
             {
                 flowLayoutPanel_ListProcessing.Visible = true;
+                foreach (FileTransferProcessingControl control in flowLayoutPanel_ListProcessing.Controls)
+                {
+                    control.UpdateUI();
+                }
             }
         }
 
         private void tabControl_Profile_Selecting(object sender, TabControlCancelEventArgs e)
         {
-            if (e.TabPageIndex == 3)
+            if (e.TabPageIndex == 1)
+            {
+                MainForm_BLL.ChangeSharedFolder("");
+            }
+            else if (e.TabPageIndex == 3)
             {
                 btn_UpdateProfile.Enabled = false;
                 MainForm_BLL.GetAccountInfor();
@@ -239,7 +281,8 @@ namespace UserApp.UI
                     lbl_CreationDate.Text = accountInfor.CreationDate.ToString("yyyy/MM/dd HH:mm");
                     if (accountInfor.Avatar != null && accountInfor.Avatar.Count > 0)
                     {
-                        try {
+                        try
+                        {
                             using (MemoryStream memoryStream = new MemoryStream(accountInfor.Avatar.ToArray()))
                             {
                                 pic_Avatar.Image = Image.FromStream(memoryStream);

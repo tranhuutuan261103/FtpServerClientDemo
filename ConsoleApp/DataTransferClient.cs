@@ -50,6 +50,24 @@ namespace ConsoleApp
             }
         }
 
+        public FileInforPackage ReceiveFileInforPackage()
+        {
+            NetworkStream ns = _tcpClient.GetStream();
+            byte[] buffer = new byte[1024];
+            int byteread = 0;
+            string data = "";
+            while (true)
+            {
+                byteread = ns.Read(buffer, 0, 1024);
+                data += Encoding.ASCII.GetString(buffer, 0, byteread);
+                if (byteread == 0)
+                {
+                    break;
+                }
+            }
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<FileInforPackage>(data) ?? new FileInforPackage();
+        }
+
         public List<FileInfor> ReceiveListRemoteFiles()
         {
             NetworkStream ns = _tcpClient.GetStream();

@@ -16,6 +16,7 @@ namespace UserApp.DTO
     public enum FileControlRequestType
     {
         ChangeFolder,
+        ChangeSharedFolder,
         Download,
         Rename,
         Information,

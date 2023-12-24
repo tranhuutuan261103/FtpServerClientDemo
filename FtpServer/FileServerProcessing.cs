@@ -86,7 +86,7 @@ namespace MyFtpServer
             }
         }
 
-        public void SendList(List<FileInfor> fileInfors)
+        public void SendFileInforPackage(FileInforPackage fileInfors)
         {
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(fileInfors);
             var bytes = Encoding.UTF8.GetBytes(json);
