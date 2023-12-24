@@ -211,6 +211,33 @@ namespace MyFtpServer
                         }
                         writer.WriteLine($"250 {id}");
                     }
+                    else if (command == "GETLISTFILEACCESS")
+                    {
+                        string idFile = string.Join(" ", parts, 1, parts.Length - 1);
+                        FileStorageDAL dal = new FileStorageDAL();
+                        List<FileAccessVM>? list = dal.GetListFileAccess(idAccount, idFile, _rootPath);
+                        if (list == null)
+                        {
+                            writer.WriteLine("550 File not found");
+                            ResponseStatus(sessionID, $"550 File not found");
+                            continue;
+                        }
+                        string json = JsonConvert.SerializeObject(list);
+                        writer.WriteLine($"257 {json}");
+                    }
+                    else if (command == "UPDATEFILEACCESS")
+                    {
+                        string json = string.Join(" ", parts, 1, parts.Length - 1);
+                        List<FileAccessVM> list = JsonConvert.DeserializeObject<List<FileAccessVM>>(json);
+                        FileStorageDAL dal = new FileStorageDAL();
+                        if (dal.UpdateFileAccess(idAccount, list) == false)
+                        {
+                            writer.WriteLine("550 File not found");
+                            ResponseStatus(sessionID, $"550 File not found");
+                            continue;
+                        }
+                        writer.WriteLine($"257 Oke");
+                    }
                     else if (command == "MLSD")
                     {
                         // Get list file and folder

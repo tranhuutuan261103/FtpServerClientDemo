@@ -148,15 +148,16 @@ namespace UserApp.UI
             MainForm_BLL.GetDetailFile(fileInfor.Id);
         }
 
-        private void GetDetailFileHandler(FileDetailVM fileInfor)
+        private void GetDetailFileHandler(FileDetailVM fileInfor, List<FileAccessVM> fileAccessVMs)
         {
             if (fileInfor == null)
             {
                 return;
             }
-            using (DetailFileForm detailFileForm = new DetailFileForm(fileInfor))
+            DetailFileForm detailFileForm = new DetailFileForm(fileInfor, fileAccessVMs);
+            if (detailFileForm.ShowDialog() == DialogResult.OK)
             {
-                detailFileForm.ShowDialog();
+                MainForm_BLL.UpdateFileAccess(detailFileForm.GetFileAccessVMs());
             }
         }
 
@@ -236,9 +237,18 @@ namespace UserApp.UI
                     lbl_StoragedData.Text = fileManager.FileSizeToString(accountInfor.UsedStorage);
                     lbl_FullName.Text = accountInfor.FirstName + " " + accountInfor.LastName;
                     lbl_CreationDate.Text = accountInfor.CreationDate.ToString("yyyy/MM/dd HH:mm");
-                    using (MemoryStream memoryStream = new MemoryStream(accountInfor.Avatar.ToArray()))
+                    if (accountInfor.Avatar != null && accountInfor.Avatar.Count > 0)
                     {
-                        pic_Avatar.Image = Image.FromStream(memoryStream);
+                        try {
+                            using (MemoryStream memoryStream = new MemoryStream(accountInfor.Avatar.ToArray()))
+                            {
+                                pic_Avatar.Image = Image.FromStream(memoryStream);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message);
+                        }
                     }
                 });
             }
@@ -252,9 +262,19 @@ namespace UserApp.UI
                 lbl_StoragedData.Text = fileManager.FileSizeToString(accountInfor.UsedStorage);
                 lbl_FullName.Text = accountInfor.FirstName + " " + accountInfor.LastName;
                 lbl_CreationDate.Text = accountInfor.CreationDate.ToString("yyyy/MM/dd HH:mm");
-                using (MemoryStream memoryStream = new MemoryStream(accountInfor.Avatar.ToArray()))
+                if (accountInfor.Avatar != null && accountInfor.Avatar.Count > 0)
                 {
-                    pic_Avatar.Image = Image.FromStream(memoryStream);
+                    try
+                    {
+                        using (MemoryStream memoryStream = new MemoryStream(accountInfor.Avatar.ToArray()))
+                        {
+                            pic_Avatar.Image = Image.FromStream(memoryStream);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
                 }
             }
         }
