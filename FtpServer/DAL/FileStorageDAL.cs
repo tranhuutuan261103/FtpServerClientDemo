@@ -45,53 +45,43 @@ namespace MyFtpServer.DAL
         {
             using(var db = new FileStorageDBContext())
             {
-                // Get all subfiles
-                var folderAccess = db.FolderAccesses
-                    .Where(fa => fa.IdAccount == idAccount
-                    && (idParent == "") ? true : fa.IdFolder == idParent
-                    ).FirstOrDefault();
-
-                if (folderAccess != null && folderAccess.IdAccess == 1)
+                var files = db.Files
+                .Where(f => f.IdParent == (idParent.IsNullOrEmpty() ? null : idParent) && f.IsDeleted == false
+                && db.FileAccesses
+                .Any(fa => fa.IdAccount == idAccount && fa.IdFile == f.Id && fa.IdAccess == 1)
+                ).ToList();
+                var fileInfors = new List<FileInfor>();
+                foreach (var file in files)
                 {
-                    var files = db.Files
-                    .Where(f => f.IdParent == (idParent.IsNullOrEmpty() ? null : idParent) && f.IsDeleted == false
-                    && db.FileAccesses
-                    .Any(fa => fa.IdAccount == idAccount && fa.IdFile == f.Id)
-                    ).ToList();
-                    var fileInfors = new List<FileInfor>();
-                    foreach (var file in files)
+                    var fileInfor = new FileInfor()
                     {
-                        var fileInfor = new FileInfor()
-                        {
-                            Id = file.Id,
-                            Name = file.Name,
-                            IsDirectory = false,
-                        };
-                        fileInfors.Add(fileInfor);
-                    }
-
-                    // Get all subfolders
-                    var folders = db.Folders
-                        .Where(f => f.IdParent == (idParent.IsNullOrEmpty() ? null : idParent) && f.IsDeleted == false
-                        && db.FolderAccesses
-                        .Any(fa => fa.IdAccount == idAccount && fa.IdFolder == f.Id)).ToList();
-                    foreach (var folder in folders)
-                    {
-                        var fileInfor = new FileInfor()
-                        {
-                            Id = folder.Id,
-                            Name = folder.Name,
-                            IsDirectory = true,
-                        };
-                        fileInfors.Add(fileInfor);
-                    }
-                    return new FileInforPackage()
-                    {
-                        Category = Category.Owner,
-                        fileInfors = fileInfors
+                        Id = file.Id,
+                        Name = file.Name,
+                        IsDirectory = false,
                     };
+                    fileInfors.Add(fileInfor);
                 }
-                return new FileInforPackage();
+
+                // Get all subfolders
+                var folders = db.Folders
+                    .Where(f => f.IdParent == (idParent.IsNullOrEmpty() ? null : idParent) && f.IsDeleted == false
+                    && db.FolderAccesses
+                    .Any(fa => fa.IdAccount == idAccount && fa.IdFolder == f.Id && fa.IdAccess == 1)).ToList();
+                foreach (var folder in folders)
+                {
+                    var fileInfor = new FileInfor()
+                    {
+                        Id = folder.Id,
+                        Name = folder.Name,
+                        IsDirectory = true,
+                    };
+                    fileInfors.Add(fileInfor);
+                }
+                return new FileInforPackage()
+                {
+                    Category = Category.Owner,
+                    fileInfors = fileInfors
+                };
             }
         }
 
@@ -219,6 +209,52 @@ namespace MyFtpServer.DAL
                 return new FileInforPackage()
                 {
                     Category = Category.CanDownload,
+                    fileInfors = fileInfors
+                };
+            }
+        }
+
+        public FileInforPackage GetDeletedFilePackage(int idAccount)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var files = db.Files
+                    .Where(f => f.IsDeleted == true && 
+                    db.FileAccesses
+                    .Any(fa => fa.IdAccount == idAccount && 
+                    f.Id == fa.IdFile && 
+                    fa.IdAccess == 1)).ToList();
+                var fileInfors = new List<FileInfor>();
+                foreach (var file in files)
+                {
+                    var fileInfor = new FileInfor()
+                    {
+                        Id = file.Id,
+                        Name = file.Name,
+                        IsDirectory = false,
+                    };
+                    fileInfors.Add(fileInfor);
+                }
+                // Get all subfolders
+                var folders = db.Folders
+                    .Where(f => f.IsDeleted == true &&
+                    db.FolderAccesses
+                    .Any(fa => fa.IdAccount == idAccount &&
+                    f.Id == fa.IdFolder &&
+                                                                                                fa.IdAccess == 1)).ToList();
+                foreach (var folder in folders)
+                {
+                    var fileInfor = new FileInfor()
+                    {
+                        Id = folder.Id,
+                        Name = folder.Name,
+                        IsDirectory = true,
+                    };
+                    fileInfors.Add(fileInfor);
+                }
+                return new FileInforPackage()
+                {
+                    Category = Category.Deleted,
                     fileInfors = fileInfors
                 };
             }
@@ -531,6 +567,34 @@ namespace MyFtpServer.DAL
                     return folder.Id;
                 }
                 return "";
+            }
+        }
+
+        public bool RestoreFile(int idAccount, string idFile)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var file = db.Files.FirstOrDefault(f => f.Id == idFile);
+                if(file != null)
+                {
+                    file.IsDeleted = false;
+                    if(db.SaveChanges() != 0)
+                    {
+                        return true;
+                    }
+                } else
+                {
+                    var folder = db.Folders.FirstOrDefault(f => f.Id == idFile);
+                    if(folder != null)
+                    {
+                        folder.IsDeleted = false;
+                        if(db.SaveChanges() != 0)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
         }
 

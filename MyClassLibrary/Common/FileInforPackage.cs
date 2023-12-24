@@ -17,6 +17,7 @@ namespace MyClassLibrary.Common
         Owner,
         Shared,
         None,
-        CanDownload
+        CanDownload,
+        Deleted
     }
 }

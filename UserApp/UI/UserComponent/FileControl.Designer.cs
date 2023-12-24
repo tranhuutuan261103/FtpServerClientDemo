@@ -44,11 +44,15 @@
             guna2Elipse3 = new Guna.UI2.WinForms.Guna2Elipse(components);
             guna2CirclePictureBox_MoreOption = new Guna.UI2.WinForms.Guna2CirclePictureBox();
             pictureBox_MoreOption = new PictureBox();
+            guna2CMStrip_Deleted = new Guna.UI2.WinForms.Guna2ContextMenuStrip();
+            informationToolStripMenuItem = new ToolStripMenuItem();
+            ToolStripMenuItem_Restore = new ToolStripMenuItem();
             guna2CMStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox_Folder).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox_File).BeginInit();
             ((System.ComponentModel.ISupportInitialize)guna2CirclePictureBox_MoreOption).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox_MoreOption).BeginInit();
+            guna2CMStrip_Deleted.SuspendLayout();
             SuspendLayout();
             // 
             // guna2Elipse1
@@ -85,38 +89,38 @@
             guna2CMStrip.RenderStyle.SelectionForeColor = Color.White;
             guna2CMStrip.RenderStyle.SeparatorColor = Color.Gainsboro;
             guna2CMStrip.RenderStyle.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
-            guna2CMStrip.Size = new Size(221, 172);
+            guna2CMStrip.Size = new Size(176, 172);
             // 
             // ToolStripMenuItem_Download
             // 
             ToolStripMenuItem_Download.Name = "ToolStripMenuItem_Download";
             ToolStripMenuItem_Download.Padding = new Padding(0, 10, 0, 10);
-            ToolStripMenuItem_Download.Size = new Size(220, 42);
-            ToolStripMenuItem_Download.Text = "Tải xuống";
+            ToolStripMenuItem_Download.Size = new Size(175, 42);
+            ToolStripMenuItem_Download.Text = "Download";
             ToolStripMenuItem_Download.Click += ToolStripMenuItem_Download_Click;
             // 
             // ToolStripMenuItem_Rename
             // 
             ToolStripMenuItem_Rename.Name = "ToolStripMenuItem_Rename";
             ToolStripMenuItem_Rename.Padding = new Padding(0, 10, 0, 10);
-            ToolStripMenuItem_Rename.Size = new Size(220, 42);
-            ToolStripMenuItem_Rename.Text = "Đổi tên";
+            ToolStripMenuItem_Rename.Size = new Size(175, 42);
+            ToolStripMenuItem_Rename.Text = "Rename";
             ToolStripMenuItem_Rename.Click += ToolStripMenuItem_Rename_Click;
             // 
             // ToolStripMenuItem_Information
             // 
             ToolStripMenuItem_Information.Name = "ToolStripMenuItem_Information";
             ToolStripMenuItem_Information.Padding = new Padding(0, 10, 0, 10);
-            ToolStripMenuItem_Information.Size = new Size(220, 42);
-            ToolStripMenuItem_Information.Text = "Thông tin";
+            ToolStripMenuItem_Information.Size = new Size(175, 42);
+            ToolStripMenuItem_Information.Text = "Information";
             ToolStripMenuItem_Information.Click += ToolStripMenuItem_Information_Click;
             // 
             // ToolStripMenuItem_Remove
             // 
             ToolStripMenuItem_Remove.Name = "ToolStripMenuItem_Remove";
             ToolStripMenuItem_Remove.Padding = new Padding(0, 10, 0, 10);
-            ToolStripMenuItem_Remove.Size = new Size(220, 42);
-            ToolStripMenuItem_Remove.Text = "Chuyển vào thùng rác";
+            ToolStripMenuItem_Remove.Size = new Size(175, 42);
+            ToolStripMenuItem_Remove.Text = "Remove to bin";
             ToolStripMenuItem_Remove.Click += ToolStripMenuItem_Remove_Click;
             // 
             // guna2Elipse2
@@ -183,6 +187,38 @@
             pictureBox_MoreOption.MouseEnter += pictureBox_MoreOption_MouseEnter;
             pictureBox_MoreOption.MouseLeave += pictureBox_MoreOption_MouseLeave;
             // 
+            // guna2CMStrip_Deleted
+            // 
+            guna2CMStrip_Deleted.ImageScalingSize = new Size(20, 20);
+            guna2CMStrip_Deleted.Items.AddRange(new ToolStripItem[] { informationToolStripMenuItem, ToolStripMenuItem_Restore });
+            guna2CMStrip_Deleted.Name = "ToolStripMenuItem_Restore";
+            guna2CMStrip_Deleted.RenderStyle.ArrowColor = Color.FromArgb(151, 143, 255);
+            guna2CMStrip_Deleted.RenderStyle.BorderColor = Color.Gainsboro;
+            guna2CMStrip_Deleted.RenderStyle.ColorTable = null;
+            guna2CMStrip_Deleted.RenderStyle.RoundedEdges = true;
+            guna2CMStrip_Deleted.RenderStyle.SelectionArrowColor = Color.White;
+            guna2CMStrip_Deleted.RenderStyle.SelectionBackColor = Color.FromArgb(100, 88, 255);
+            guna2CMStrip_Deleted.RenderStyle.SelectionForeColor = Color.White;
+            guna2CMStrip_Deleted.RenderStyle.SeparatorColor = Color.Gainsboro;
+            guna2CMStrip_Deleted.RenderStyle.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
+            guna2CMStrip_Deleted.Size = new Size(157, 88);
+            // 
+            // informationToolStripMenuItem
+            // 
+            informationToolStripMenuItem.Name = "informationToolStripMenuItem";
+            informationToolStripMenuItem.Padding = new Padding(0, 10, 0, 10);
+            informationToolStripMenuItem.Size = new Size(156, 42);
+            informationToolStripMenuItem.Text = "Information";
+            informationToolStripMenuItem.Click += ToolStripMenuItem_Information_Click;
+            // 
+            // ToolStripMenuItem_Restore
+            // 
+            ToolStripMenuItem_Restore.Name = "ToolStripMenuItem_Restore";
+            ToolStripMenuItem_Restore.Padding = new Padding(0, 10, 0, 10);
+            ToolStripMenuItem_Restore.Size = new Size(156, 42);
+            ToolStripMenuItem_Restore.Text = "Restore";
+            ToolStripMenuItem_Restore.Click += ToolStripMenuItem_Restore_Click;
+            // 
             // FileControl
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -202,6 +238,7 @@
             ((System.ComponentModel.ISupportInitialize)pictureBox_File).EndInit();
             ((System.ComponentModel.ISupportInitialize)guna2CirclePictureBox_MoreOption).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox_MoreOption).EndInit();
+            guna2CMStrip_Deleted.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -220,5 +257,8 @@
         private Guna.UI2.WinForms.Guna2Elipse guna2Elipse3;
         private Guna.UI2.WinForms.Guna2CirclePictureBox guna2CirclePictureBox_MoreOption;
         private PictureBox pictureBox_MoreOption;
+        private Guna.UI2.WinForms.Guna2ContextMenuStrip guna2CMStrip_Deleted;
+        private ToolStripMenuItem informationToolStripMenuItem;
+        private ToolStripMenuItem ToolStripMenuItem_Restore;
     }
 }
