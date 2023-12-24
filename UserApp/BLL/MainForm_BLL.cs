@@ -176,5 +176,16 @@ namespace UserApp.BLL
             _remoteFolderPath = idFolder;
             ftpClient.ChangeSharedFolder(idFolder);
         }
+
+        internal void ChangeDeletedFolder(string idFolder)
+        {
+            _remoteFolderPath = idFolder;
+            ftpClient.ChangeDeletedFolder(idFolder);
+        }
+
+        public void RestoreFile(RestoreFileRequest request)
+        {
+            ftpClient.RestoreFile(request);
+        }
     }
 }

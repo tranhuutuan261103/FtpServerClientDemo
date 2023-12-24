@@ -59,6 +59,7 @@
             tabPage2 = new TabPage();
             grid_ListFileAndFolderShared = new FlowLayoutPanel();
             tabPage3 = new TabPage();
+            grid_ListFileAndFolderDeleted = new FlowLayoutPanel();
             tabPage4 = new TabPage();
             lbl_CreationDate = new Guna.UI2.WinForms.Guna2HtmlLabel();
             guna2HtmlLabel5 = new Guna.UI2.WinForms.Guna2HtmlLabel();
@@ -75,10 +76,12 @@
             pic_Avatar = new Guna.UI2.WinForms.Guna2CirclePictureBox();
             flowLayoutPanel_ListProcessing = new FlowLayoutPanel();
             guna2Elipse1 = new Guna.UI2.WinForms.Guna2Elipse(components);
+            guna2Elipse2 = new Guna.UI2.WinForms.Guna2Elipse(components);
             guna2ContextMenuStrip_btnNew.SuspendLayout();
             tabControl_Profile.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
+            tabPage3.SuspendLayout();
             tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pic_Avatar).BeginInit();
             SuspendLayout();
@@ -278,12 +281,23 @@
             // 
             // tabPage3
             // 
+            tabPage3.BackColor = Color.FromArgb(233, 244, 255);
+            tabPage3.Controls.Add(grid_ListFileAndFolderDeleted);
             tabPage3.Location = new Point(184, 4);
             tabPage3.Name = "tabPage3";
             tabPage3.Size = new Size(844, 564);
             tabPage3.TabIndex = 2;
-            tabPage3.Text = "My favorite";
-            tabPage3.UseVisualStyleBackColor = true;
+            tabPage3.Text = "Recycle Bin";
+            // 
+            // grid_ListFileAndFolderDeleted
+            // 
+            grid_ListFileAndFolderDeleted.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            grid_ListFileAndFolderDeleted.BackColor = Color.White;
+            grid_ListFileAndFolderDeleted.Location = new Point(37, 61);
+            grid_ListFileAndFolderDeleted.Name = "grid_ListFileAndFolderDeleted";
+            grid_ListFileAndFolderDeleted.Padding = new Padding(30);
+            grid_ListFileAndFolderDeleted.Size = new Size(772, 476);
+            grid_ListFileAndFolderDeleted.TabIndex = 0;
             // 
             // tabPage4
             // 
@@ -505,6 +519,11 @@
             guna2Elipse1.BorderRadius = 48;
             guna2Elipse1.TargetControl = grid_ListFileAndFolderShared;
             // 
+            // guna2Elipse2
+            // 
+            guna2Elipse2.BorderRadius = 48;
+            guna2Elipse2.TargetControl = grid_ListFileAndFolderDeleted;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -525,6 +544,7 @@
             tabControl_Profile.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
             tabPage2.ResumeLayout(false);
+            tabPage3.ResumeLayout(false);
             tabPage4.ResumeLayout(false);
             tabPage4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pic_Avatar).EndInit();
@@ -564,5 +584,7 @@
         private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel5;
         private FlowLayoutPanel grid_ListFileAndFolderShared;
         private Guna.UI2.WinForms.Guna2Elipse guna2Elipse1;
+        private FlowLayoutPanel grid_ListFileAndFolderDeleted;
+        private Guna.UI2.WinForms.Guna2Elipse guna2Elipse2;
     }
 }

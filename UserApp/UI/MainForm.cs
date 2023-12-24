@@ -59,7 +59,7 @@ namespace UserApp.UI
                     {
                         grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
                         {
-                            grid_FileAndFolder.Controls.Add(new FileControl(item, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler));
+                            grid_FileAndFolder.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, RestoreFileHandler));
                         });
                     }
                 }
@@ -79,11 +79,36 @@ namespace UserApp.UI
                     {
                         grid_ListFileAndFolderShared.BeginInvoke((MethodInvoker)delegate
                         {
-                            grid_ListFileAndFolderShared.Controls.Add(new FileControl(item, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler));
+                            grid_ListFileAndFolderShared.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, RestoreFileHandler));
                         });
                     }
                 }
             }
+            else if (fileInforPackage.Category == Category.Deleted)
+            {
+                if (grid_ListFileAndFolderDeleted.IsHandleCreated && !grid_ListFileAndFolderDeleted.IsDisposed)
+                {
+                    grid_ListFileAndFolderDeleted.BeginInvoke((MethodInvoker)delegate
+                    {
+                        grid_ListFileAndFolderDeleted.Controls.Clear();
+                    });
+                }
+                foreach (var item in fileInforPackage.fileInfors)
+                {
+                    if (grid_ListFileAndFolderDeleted.IsHandleCreated && !grid_ListFileAndFolderDeleted.IsDisposed)
+                    {
+                        grid_ListFileAndFolderDeleted.BeginInvoke((MethodInvoker)delegate
+                        {
+                            grid_ListFileAndFolderDeleted.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, RestoreFileHandler));
+                        });
+                    }
+                }
+            }
+        }
+
+        private void RestoreFileHandler(RestoreFileRequest sender)
+        {
+            MainForm_BLL.RestoreFile(sender);
         }
 
         public void FileControlHandle(object sender, EventArgs e)
@@ -253,9 +278,17 @@ namespace UserApp.UI
 
         private void tabControl_Profile_Selecting(object sender, TabControlCancelEventArgs e)
         {
-            if (e.TabPageIndex == 1)
+            if (e.TabPageIndex == 0)
+            {
+                MainForm_BLL.ChangeFolder("");
+            }
+            else if (e.TabPageIndex == 1)
             {
                 MainForm_BLL.ChangeSharedFolder("");
+            }
+            else if (e.TabPageIndex == 2)
+            {
+                MainForm_BLL.ChangeDeletedFolder("");
             }
             else if (e.TabPageIndex == 3)
             {

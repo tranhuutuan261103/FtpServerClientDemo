@@ -128,6 +128,19 @@ namespace ConsoleApp
             }
         }
 
+        public bool RestoreFile(string fileId)
+        {
+            string Command, Response;
+            Command = string.Format("RESTOREFILE {0}", fileId);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("250 ") == true)
+            {
+                return true;
+            }
+            return false;
+        }
+
         public List<FileAccessVM> GetListFileAccess(string id)
         {
             string Command = "", Response = "";

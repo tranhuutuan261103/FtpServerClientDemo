@@ -205,6 +205,12 @@ namespace ConsoleApp
                         fcp.DeleteFolder(request);
                     }
                     break;
+                case "RESTOREFILE":
+                    {
+                        RestoreFileRequest request = (RestoreFileRequest)taskSession.Data;
+                        fcp.RestoreFile(request.FileId);
+                    }
+                    break;
                 case "GETLISTFILEACCESS":
                     {
                         string id = (string)taskSession.Data;
@@ -224,6 +230,17 @@ namespace ConsoleApp
                         {
                             IdParent = (string)taskSession.Data ?? "",
                             IdAccess = IdAccess.Shared
+                        };
+                        FileInforPackage fileInfors = fcp.GetFileInforPackage(request);
+                        ChangeFolderAndFileHandler(fileInfors);
+                    }
+                    break;
+                case "GETLISTDELETEDFILE":
+                    {
+                        GetListFileRequest request = new GetListFileRequest()
+                        {
+                            IdParent = (string)taskSession.Data ?? "",
+                            IdAccess = IdAccess.Deleted
                         };
                         FileInforPackage fileInfors = fcp.GetFileInforPackage(request);
                         ChangeFolderAndFileHandler(fileInfors);
@@ -450,6 +467,18 @@ namespace ConsoleApp
         public void ChangeSharedFolder(string idFolder)
         {
             TaskSession taskSession = new TaskSession("GETLISTSHAREDFILE", idFolder);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void ChangeDeletedFolder(string idFolder)
+        {
+            TaskSession taskSession = new TaskSession("GETLISTDELETEDFILE", idFolder);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void RestoreFile(RestoreFileRequest request)
+        {
+            TaskSession taskSession = new TaskSession("RESTOREFILE", request);
             PushMainTaskSession(taskSession);
         }
 

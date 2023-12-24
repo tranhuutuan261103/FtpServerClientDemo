@@ -150,7 +150,8 @@ namespace MyFtpServer
                         string id = dal.CreateNewFolder(idAccount, remoteFolderPath, folderName);
                         writer.WriteLine($"257 {id}");
                         ResponseStatus(sessionID, $"257 Directory created");
-                    } else if (command == "GETDETAILFILE")
+                    }
+                    else if (command == "GETDETAILFILE")
                     {
                         string idFile = string.Join(" ", parts, 1, parts.Length - 1);
                         FileStorageDAL dal = new FileStorageDAL();
@@ -183,10 +184,11 @@ namespace MyFtpServer
                         }
                         writer.WriteLine($"250 {id}");
                         ResponseStatus(sessionID, $"250 Directory renamed");
-                    } else if (command == "DELE")
+                    }
+                    else if (command == "DELE")
                     {
                         string idFile = string.Join(" ", parts, 1, parts.Length - 1);
-                        
+
                         FileStorageDAL dal = new FileStorageDAL();
                         string id = dal.DeleteFile(idAccount, idFile);
                         if (id == "")
@@ -197,7 +199,23 @@ namespace MyFtpServer
                         }
                         writer.WriteLine($"250 {id}");
                         ResponseStatus(sessionID, $"250 File deleted");
-                    } else if (command == "RMD")
+                    }
+                    else if (command == "RESTOREFILE")
+                    {
+                        string idFile = string.Join(" ", parts, 1, parts.Length - 1);
+                        FileStorageDAL dal = new FileStorageDAL();
+                        if (dal.RestoreFile(idAccount, idFile) == true)
+                        {
+                            writer.WriteLine($"250 {idFile}");
+                            ResponseStatus(sessionID, $"250 File restored");
+                        }
+                        else
+                        {
+                            writer.WriteLine("550 File not found");
+                            ResponseStatus(sessionID, $"550 File not found");
+                        }
+                    }
+                    else if (command == "RMD")
                     {
                         string idFolder = string.Join(" ", parts, 1, parts.Length - 1);
 
@@ -261,6 +279,10 @@ namespace MyFtpServer
                             {
                                 fileInforPackage = dal.GetCanDownloadFilePackage(idAccount, request1.IdParent);
                             }
+                            else if (request1.IdAccess == IdAccess.Deleted)
+                            {
+                                fileInforPackage = dal.GetDeletedFilePackage(idAccount);
+                            }
                         }
 
                         // Check Tcp Listener
@@ -319,7 +341,8 @@ namespace MyFtpServer
                         ResponseStatus(sessionID, $"226 Transfer complete");
                         if (tcpListener != null)
                             tcpListener.Stop();
-                    } else if (command == "CHECKCANUPLOAD")
+                    }
+                    else if (command == "CHECKCANUPLOAD")
                     {
                         FileStorageDAL dal = new FileStorageDAL();
                         if (dal.CheckCanUpload(idAccount, remoteFolderPath) == true)
@@ -380,7 +403,7 @@ namespace MyFtpServer
 
                         long length = long.Parse(reader.ReadLine() ?? "0");
 
-                        FileServerExpressProcessing processing = new FileServerExpressProcessing(tcpListener, fullPath , length);
+                        FileServerExpressProcessing processing = new FileServerExpressProcessing(tcpListener, fullPath, length);
                         processing.ReceiveExpressFile();
 
                         writer.WriteLine("226 Transfer complete");
@@ -406,7 +429,7 @@ namespace MyFtpServer
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, $"150 Opening data connection");
 
-                        FileServerExpressProcessing processing = new FileServerExpressProcessing(tcpListener, fullPath ,new FileInfo(fullPath).Length);
+                        FileServerExpressProcessing processing = new FileServerExpressProcessing(tcpListener, fullPath, new FileInfo(fullPath).Length);
                         processing.SendExpressFile();
 
                         command = reader.ReadLine() ?? "550";
@@ -423,7 +446,8 @@ namespace MyFtpServer
 
                         if (tcpListener != null)
                             tcpListener.Stop();
-                    } else if (command == "GETACCOUNTINFOR")
+                    }
+                    else if (command == "GETACCOUNTINFOR")
                     {
                         AccountDAL accountDAL = new AccountDAL();
                         AccountInfoVM account = accountDAL.GetAccount(idAccount);
@@ -453,7 +477,8 @@ namespace MyFtpServer
 
                         writer.WriteLine("226 Transfer complete");
                         ResponseStatus(sessionID, $"226 Transfer complete");
-                    } else if (command == "UPDATEACCOUNTINFOR")
+                    }
+                    else if (command == "UPDATEACCOUNTINFOR")
                     {
                         data_channel = tcpListener.AcceptTcpClient();
                         if (data_channel == null)
@@ -475,7 +500,8 @@ namespace MyFtpServer
                         }
                         writer.WriteLine("226 Transfer complete");
                         ResponseStatus(sessionID, $"226 Transfer complete");
-                    } else if (command == "QUIT")
+                    }
+                    else if (command == "QUIT")
                     {
                         writer.WriteLine("221 Goodbye");
                         break;

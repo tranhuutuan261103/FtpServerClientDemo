@@ -78,12 +78,12 @@
             // 
             // label_TransferRate
             // 
-            label_TransferRate.AutoSize = true;
-            label_TransferRate.Location = new Point(227, 30);
+            label_TransferRate.Location = new Point(161, 30);
             label_TransferRate.Name = "label_TransferRate";
-            label_TransferRate.Size = new Size(39, 20);
+            label_TransferRate.Size = new Size(174, 20);
             label_TransferRate.TabIndex = 3;
             label_TransferRate.Text = "0 / 0";
+            label_TransferRate.TextAlign = ContentAlignment.MiddleRight;
             label_TransferRate.MouseEnter += FileTransferProcessingControl_MouseEnter;
             label_TransferRate.MouseLeave += FileTransferProcessingControl_MouseLeave;
             // 

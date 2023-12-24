@@ -20,5 +20,6 @@ namespace MyClassLibrary.Bean.File
         View = 3,
         CanDownload = 4,
         CanUpload = 5,
+        Deleted = 6,
     }
 }
