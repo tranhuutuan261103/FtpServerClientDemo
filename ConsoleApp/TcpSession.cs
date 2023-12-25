@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleApp
+namespace MyFtpClient
 {
     public class TcpSession
     {
@@ -40,7 +40,8 @@ namespace ConsoleApp
                 try
                 {
                     _clientSession.Connect(_host, _port);
-                } catch (Exception)
+                }
+                catch (Exception)
                 {
                     return false;
                 }
@@ -101,7 +102,7 @@ namespace ConsoleApp
                 string json = Newtonsoft.Json.JsonConvert.SerializeObject(request);
                 sw.WriteLine("REGISTER " + json);
                 sw.Flush();
-                
+
                 response = sr.ReadLine() ?? "";
                 if (response.StartsWith("230"))
                 {

@@ -1,5 +1,5 @@
-﻿using ConsoleApp;
-using MyClassLibrary.Bean;
+﻿using MyClassLibrary.Bean;
+using MyFtpClient;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

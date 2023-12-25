@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using ConsoleApp;
 using MyClassLibrary;
 using MyClassLibrary.Common;
+using MyFtpClient;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 Console.InputEncoding = System.Text.Encoding.UTF8;

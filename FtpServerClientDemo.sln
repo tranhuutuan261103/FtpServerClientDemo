@@ -5,13 +5,13 @@ VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyClassLibrary", "MyClassLibrary\MyClassLibrary.csproj", "{B6052C8D-CF29-400F-922D-ADEDA4FDE5A5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{D498637F-7465-4CE9-82A3-47E0FF92A969}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyFtpClient", "ConsoleApp\MyFtpClient.csproj", "{D498637F-7465-4CE9-82A3-47E0FF92A969}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyFtpServer", "FtpServer\MyFtpServer.csproj", "{936D6E83-F068-4EA0-933C-D93D5C724233}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserApp", "UserApp\UserApp.csproj", "{D08EF1D1-C13D-4C1E-9294-AD5720110301}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerApp", "ServerApp\ServerApp.csproj", "{D5CC7952-FE43-4E34-9927-B45A9F8DDC98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerApp", "ServerApp\ServerApp.csproj", "{D5CC7952-FE43-4E34-9927-B45A9F8DDC98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
