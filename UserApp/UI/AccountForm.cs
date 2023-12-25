@@ -26,6 +26,8 @@ namespace UserApp.UI
             loginControl = new LoginControl(LoginInvoke, SetFormRegisterInvoke, SetFormResetPasswordInvoke);
             registerControl = new RegisterControl(RegisterInvoke, SetFormLoginInvoke);
             resetPasswordControl = new ResetPasswordControl(ResetPasswordInvoke, SetFormLogin);
+            txt_IPAddress.Text = "127.0.0.1";
+            txt_Port.Text = "1234";
             ftpClient = new FtpClient("127.0.0.1", 1234);
         }
 
@@ -95,6 +97,7 @@ namespace UserApp.UI
 
         private void LoginInvoke(string username, string password)
         {
+            ftpClient = GetFtpClient();
             if (ftpClient.Login(username, password) == true)
             {
                 MainForm mainForm = new MainForm(ftpClient, username);
@@ -109,6 +112,7 @@ namespace UserApp.UI
 
         private void RegisterInvoke(RegisterRequest request)
         {
+            ftpClient = GetFtpClient();
             if (ftpClient.Register(request) == true)
             {
                 MessageBox.Show("Register successfully");
@@ -124,6 +128,7 @@ namespace UserApp.UI
 
         private void ResetPasswordInvoke(ResetPasswordRequest request)
         {
+            ftpClient = GetFtpClient();
             if (ftpClient.ResetPassword(request) == true)
             {
                 MessageBox.Show("Reset password successfully");
@@ -135,6 +140,38 @@ namespace UserApp.UI
             {
                 MessageBox.Show("Reset password failed");
             }
+        }
+
+        private void txt_Port_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != 8)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txt_Port_TextChanged(object sender, EventArgs e)
+        {
+            if (int.TryParse(txt_Port.Text, out int port))
+            {
+                if (port < 0 || port > 65535)
+                {
+                    MessageBox.Show("Port must be in range 0 - 65535");
+                    txt_Port.Text = "1234";
+                }
+            }
+            else
+            {
+                MessageBox.Show("Port must be a number");
+                txt_Port.Text = "1234";
+            }
+        }
+
+        private FtpClient GetFtpClient()
+        {
+            string ipAddress = txt_IPAddress.Text;
+            int port = int.Parse(txt_Port.Text);
+            return new FtpClient(ipAddress, port);
         }
     }
 }

@@ -45,6 +45,11 @@ namespace ConsoleApp
                 if (Processing != null)
                 {
                     FileClientProcessingEvent(Processing);
+                    if (Processing.Status == FileTransferProcessingStatus.Completed ||
+                        Processing.Status == FileTransferProcessingStatus.Failed)
+                    {
+                        break;
+                    }
                 }
                 Thread.Sleep(500);
             }
@@ -59,7 +64,7 @@ namespace ConsoleApp
             while (true)
             {
                 byteread = ns.Read(buffer, 0, 1024);
-                data += Encoding.ASCII.GetString(buffer, 0, byteread);
+                data += Encoding.UTF8.GetString(buffer, 0, byteread);
                 if (byteread == 0)
                 {
                     break;
