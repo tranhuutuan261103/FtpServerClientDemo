@@ -36,6 +36,7 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges6 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges8 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DetailFileForm));
             flowLayoutPanel_ListProfile = new FlowLayoutPanel();
             lbl_Name = new Guna.UI2.WinForms.Guna2HtmlLabel();
             lbl_Owner = new Guna.UI2.WinForms.Guna2HtmlLabel();
@@ -255,9 +256,10 @@
             Controls.Add(lbl_Owner);
             Controls.Add(lbl_Name);
             Controls.Add(flowLayoutPanel_ListProfile);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "DetailFileForm";
             StartPosition = FormStartPosition.CenterParent;
-            Text = "DetailForm";
+            Text = "Detail information";
             TopMost = true;
             Load += DetailFileForm_Load;
             ResumeLayout(false);
