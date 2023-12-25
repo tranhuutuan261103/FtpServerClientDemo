@@ -33,27 +33,27 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges4 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            guna2CirclePictureBox1 = new Guna.UI2.WinForms.Guna2CirclePictureBox();
+            pic_Avatar = new Guna.UI2.WinForms.Guna2CirclePictureBox();
             lbl_FullName = new Guna.UI2.WinForms.Guna2HtmlLabel();
             lbl_Email = new Guna.UI2.WinForms.Guna2HtmlLabel();
             checkBox = new Guna.UI2.WinForms.Guna2CustomCheckBox();
             pic_Status = new Guna.UI2.WinForms.Guna2CirclePictureBox();
-            ((System.ComponentModel.ISupportInitialize)guna2CirclePictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pic_Avatar).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pic_Status).BeginInit();
             SuspendLayout();
             // 
-            // guna2CirclePictureBox1
+            // pic_Avatar
             // 
-            guna2CirclePictureBox1.Image = (Image)resources.GetObject("guna2CirclePictureBox1.Image");
-            guna2CirclePictureBox1.ImageRotate = 0F;
-            guna2CirclePictureBox1.Location = new Point(10, 15);
-            guna2CirclePictureBox1.Name = "guna2CirclePictureBox1";
-            guna2CirclePictureBox1.ShadowDecoration.CustomizableEdges = customizableEdges1;
-            guna2CirclePictureBox1.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
-            guna2CirclePictureBox1.Size = new Size(40, 40);
-            guna2CirclePictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
-            guna2CirclePictureBox1.TabIndex = 0;
-            guna2CirclePictureBox1.TabStop = false;
+            pic_Avatar.Image = (Image)resources.GetObject("pic_Avatar.Image");
+            pic_Avatar.ImageRotate = 0F;
+            pic_Avatar.Location = new Point(10, 15);
+            pic_Avatar.Name = "pic_Avatar";
+            pic_Avatar.ShadowDecoration.CustomizableEdges = customizableEdges1;
+            pic_Avatar.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
+            pic_Avatar.Size = new Size(40, 40);
+            pic_Avatar.SizeMode = PictureBoxSizeMode.StretchImage;
+            pic_Avatar.TabIndex = 0;
+            pic_Avatar.TabStop = false;
             // 
             // lbl_FullName
             // 
@@ -62,7 +62,7 @@
             lbl_FullName.Font = new Font("Segoe UI Semibold", 10.8F, FontStyle.Bold, GraphicsUnit.Point);
             lbl_FullName.Location = new Point(61, 3);
             lbl_FullName.Name = "lbl_FullName";
-            lbl_FullName.Size = new Size(84, 27);
+            lbl_FullName.Size = new Size(165, 27);
             lbl_FullName.TabIndex = 1;
             lbl_FullName.Text = "Full name";
             // 
@@ -95,6 +95,7 @@
             // 
             // pic_Status
             // 
+            pic_Status.BackColor = Color.Transparent;
             pic_Status.FillColor = Color.Red;
             pic_Status.ImageRotate = 0F;
             pic_Status.Location = new Point(37, 43);
@@ -113,10 +114,10 @@
             Controls.Add(checkBox);
             Controls.Add(lbl_Email);
             Controls.Add(lbl_FullName);
-            Controls.Add(guna2CirclePictureBox1);
+            Controls.Add(pic_Avatar);
             Name = "AccountControl";
             Size = new Size(265, 70);
-            ((System.ComponentModel.ISupportInitialize)guna2CirclePictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pic_Avatar).EndInit();
             ((System.ComponentModel.ISupportInitialize)pic_Status).EndInit();
             ResumeLayout(false);
             PerformLayout();
@@ -124,7 +125,7 @@
 
         #endregion
 
-        private Guna.UI2.WinForms.Guna2CirclePictureBox guna2CirclePictureBox1;
+        private Guna.UI2.WinForms.Guna2CirclePictureBox pic_Avatar;
         private Guna.UI2.WinForms.Guna2HtmlLabel lbl_FullName;
         private Guna.UI2.WinForms.Guna2HtmlLabel lbl_Email;
         private Guna.UI2.WinForms.Guna2CustomCheckBox checkBox;
