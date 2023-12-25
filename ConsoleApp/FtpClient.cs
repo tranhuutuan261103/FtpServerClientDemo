@@ -34,6 +34,12 @@ namespace MyFtpClient
             }
         }
 
+        public void SetIPAdressAndPort(string ipAddress, int port)
+        {
+            _host = ipAddress; 
+            _port = port;
+        }
+
         public bool Register(RegisterRequest request)
         {
             return _mainTcpSession.Register(request);
@@ -49,12 +55,16 @@ namespace MyFtpClient
         {
             _mainTcpSession.SetUsername(username);
             _mainTcpSession.SetPassword(password);
+            _mainTcpSession.SetHost(_host);
+            _mainTcpSession.SetPort(_port);
             if (_mainTcpSession.Connect())
             {
                 for (int i = 0; i < subTcpSession.Length; i++)
                 {
                     subTcpSession[i].SetUsername(username);
                     subTcpSession[i].SetPassword(password);
+                    subTcpSession[i].SetHost(_host);
+                    subTcpSession[i].SetPort(_port);
                 }
                 return true;
             }

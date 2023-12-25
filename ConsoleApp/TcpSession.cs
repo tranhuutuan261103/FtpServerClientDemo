@@ -183,6 +183,16 @@ namespace MyFtpClient
         {
             _password = password;
         }
+
+        internal void SetHost(string host)
+        {
+            _host = host;
+        }
+
+        internal void SetPort(int port)
+        {
+            _port = port;
+        }
     }
 
     public enum TcpSessionStatus

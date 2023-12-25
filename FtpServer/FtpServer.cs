@@ -22,11 +22,15 @@ namespace MyFtpServer
         private string _host;
         private int _port;
         private TcpListener _controlSocket;
+        private bool _isRunning = false;
         private readonly string _rootPath = @"D:\FileServer";
         int _sessionID = 2;
+        List<ClientConnection> _connections = new List<ClientConnection>();
 
-        public FtpServer(string host, int port, CommandReceivedHandler commandReceived)
+        public FtpServer(string host, int port, string rootPath, CommandReceivedHandler commandReceived)
         {
+            if (!Directory.Exists(rootPath))
+                throw new Exception("Root path not exist");
             try
             {
                 _host = host;
@@ -34,10 +38,20 @@ namespace MyFtpServer
                 CommandReceived += commandReceived;
                 _controlSocket = new TcpListener(IPAddress.Parse(_host), _port);
                 _controlSocket.Start();
+                _isRunning = true;
                 _passivePort = 30000;
             } catch (Exception ex)
             {
                 throw new Exception("FTP Server error: " + ex.Message);
+            }
+        }
+
+        private object _lock = new object();
+        public List<ClientConnection> GetConnectedClients()
+        {
+            lock (_lock)
+            {
+                return new List<ClientConnection>(_connections);
             }
         }
 
@@ -46,11 +60,13 @@ namespace MyFtpServer
             ResponseStatus(0, $"FTP Server already start at {_host}:{_port}");
             try
             {
-                while (true)
+                while (_isRunning)
                 {
                     TcpClient client = _controlSocket.AcceptTcpClient();
+                    ClientConnection clientConnection = new ClientConnection(0, client);
+                    _connections.Add(clientConnection);
                     Thread clientThread = new Thread(new ParameterizedThreadStart(HandleClient));
-                    clientThread.Start(client);
+                    clientThread.Start(clientConnection);
                 }
             }
             catch (Exception ex)
@@ -60,14 +76,16 @@ namespace MyFtpServer
             }
         }
 
-        private void HandleClient(object? client)
+        private void HandleClient(object? clientConnectionPar)
         {
-            if (client == null)
+            if (clientConnectionPar == null)
                 return;
 
             int sessionID = GetSessionID();
 
-            TcpClient tcpClient = (TcpClient)client;
+            ClientConnection clientConnection = (ClientConnection)clientConnectionPar;
+
+            TcpClient tcpClient = clientConnection.TcpClient;
             NetworkStream ns = tcpClient.GetStream();
             StreamReader reader = new StreamReader(ns);
             StreamWriter writer = new StreamWriter(ns) { AutoFlush = true };
@@ -77,10 +95,19 @@ namespace MyFtpServer
             ResponseStatus(sessionID, $"220 FTP Server already for {iPEndPoint.Address}:{iPEndPoint.Port}");
 
             int idAccount;
-            do
+            try
             {
-                idAccount = Authenticate(sessionID, reader, writer);
-            } while (idAccount == 0);
+                do
+                {
+                    idAccount = Authenticate(sessionID, reader, writer);
+                } while (idAccount == 0);
+            } catch (Exception ex)
+            {
+                ResponseStatus(sessionID, $"530 {ex.Message}");
+                _connections.Remove(clientConnection);
+                return;
+            }
+            clientConnection.IdAccount = idAccount;
             
             TcpListener tcpListener = new TcpListener(IPAddress.Parse(_host), _passivePort);
             int passivePort;
@@ -527,6 +554,7 @@ namespace MyFtpServer
             finally
             {
                 tcpClient.Close();
+                _connections.Remove(clientConnection);
                 ResponseStatus(sessionID, $"??? FTP Server disconnected with {iPEndPoint.Address}:{iPEndPoint.Port}");
             }
         }
@@ -661,6 +689,14 @@ namespace MyFtpServer
         {
             DateTime now = DateTime.Now;
             CommandReceived($"S> {now}\tSession {sessionId}\t {message}");
+        }
+
+        public void Stop()
+        {
+            _isRunning = false;
+            _controlSocket.Stop();
+            _connections.ForEach(c => c.Close());
+            _connections.Clear();
         }
     }
 }

@@ -171,7 +171,8 @@ namespace UserApp.UI
         {
             string ipAddress = txt_IPAddress.Text;
             int port = int.Parse(txt_Port.Text);
-            return new FtpClient(ipAddress, port);
+            ftpClient.SetIPAdressAndPort(ipAddress, port);
+            return ftpClient;
         }
     }
 }
