@@ -77,9 +77,12 @@ namespace MyFtpServer.DAL
                     };
                     fileInfors.Add(fileInfor);
                 }
+                var folderParent = db.Folders.FirstOrDefault(f => f.Id == idParent);
                 return new FileInforPackage()
                 {
                     Category = Category.Owner,
+                    IdFolder = idParent,
+                    NameFolder = folderParent == null ? "" : folderParent.Name,
                     fileInfors = fileInfors
                 };
             }

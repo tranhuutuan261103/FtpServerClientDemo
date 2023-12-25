@@ -6,6 +6,7 @@ using MyClassLibrary.Common;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
+using System.Formats.Asn1;
 using System.Windows.Forms;
 using UserApp.BLL;
 using UserApp.DTO;
@@ -29,11 +30,72 @@ namespace UserApp.UI
             flowLayoutPanel_ListProcessing.AutoScroll = true;
             _email = email;
             MainForm_BLL = new MainForm_BLL(ftpClient, TransferProgress, ChangeFolderAndFileHandler, GetAccountInfor, GetDetailFileHandler);
+            folderPathControl.ClickFolderItemControlEvent += ClickFolderItemControlHandler;
+
+            AddEvent();
+        }
+
+        public void AddEvent()
+        {
+            this.Click += Control_Click;
+            foreach (Control control in this.Controls)
+            {
+                if (control.Name != "flowLayoutPanel_ListProcessing"
+                    && control.Name != "btn_TransferInfor")
+                {
+                    control.Click += Control_Click;
+                }
+            }
+            foreach (Control control in grid_FileAndFolder.Controls)
+            {
+                control.Click += Control_Click;
+            }
+            foreach (Control control in grid_ListFileAndFolderShared.Controls)
+            {
+                control.Click += Control_Click;
+            }
+            foreach (Control control in grid_ListFileAndFolderDeleted.Controls)
+            {
+                control.Click += Control_Click;
+            }
+            tabPage1.Click += Control_Click;
+            foreach (Control control in tabPage1.Controls)
+            {
+                control.Click += Control_Click;
+            }
+            tabPage2.Click += Control_Click;
+            foreach (Control control in tabPage2.Controls)
+            {
+                control.Click += Control_Click;
+            }
+            tabPage3.Click += Control_Click;
+            foreach (Control control in tabPage3.Controls)
+            {
+                control.Click += Control_Click;
+            }
+            tabPage4.Click += Control_Click;
+            foreach (Control control in tabPage4.Controls)
+            {
+                control.Click += Control_Click;
+            }
+        }
+
+        private void Control_Click(object? sender, EventArgs e)
+        {
+            if (flowLayoutPanel_ListProcessing != null)
+            {
+                flowLayoutPanel_ListProcessing.Visible = false;
+            }
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
             MainForm_BLL.GetFileInfos();
+        }
+
+        private void ClickFolderItemControlHandler(FolderItemVM folderItemVM)
+        {
+            MainForm_BLL.ChangeFolder(folderItemVM.IdFolder);
         }
 
         private void ChangeFolderAndFileHandler(FileInforPackage sender)
@@ -50,6 +112,32 @@ namespace UserApp.UI
                     grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
                     {
                         grid_FileAndFolder.Controls.Clear();
+                    });
+                }
+
+                if (folderPathControl.IsHandleCreated && !folderPathControl.IsDisposed)
+                {
+                    folderPathControl.BeginInvoke((MethodInvoker)delegate
+                    {
+                        if (fileInforPackage.IdFolder == "")
+                        {
+                            folderPathControl.Reset();
+                        }
+                        else
+                        {
+                            if (folderPathControl.HasFolderItemVM(fileInforPackage.IdFolder))
+                            {
+                                folderPathControl.RemoveItem(fileInforPackage.IdFolder);
+                            }
+                            else
+                            {
+                                folderPathControl.AddItem(new FolderItemVM()
+                                {
+                                    IdFolder = fileInforPackage.IdFolder,
+                                    NameFolder = fileInforPackage.NameFolder,
+                                });
+                            }
+                        }
                     });
                 }
 
