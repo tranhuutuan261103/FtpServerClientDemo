@@ -6,6 +6,7 @@ using MyClassLibrary.Common;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
+using System.Formats.Asn1;
 using System.Windows.Forms;
 using UserApp.BLL;
 using UserApp.DTO;
@@ -18,7 +19,8 @@ namespace UserApp.UI
     {
         private MainForm_BLL MainForm_BLL;
         private InterFont font = new InterFont();
-        public MainForm(FtpClient ftpClient)
+        private string _email;
+        public MainForm(FtpClient ftpClient, string email)
         {
             InitializeComponent();
             flowLayoutPanel_ListProcessing.AutoScroll = false;
@@ -26,7 +28,64 @@ namespace UserApp.UI
             flowLayoutPanel_ListProcessing.HorizontalScroll.Visible = false;
             flowLayoutPanel_ListProcessing.HorizontalScroll.Maximum = 0;
             flowLayoutPanel_ListProcessing.AutoScroll = true;
+            _email = email;
             MainForm_BLL = new MainForm_BLL(ftpClient, TransferProgress, ChangeFolderAndFileHandler, GetAccountInfor, GetDetailFileHandler);
+            folderPathControl.ClickFolderItemControlEvent += ClickFolderItemControlHandler;
+
+            AddEvent();
+        }
+
+        public void AddEvent()
+        {
+            this.Click += Control_Click;
+            foreach (Control control in this.Controls)
+            {
+                if (control.Name != "flowLayoutPanel_ListProcessing"
+                    && control.Name != "btn_TransferInfor")
+                {
+                    control.Click += Control_Click;
+                }
+            }
+            foreach (Control control in grid_FileAndFolder.Controls)
+            {
+                control.Click += Control_Click;
+            }
+            foreach (Control control in grid_ListFileAndFolderShared.Controls)
+            {
+                control.Click += Control_Click;
+            }
+            foreach (Control control in grid_ListFileAndFolderDeleted.Controls)
+            {
+                control.Click += Control_Click;
+            }
+            tabPage1.Click += Control_Click;
+            foreach (Control control in tabPage1.Controls)
+            {
+                control.Click += Control_Click;
+            }
+            tabPage2.Click += Control_Click;
+            foreach (Control control in tabPage2.Controls)
+            {
+                control.Click += Control_Click;
+            }
+            tabPage3.Click += Control_Click;
+            foreach (Control control in tabPage3.Controls)
+            {
+                control.Click += Control_Click;
+            }
+            tabPage4.Click += Control_Click;
+            foreach (Control control in tabPage4.Controls)
+            {
+                control.Click += Control_Click;
+            }
+        }
+
+        private void Control_Click(object? sender, EventArgs e)
+        {
+            if (flowLayoutPanel_ListProcessing != null)
+            {
+                flowLayoutPanel_ListProcessing.Visible = false;
+            }
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -34,31 +93,110 @@ namespace UserApp.UI
             MainForm_BLL.GetFileInfos();
         }
 
-        private void ChangeFolderAndFileHandler(List<FileInfor> sender)
+        private void ClickFolderItemControlHandler(FolderItemVM folderItemVM)
+        {
+            MainForm_BLL.ChangeFolder(folderItemVM.IdFolder);
+        }
+
+        private void ChangeFolderAndFileHandler(FileInforPackage sender)
         {
             UpdateGridFileAndFolder(sender);
         }
 
-        private void UpdateGridFileAndFolder(List<FileInfor> fileInfors)
+        private void UpdateGridFileAndFolder(FileInforPackage fileInforPackage)
         {
-            if (grid_FileAndFolder.IsHandleCreated && !grid_FileAndFolder.IsDisposed)
-            {
-                grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
-                {
-                    grid_FileAndFolder.Controls.Clear();
-                });
-            }
-
-            foreach (var item in fileInfors)
+            if (fileInforPackage.Category == Category.Owner)
             {
                 if (grid_FileAndFolder.IsHandleCreated && !grid_FileAndFolder.IsDisposed)
                 {
                     grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
                     {
-                        grid_FileAndFolder.Controls.Add(new FileControl(item, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler));
+                        grid_FileAndFolder.Controls.Clear();
                     });
                 }
+
+                if (folderPathControl.IsHandleCreated && !folderPathControl.IsDisposed)
+                {
+                    folderPathControl.BeginInvoke((MethodInvoker)delegate
+                    {
+                        if (fileInforPackage.IdFolder == "")
+                        {
+                            folderPathControl.Reset();
+                        }
+                        else
+                        {
+                            if (folderPathControl.HasFolderItemVM(fileInforPackage.IdFolder))
+                            {
+                                folderPathControl.RemoveItem(fileInforPackage.IdFolder);
+                            }
+                            else
+                            {
+                                folderPathControl.AddItem(new FolderItemVM()
+                                {
+                                    IdFolder = fileInforPackage.IdFolder,
+                                    NameFolder = fileInforPackage.NameFolder,
+                                });
+                            }
+                        }
+                    });
+                }
+
+                foreach (var item in fileInforPackage.fileInfors)
+                {
+                    if (grid_FileAndFolder.IsHandleCreated && !grid_FileAndFolder.IsDisposed)
+                    {
+                        grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
+                        {
+                            grid_FileAndFolder.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, RestoreFileHandler));
+                        });
+                    }
+                }
             }
+            else if (fileInforPackage.Category == Category.Shared)
+            {
+                if (grid_ListFileAndFolderShared.IsHandleCreated && !grid_ListFileAndFolderShared.IsDisposed)
+                {
+                    grid_ListFileAndFolderShared.BeginInvoke((MethodInvoker)delegate
+                    {
+                        grid_ListFileAndFolderShared.Controls.Clear();
+                    });
+                }
+                foreach (var item in fileInforPackage.fileInfors)
+                {
+                    if (grid_ListFileAndFolderShared.IsHandleCreated && !grid_ListFileAndFolderShared.IsDisposed)
+                    {
+                        grid_ListFileAndFolderShared.BeginInvoke((MethodInvoker)delegate
+                        {
+                            grid_ListFileAndFolderShared.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, RestoreFileHandler));
+                        });
+                    }
+                }
+            }
+            else if (fileInforPackage.Category == Category.Deleted)
+            {
+                if (grid_ListFileAndFolderDeleted.IsHandleCreated && !grid_ListFileAndFolderDeleted.IsDisposed)
+                {
+                    grid_ListFileAndFolderDeleted.BeginInvoke((MethodInvoker)delegate
+                    {
+                        grid_ListFileAndFolderDeleted.Controls.Clear();
+                    });
+                }
+                foreach (var item in fileInforPackage.fileInfors)
+                {
+                    if (grid_ListFileAndFolderDeleted.IsHandleCreated && !grid_ListFileAndFolderDeleted.IsDisposed)
+                    {
+                        grid_ListFileAndFolderDeleted.BeginInvoke((MethodInvoker)delegate
+                        {
+                            grid_ListFileAndFolderDeleted.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, RestoreFileHandler));
+                        });
+                    }
+                }
+            }
+        }
+
+        private void RestoreFileHandler(RestoreFileRequest sender)
+        {
+            MainForm_BLL.RestoreFile(sender);
         }
 
         public void FileControlHandle(object sender, EventArgs e)
@@ -69,6 +207,13 @@ namespace UserApp.UI
                 if (request.fileInfor.IsDirectory == true)
                 {
                     MainForm_BLL.ChangeFolder(request.fileInfor.Id);
+                }
+            }
+            else if (request.type == FileControlRequestType.ChangeSharedFolder)
+            {
+                if (request.fileInfor.IsDirectory == true)
+                {
+                    MainForm_BLL.ChangeSharedFolder(request.fileInfor.Id);
                 }
             }
             else if (request.type == FileControlRequestType.Download)
@@ -92,7 +237,9 @@ namespace UserApp.UI
                 {
                     flowLayoutPanel_ListProcessing.Invoke((MethodInvoker)delegate
                     {
-                        flowLayoutPanel_ListProcessing.Controls.Add(new FileTransferProcessingControl(sender));
+                        var control = new FileTransferProcessingControl(sender);
+                        flowLayoutPanel_ListProcessing.Controls.Add(control);
+                        control.UpdateUI();
                     });
                 }
                 else
@@ -154,7 +301,7 @@ namespace UserApp.UI
             {
                 return;
             }
-            DetailFileForm detailFileForm = new DetailFileForm(fileInfor, fileAccessVMs);
+            DetailFileForm detailFileForm = new DetailFileForm(fileInfor, fileAccessVMs, _email);
             if (detailFileForm.ShowDialog() == DialogResult.OK)
             {
                 MainForm_BLL.UpdateFileAccess(detailFileForm.GetFileAccessVMs());
@@ -210,12 +357,28 @@ namespace UserApp.UI
             else
             {
                 flowLayoutPanel_ListProcessing.Visible = true;
+                foreach (FileTransferProcessingControl control in flowLayoutPanel_ListProcessing.Controls)
+                {
+                    control.UpdateUI();
+                }
             }
         }
 
         private void tabControl_Profile_Selecting(object sender, TabControlCancelEventArgs e)
         {
-            if (e.TabPageIndex == 3)
+            if (e.TabPageIndex == 0)
+            {
+                MainForm_BLL.ChangeFolder("");
+            }
+            else if (e.TabPageIndex == 1)
+            {
+                MainForm_BLL.ChangeSharedFolder("");
+            }
+            else if (e.TabPageIndex == 2)
+            {
+                MainForm_BLL.ChangeDeletedFolder("");
+            }
+            else if (e.TabPageIndex == 3)
             {
                 btn_UpdateProfile.Enabled = false;
                 MainForm_BLL.GetAccountInfor();
@@ -239,7 +402,8 @@ namespace UserApp.UI
                     lbl_CreationDate.Text = accountInfor.CreationDate.ToString("yyyy/MM/dd HH:mm");
                     if (accountInfor.Avatar != null && accountInfor.Avatar.Count > 0)
                     {
-                        try {
+                        try
+                        {
                             using (MemoryStream memoryStream = new MemoryStream(accountInfor.Avatar.ToArray()))
                             {
                                 pic_Avatar.Image = Image.FromStream(memoryStream);

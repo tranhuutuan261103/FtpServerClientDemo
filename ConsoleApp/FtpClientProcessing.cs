@@ -128,6 +128,19 @@ namespace ConsoleApp
             }
         }
 
+        public bool RestoreFile(string fileId)
+        {
+            string Command, Response;
+            Command = string.Format("RESTOREFILE {0}", fileId);
+            _writer.WriteLine(Command);
+            Response = _reader.ReadLine() ?? "";
+            if (Response.StartsWith("250 ") == true)
+            {
+                return true;
+            }
+            return false;
+        }
+
         public List<FileAccessVM> GetListFileAccess(string id)
         {
             string Command = "", Response = "";
@@ -341,6 +354,54 @@ namespace ConsoleApp
                 }
             }
         }
+        public FileInforPackage GetFileInforPackage(GetListFileRequest request)
+        {
+            FileInforPackage fileInforPackage = new FileInforPackage();
+            string command, response;
+
+            command = string.Format("CWD {0}", request.IdParent);
+            _writer.WriteLine(command);
+            response = _reader.ReadLine() ?? "";
+
+            command = "PWD";
+            _writer.WriteLine(command);
+            response = _reader.ReadLine() ?? "";
+            //Console.WriteLine(Response); // Console command line
+            if (response.StartsWith("257 ") == true)
+            {
+                string[] tokens = response.Split('"');
+                //Console.WriteLine(tokens[1]); // Console command line
+            }
+
+            command = "PASV";
+            _writer.WriteLine(command);
+            response = _reader.ReadLine() ?? "";
+            //Console.WriteLine(Response); // Console command line
+            if (response.StartsWith("227 ") == true)
+            {
+                IPEndPoint server_data_endpoint = GetServerEndpoint(response);
+                string json = JsonConvert.SerializeObject(request);
+                command = "MLSD " + json;
+                _writer.WriteLine(command);
+                TcpClient data_channel = new TcpClient();
+                data_channel.Connect(server_data_endpoint);
+                response = _reader.ReadLine() ?? "";
+                //Console.WriteLine(Response); // Console command line
+                if (response.StartsWith("150 "))
+                {
+                    DataTransferClient fileClientProcessing = new DataTransferClient(data_channel);
+                    fileInforPackage = fileClientProcessing.ReceiveFileInforPackage();
+
+                    response = _reader.ReadLine() ?? "";
+                    if (response.StartsWith("226 "))
+                    {
+                        //Console.WriteLine(Response); // Console command line
+                        data_channel.Close();
+                    }
+                }
+            }
+            return fileInforPackage;
+        }
 
         public List<FileInfor> ListRemoteFoldersAndFiles(string remoteFolderPath)
         {
@@ -399,8 +460,13 @@ namespace ConsoleApp
             bool currentRemoteFolderPath = SetRemoteFolderPath(remoteFolderPath);
             if (currentRemoteFolderPath == true)
             {
-                List<FileInfor> fileInfors = ListRemoteFoldersAndFiles(remoteFolderPath);
-                foreach (FileInfor fileInfor in fileInfors)
+                GetListFileRequest request = new GetListFileRequest()
+                {
+                    IdParent = remoteFolderPath,
+                    IdAccess = IdAccess.Shared,
+                };
+                FileInforPackage fileInfors = GetFileInforPackage(request);
+                foreach (FileInfor fileInfor in fileInfors.fileInfors)
                 {
                     if (fileInfor.IsDirectory == true)
                     {
@@ -415,6 +481,25 @@ namespace ConsoleApp
                     }
                 }
             }
+        }
+
+        public bool CheckCanUpload(string remotePath)
+        {
+            string command, response;
+            command = string.Format("CWD {0}", remotePath);
+            _writer.WriteLine(command);
+            response = _reader.ReadLine() ?? "";
+            if (response.StartsWith("250 ") == true)
+            {
+                command = "CHECKCANUPLOAD";
+                _writer.WriteLine(command);
+                response = _reader.ReadLine() ?? "";
+                if (response.StartsWith("200 ") == true)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void UploadFolder(string remoteFolderPath, string localFolderPath)

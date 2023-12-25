@@ -16,17 +16,21 @@ namespace UserApp.UI.UserComponent
 {
     public partial class FileControl : UserControl
     {
-        public FileControl(FileInfor item, 
-            FileControlClickHandler fileControlClickHandler, 
+        public FileControl(FileInfor item,
+            Category category,
+            FileControlClickHandler fileControlClickHandler,
             ShowDetailFileHandler showDetailFileHandler,
-            RenameClickHandler renameClickHandler, 
-            DeleteClickHandler deleteClickHandler)
+            RenameClickHandler renameClickHandler,
+            DeleteClickHandler deleteClickHandler,
+            RestoreClickHandler restoreClickHandler)
         {
             FileControlClick = fileControlClickHandler;
             ShowDetailFile = showDetailFileHandler;
             RenameClick = renameClickHandler;
             DeleteClick = deleteClickHandler;
+            RestoreClick = restoreClickHandler;
             infor = item;
+            this.category = category;
             InitializeComponent();
             UpdateInforUI(item);
         }
@@ -35,15 +39,44 @@ namespace UserApp.UI.UserComponent
         public event FileControlClickHandler FileControlClick;
 
         private FileInfor infor;
+        private Category category;
 
         private void FileControl_DoubleClick(object sender, EventArgs e)
         {
-            FileControlRequest fileControlRequest = new FileControlRequest()
+            string panelName = "";
+            try
             {
-                fileInfor = infor,
-                type = FileControlRequestType.ChangeFolder,
-            };
-            FileControlClick(fileControlRequest, e);
+                if (Parent != null)
+                {
+                    panelName = Parent.Name;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            catch (Exception)
+            {
+                return;
+            }
+            if (panelName == "grid_FileAndFolder")
+            {
+                FileControlRequest fileControlRequest = new FileControlRequest()
+                {
+                    fileInfor = infor,
+                    type = FileControlRequestType.ChangeFolder,
+                };
+                FileControlClick(fileControlRequest, e);
+            }
+            else if (panelName == "grid_ListFileAndFolderShared")
+            {
+                FileControlRequest fileControlRequest = new FileControlRequest()
+                {
+                    fileInfor = infor,
+                    type = FileControlRequestType.ChangeSharedFolder,
+                };
+                FileControlClick(fileControlRequest, e);
+            }
         }
 
         private void ToolStripMenuItem_Download_Click(object sender, EventArgs e)
@@ -68,11 +101,12 @@ namespace UserApp.UI.UserComponent
                 if (infor.IsDirectory == true)
                 {
                     inputDialog.InputText = infor.Name;
-                } else
+                }
+                else
                 {
                     inputDialog.InputText = infor.Name.Substring(0, infor.Name.LastIndexOf('.'));
                 }
-                
+
                 if (inputDialog.ShowDialog() == DialogResult.OK)
                 {
                     if (inputDialog.InputText == infor.Name || inputDialog.InputText == "")
@@ -152,7 +186,14 @@ namespace UserApp.UI.UserComponent
 
         private void btn_MoreOption_Click(object sender, EventArgs e)
         {
-            guna2CMStrip.Show(this, this.PointToClient(MousePosition));
+            if (category == Category.Deleted)
+            {
+                guna2CMStrip_Deleted.Show(this, this.PointToClient(MousePosition));
+            }
+            else
+            {
+                guna2CMStrip.Show(this, this.PointToClient(MousePosition));
+            }
         }
 
         private void pictureBox_MoreOption_MouseEnter(object sender, EventArgs e)
@@ -174,6 +215,17 @@ namespace UserApp.UI.UserComponent
                 return input.Substring(0, maxLenght) + "...";
             }
             return input;
+        }
+
+        public delegate void RestoreClickHandler(RestoreFileRequest sender);
+        public event RestoreClickHandler RestoreClick;
+
+        private void ToolStripMenuItem_Restore_Click(object sender, EventArgs e)
+        {
+            RestoreClick(new RestoreFileRequest()
+            {
+                FileId = infor.Id ?? "",
+            });
         }
     }
 }

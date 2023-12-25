@@ -1,4 +1,5 @@
 ﻿using Guna.UI2.WinForms;
+using MyClassLibrary;
 using MyClassLibrary.Common;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,6 @@ namespace UserApp.UI.UserComponent
         {
             InitializeComponent();
             this.processing = processing;
-            UpdateUI();
         }
 
         private FileTransferProcessing processing;
@@ -33,7 +33,6 @@ namespace UserApp.UI.UserComponent
         public void UpdateUI()
 
         {
-
             if (processing != null)
 
             {
@@ -108,20 +107,8 @@ namespace UserApp.UI.UserComponent
 
         private string TransferRateFormat(long fileTransfered, long fileSize)
         {
-            string[] type = { "B", "KB", "MB", "GB", "TB" };
-            int i = 0;
-            int j = 0;
-            while (fileTransfered > 1024)
-            {
-                fileTransfered /= 1024;
-                i++;
-            }
-            while (fileSize > 1024)
-            {
-                fileSize /= 1024;
-                j++;
-            }
-            return $"{fileTransfered} {type[i]}/{fileSize} {type[j]}";
+            FileManager fileManager = new FileManager();
+            return $"{fileManager.FileSizeToString(fileTransfered)}/{fileManager.FileSizeToString(fileSize)}";
         }
 
         public void UpdateTransferProcessing(FileTransferProcessing processing)

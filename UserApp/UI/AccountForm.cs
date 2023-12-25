@@ -97,7 +97,7 @@ namespace UserApp.UI
         {
             if (ftpClient.Login(username, password) == true)
             {
-                MainForm mainForm = new MainForm(ftpClient);
+                MainForm mainForm = new MainForm(ftpClient, username);
                 mainForm.Show();
                 Hide();
             }

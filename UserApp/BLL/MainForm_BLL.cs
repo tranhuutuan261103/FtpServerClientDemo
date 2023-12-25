@@ -90,12 +90,6 @@ namespace UserApp.BLL
         }
         public void Back()
         {
-            /*if (_remoteFolderPath == "")
-                _remoteFolderPath = "\\";
-            if (_remoteFolderPath != "")
-            {
-                _remoteFolderPath = _remoteFolderPath.Substring(0, _remoteFolderPath.LastIndexOf('\\'));
-            }*/
             _remoteFolderPath = "";
             ftpClient.ListRemoteFolderAndFiles("");
         }
@@ -109,10 +103,10 @@ namespace UserApp.BLL
                 progress(sender);
         }
 
-        public delegate void OnChangeFolderAndFile(List<FileInfor> sender);
+        public delegate void OnChangeFolderAndFile(FileInforPackage sender);
         public event OnChangeFolderAndFile changeFolderAndFile;
 
-        private void ChangeFoldersAndFileHandler(List<FileInfor> fileInfors)
+        private void ChangeFoldersAndFileHandler(FileInforPackage fileInfors)
         {
             if (fileInfors != null)
                 changeFolderAndFile(fileInfors);
@@ -139,8 +133,13 @@ namespace UserApp.BLL
 
         public void UploadFolder(string selectedPath)
         {
-            string folderName = selectedPath.Substring(selectedPath.LastIndexOf('\\') + 1);
-            ftpClient.UploadFolder(folderName, selectedPath);
+            UploadFolderRequest request = new UploadFolderRequest()
+            {
+                FolderName = selectedPath.Substring(selectedPath.LastIndexOf('\\') + 1),
+                ParentFolderId = _remoteFolderPath,
+                FullLocalPath = selectedPath
+            };
+            ftpClient.UploadFolder(request);
         }
 
         // Manage account
@@ -170,6 +169,23 @@ namespace UserApp.BLL
         public void UpdateFileAccess(List<FileAccessVM> fileAccessVMs)
         {
             ftpClient.UpdateFileAccess(fileAccessVMs);
+        }
+
+        public void ChangeSharedFolder(string idFolder)
+        {
+            _remoteFolderPath = idFolder;
+            ftpClient.ChangeSharedFolder(idFolder);
+        }
+
+        internal void ChangeDeletedFolder(string idFolder)
+        {
+            _remoteFolderPath = idFolder;
+            ftpClient.ChangeDeletedFolder(idFolder);
+        }
+
+        public void RestoreFile(RestoreFileRequest request)
+        {
+            ftpClient.RestoreFile(request);
         }
     }
 }
