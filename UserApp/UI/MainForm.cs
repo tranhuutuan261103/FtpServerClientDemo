@@ -233,7 +233,17 @@ namespace UserApp.UI
         {
             if (flowLayoutPanel_ListProcessing.IsHandleCreated && !flowLayoutPanel_ListProcessing.IsDisposed)
             {
-                if (sender.Status == FileTransferProcessingStatus.Waiting)
+                bool isExist = false;
+                foreach (FileTransferProcessingControl control in flowLayoutPanel_ListProcessing.Controls)
+                {
+                    if (sender == control.GetFileTransferProcessing())
+                    {
+                        isExist = true;
+                        control.UpdateTransferProcessing(sender);
+                        break;
+                    }
+                }
+                if (!isExist)
                 {
                     flowLayoutPanel_ListProcessing.Invoke((MethodInvoker)delegate
                     {
@@ -241,17 +251,6 @@ namespace UserApp.UI
                         flowLayoutPanel_ListProcessing.Controls.Add(control);
                         control.UpdateUI();
                     });
-                }
-                else
-                {
-                    foreach (FileTransferProcessingControl control in flowLayoutPanel_ListProcessing.Controls)
-                    {
-                        if (sender == control.GetFileTransferProcessing())
-                        {
-                            control.UpdateTransferProcessing(sender);
-                            break;
-                        }
-                    }
                 }
             }
         }

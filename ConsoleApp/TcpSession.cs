@@ -37,7 +37,13 @@ namespace ConsoleApp
         {
             if (_clientSession.Connected == false)
             {
-                _clientSession.Connect(_host, _port);
+                try
+                {
+                    _clientSession.Connect(_host, _port);
+                } catch (Exception)
+                {
+                    return false;
+                }
             }
             _status = TcpSessionStatus.Connected;
             return Login(_username, _password);

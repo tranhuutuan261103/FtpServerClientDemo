@@ -25,18 +25,25 @@ namespace MyFtpServer
         private readonly string _rootPath = @"D:\FileServer";
         int _sessionID = 2;
 
-        public FtpServer(string host, int port)
+        public FtpServer(string host, int port, CommandReceivedHandler commandReceived)
         {
-            _host = host;
-            _port = port;
-            _controlSocket = new TcpListener(IPAddress.Parse(_host), _port);
-            _controlSocket.Start();
-            _passivePort = 30000;
+            try
+            {
+                _host = host;
+                _port = port;
+                CommandReceived += commandReceived;
+                _controlSocket = new TcpListener(IPAddress.Parse(_host), _port);
+                _controlSocket.Start();
+                _passivePort = 30000;
+            } catch (Exception ex)
+            {
+                throw new Exception("FTP Server error: " + ex.Message);
+            }
         }
 
         public void Start()
         {
-            Console.WriteLine($"FTP Server already start at {_host}:{_port}");
+            ResponseStatus(0, $"FTP Server already start at {_host}:{_port}");
             try
             {
                 while (true)
@@ -641,16 +648,19 @@ namespace MyFtpServer
             }
         }
 
+        public delegate void CommandReceivedHandler(string message);
+        public event CommandReceivedHandler CommandReceived;
+
         private void CommandStatus(int sessionId, string message)
         {
             DateTime now = DateTime.Now;
-            Console.WriteLine($"C> {now}\tSession {sessionId}\t {message}");
+            CommandReceived($"C> {now}\tSession {sessionId}\t {message}");
         }
 
         private void ResponseStatus(int sessionId, string message)
         {
             DateTime now = DateTime.Now;
-            Console.WriteLine($"S> {now}\tSession {sessionId}\t {message}");
+            CommandReceived($"S> {now}\tSession {sessionId}\t {message}");
         }
     }
 }
