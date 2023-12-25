@@ -1,8 +1,8 @@
-﻿using ConsoleApp;
-using MyClassLibrary;
+﻿using MyClassLibrary;
 using MyClassLibrary.Bean.Account;
 using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
+using MyFtpClient;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing.Imaging;
 using System.Drawing.Text;

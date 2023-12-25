@@ -1,8 +1,8 @@
-﻿using ConsoleApp;
-using MyClassLibrary;
+﻿using MyClassLibrary;
 using MyClassLibrary.Bean.Account;
 using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
+using MyFtpClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;

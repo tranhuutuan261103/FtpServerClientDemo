@@ -13,7 +13,7 @@ using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleApp
+namespace MyFtpClient
 {
     public class FtpClient
     {
@@ -62,7 +62,7 @@ namespace ConsoleApp
         }
 
         public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile, OnGetListFileAccess onGetListFileAccess)
-        {   
+        {
             Thread threadMain = new Thread(MainProcess);
             threadMain.Start();
 
@@ -78,7 +78,7 @@ namespace ConsoleApp
 
         private void PushMainTaskSession(TaskSession taskSession)
         {
-            lock(_mainTaskSessionLock)
+            lock (_mainTaskSessionLock)
             {
                 _mainTaskSessions.Add(taskSession);
             }
@@ -265,7 +265,7 @@ namespace ConsoleApp
                 case "UPLOADFOLDER":
                     {
                         UploadFolderRequest uploadFolderRequest = (UploadFolderRequest)taskSession.Data;
-                        if (fcp.CheckCanUpload(uploadFolderRequest.ParentFolderId) == true) 
+                        if (fcp.CheckCanUpload(uploadFolderRequest.ParentFolderId) == true)
                         {
                             fcp.UploadFolder(uploadFolderRequest.FolderName, uploadFolderRequest.FullLocalPath);
                         }

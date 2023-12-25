@@ -8,7 +8,7 @@ using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleApp
+namespace MyFtpClient
 {
     public class AccountClientProcessing
     {
@@ -17,7 +17,7 @@ namespace ConsoleApp
         private StreamWriter _writer;
         public AccountClientProcessing(TcpClient tcpClient)
         {
-            this._tcpClient = tcpClient;
+            _tcpClient = tcpClient;
             _reader = new StreamReader(_tcpClient.GetStream());
             _writer = new StreamWriter(_tcpClient.GetStream()) { AutoFlush = true };
         }

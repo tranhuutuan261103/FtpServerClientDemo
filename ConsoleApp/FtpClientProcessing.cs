@@ -8,9 +8,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using static ConsoleApp.DataTransferClient;
+using static MyFtpClient.DataTransferClient;
 
-namespace ConsoleApp
+namespace MyFtpClient
 {
     public class FtpClientProcessing
     {

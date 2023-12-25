@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleApp
+namespace MyFtpClient
 {
     public class DataTransferClient
     {
@@ -23,7 +23,7 @@ namespace ConsoleApp
             _writer = new StreamWriter(_tcpClient.GetStream()) { AutoFlush = true };
             _reader = new StreamReader(_tcpClient.GetStream());
             this.FileClientProcessingEvent = FileClientProcessingEvent;
-            this.Processing = processing;
+            Processing = processing;
 
             Thread thread = new Thread(UpdateProcessing);
             thread.Start();
@@ -137,7 +137,7 @@ namespace ConsoleApp
             FileClientProcessingEvent(Processing);
 
             long totalBytesRead = 0;
-            
+
 
             FileStream fs = new FileStream(fullFilePath, FileMode.Open, FileAccess.Read);
             Processing.FileSize = fs.Length;
