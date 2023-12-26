@@ -37,16 +37,20 @@ namespace MyFtpClient
 
         public bool Connect()
         {
-            if (_clientSession.Connected == false)
+            try
             {
-                try
+                if (_clientSession == null || _clientSession.Client == null)
+                {
+                    _clientSession = new TcpClient();
+                }
+                if (_clientSession.Connected == false)
                 {
                     _clientSession.Connect(_host, _port);
                 }
-                catch (Exception)
-                {
-                    return false;
-                }
+            }
+            catch (Exception)
+            {
+                return false;
             }
             _status = TcpSessionStatus.Connected;
             return Login(_username, _password);
@@ -92,6 +96,10 @@ namespace MyFtpClient
         {
             try
             {
+                if (_clientSession == null)
+                {
+                    _clientSession = new TcpClient();
+                }
                 if (_clientSession.Connected == false)
                 {
                     _clientSession.Connect(_host, _port);
@@ -126,6 +134,10 @@ namespace MyFtpClient
         {
             try
             {
+                if (_clientSession == null)
+                {
+                    _clientSession = new TcpClient();
+                }
                 if (_clientSession.Connected == false)
                 {
                     _clientSession.Connect(_host, _port);
@@ -156,8 +168,14 @@ namespace MyFtpClient
 
         public void Disconnect()
         {
-            _clientSession.Close();
             _status = TcpSessionStatus.Closed;
+            try
+            {
+                _clientSession.Close();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public TcpSessionStatus GetStatus()
@@ -172,7 +190,7 @@ namespace MyFtpClient
 
         internal void Dispose()
         {
-            _clientSession.Dispose();
+            _clientSession.Close();
             _status = TcpSessionStatus.Closed;
         }
 

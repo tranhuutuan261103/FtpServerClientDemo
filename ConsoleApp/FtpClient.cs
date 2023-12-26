@@ -71,8 +71,9 @@ namespace MyFtpClient
             return false;
         }
 
-        public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile, OnGetListFileAccess onGetListFileAccess)
+        public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile, OnGetListFileAccess onGetListFileAccess, LogoutDelegate logout)
         {
+            this.logout += logout;
             Thread threadMain = new Thread(MainProcess);
             threadMain.Start();
 
@@ -93,9 +94,10 @@ namespace MyFtpClient
             }
         }
 
+        private object _sub = new object();
         private void PushSubTaskSession(FileTransferProcessing taskSession)
         {
-            lock (_subTaskSessionLock)
+            lock (_sub)
             {
                 _subTaskSessions.Add(taskSession);
             }
@@ -106,6 +108,12 @@ namespace MyFtpClient
         {
             while (true)
             {
+                if (_mainTcpSession.GetTcpClient().Client == null 
+                    || _mainTcpSession.GetTcpClient().Connected == false)
+                {
+                    //logout();
+                    break;
+                }
                 lock (_mainTaskSessionLock)
                 {
                     if (_mainTaskSessions.Count > 0)
@@ -119,7 +127,7 @@ namespace MyFtpClient
         }
         private bool PopSubTaskSession()
         {
-            lock (_subTaskSessionLock)
+            lock (_lockObject)
             {
                 if (_subTaskSessions.Count > 0)
                 {
@@ -171,6 +179,8 @@ namespace MyFtpClient
                         _ = Task.Run(async () =>
                         {
                             await HandleCommandAsync(command, availableSession);
+                            availableSession.SetStatus(TcpSessionStatus.Connected);
+                            availableSession.LastCommandTime = DateTime.Now;
                         });
                     }
                 }
@@ -196,8 +206,6 @@ namespace MyFtpClient
         private async Task HandleCommandAsync(FileTransferProcessing command, TcpSession tcpSession)
         {
             await ExecuteSubTaskSession(command, tcpSession.GetTcpClient());
-            tcpSession.SetStatus(TcpSessionStatus.Connected);
-            tcpSession.LastCommandTime = DateTime.Now;
         }
 
         private void ExecuteMainTaskSession(TaskSession taskSession)
@@ -517,6 +525,9 @@ namespace MyFtpClient
             TaskSession taskSession = new TaskSession("RESTOREFILE", request);
             PushMainTaskSession(taskSession);
         }
+
+        public delegate void LogoutDelegate();
+        public event LogoutDelegate logout;
 
         private object _mainTaskSessionLock = new object();
         private object _subTaskSessionLock = new object();

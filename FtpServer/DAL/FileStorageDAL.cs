@@ -312,7 +312,6 @@ namespace MyFtpServer.DAL
                     Name = name,
                     FilePath = filePath,
                     CreationDate = DateTime.Now,
-                    Favorite = false,
                 };
                 db.Files.Add(file);
                 if( db.SaveChanges() == 0)
@@ -437,7 +436,7 @@ namespace MyFtpServer.DAL
                         var owner = db.Accounts.FirstOrDefault(a => a.Id == fileAccess.IdAccount);
                         if (owner != null)
                         {
-                            fileDetail.FileOwner = owner.Username;
+                            fileDetail.FileOwner = owner.Email;
                         }
                     }
                     return fileDetail;
@@ -461,7 +460,7 @@ namespace MyFtpServer.DAL
                             var owner = db.Accounts.FirstOrDefault(a => a.Id == folderAccess.IdAccount);
                             if(owner != null)
                             {
-                                fileDetail.FileOwner = owner.Username;
+                                fileDetail.FileOwner = owner.Email;
                             }
                         }
                         return fileDetail;
@@ -618,7 +617,7 @@ namespace MyFtpServer.DAL
                             FileAccessVM fileAccessVM = new FileAccessVM()
                             {
                                 IdAccount = account.Id,
-                                Email = account.Username,
+                                Email = account.Email,
                                 IdAccess = fileAccess.IdAccess,
                                 FirstName = account.FirstName,
                                 LastName = account.LastName,
@@ -652,7 +651,7 @@ namespace MyFtpServer.DAL
                                 FileAccessVM fileAccessVM = new FileAccessVM()
                                 {
                                     IdAccount = account.Id,
-                                    Email = account.Username,
+                                    Email = account.Email,
                                     IdAccess = folderAccess.IdAccess,
                                     FirstName = account.FirstName,
                                     LastName = account.LastName,
@@ -688,7 +687,7 @@ namespace MyFtpServer.DAL
                     {
                         foreach (var fileAccessVM in list)
                         {
-                            var idAcc = db.Accounts.FirstOrDefault(a => a.Username == fileAccessVM.Email);
+                            var idAcc = db.Accounts.FirstOrDefault(a => a.Email == fileAccessVM.Email);
                             if (idAcc == null)
                             {
                                 continue;

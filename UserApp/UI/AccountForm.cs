@@ -97,12 +97,17 @@ namespace UserApp.UI
             SetFormLogin();
         }
 
+        private void LogoutHandler()
+        {
+            this.Show();
+        }
+
         private void LoginInvoke(string username, string password)
         {
             ftpClient = GetFtpClient();
             if (ftpClient.Login(username, password) == true)
             {
-                MainForm mainForm = new MainForm(ftpClient, username);
+                MainForm mainForm = new MainForm(ftpClient, username, LogoutHandler);
                 mainForm.Show();
                 Hide();
             }
@@ -119,7 +124,7 @@ namespace UserApp.UI
             {
                 MessageBox.Show("Register successfully");
                 SetFormLoginInvoke();
-                loginControl.SetUsername(request.Username);
+                loginControl.SetUsername(request.Email);
                 loginControl.SetPassword("");
             }
             else
