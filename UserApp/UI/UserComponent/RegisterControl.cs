@@ -51,7 +51,7 @@ namespace UserApp.UI.UserComponent
 
             RegisterRequest request = new RegisterRequest()
             {
-                Username = txt_Email.Text,
+                Email = txt_Email.Text,
                 Password = txt_Password.Text,
                 FirstName = txt_FirstName.Text,
                 LastName = txt_LastName.Text,

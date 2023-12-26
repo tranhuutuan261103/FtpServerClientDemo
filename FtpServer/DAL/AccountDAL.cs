@@ -16,7 +16,7 @@ namespace MyFtpServer.DAL
         {
             using (var db = new FileStorageDBContext())
             {
-                var account = db.Accounts.FirstOrDefault(a => a.Username == username && a.Password == password && a.IsDeleted == false);
+                var account = db.Accounts.FirstOrDefault(a => a.Email == username && a.Password == password && a.IsDeleted == false);
                 if (account != null)
                 {
                     return account.Id;
@@ -29,14 +29,14 @@ namespace MyFtpServer.DAL
         {
             using (var db = new FileStorageDBContext())
             {
-                var account = db.Accounts.FirstOrDefault(a => a.Username == request.Username);
+                var account = db.Accounts.FirstOrDefault(a => a.Email == request.Email);
                 if (account != null)
                 {
                     return false;
                 }
                 account = new Account()
                 {
-                    Username = request.Username,
+                    Email = request.Email,
                     Password = request.Password,
                     FirstName = request.FirstName,
                     LastName = request.LastName,
@@ -52,7 +52,7 @@ namespace MyFtpServer.DAL
         {
             using (var db = new FileStorageDBContext())
             {
-                var account = db.Accounts.FirstOrDefault(a => a.Username == request.Email);
+                var account = db.Accounts.FirstOrDefault(a => a.Email == request.Email);
                 if (account == null)
                 {
                     return false;
@@ -74,7 +74,7 @@ namespace MyFtpServer.DAL
                 }
                 return new AccountInfoVM()
                 {
-                    Email = account.Username,
+                    Email = account.Email,
                     FirstName = account.FirstName,
                     LastName = account.LastName,
                     UsedStorage = 0,
@@ -95,7 +95,7 @@ namespace MyFtpServer.DAL
                     accountInfoVMs.Add(new AccountInfoVM()
                     {
                         Id = account.Id,
-                        Email = account.Username,
+                        Email = account.Email,
                         FirstName = account.FirstName,
                         LastName = account.LastName,
                         UsedStorage = 0,

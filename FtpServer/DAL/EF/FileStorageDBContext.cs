@@ -28,9 +28,9 @@ namespace MyFtpServer.DAL.EF
             modelBuilder.Entity<Account>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.HasIndex(e => e.Username).IsUnique();
+                entity.HasIndex(e => e.Email).IsUnique();
                 entity.Property(e => e.Id).UseIdentityColumn(10000, 1);
-                entity.Property(e => e.Username).IsRequired().HasMaxLength(32);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(32);
                 entity.Property(e => e.Password).IsRequired().HasMaxLength(32);
                 entity.Property(e => e.FirstName).IsRequired().HasMaxLength(32);
                 entity.Property(e => e.LastName).IsRequired().HasMaxLength(32);
@@ -139,6 +139,17 @@ namespace MyFtpServer.DAL.EF
                 if (entityEntry.State == EntityState.Added)
                 {
                     ((Folder)entityEntry.Entity).CreationDate = DateTime.Now;
+                }
+            }
+
+            var accountEntities = ChangeTracker.Entries()
+                .Where(x => x.Entity is Account && (x.State == EntityState.Added || x.State == EntityState.Modified));
+
+            foreach (var entityEntry in accountEntities)
+            {
+                if (entityEntry.State == EntityState.Added)
+                {
+                    ((Account)entityEntry.Entity).CreateDate = DateTime.Now;
                 }
             }
 
