@@ -13,7 +13,6 @@ namespace MyFtpServer.DAL.Entities
         public string Id { get; set; } = String.Empty;
         public string Name { get; set; } = String.Empty;
         public string FilePath { get; set; } = String.Empty;
-        public bool Favorite { get; set; }
         public string? IdParent { get; set; }
         public Folder? ParentFolder { get; set; }
         public DateTime CreationDate { get; set; }

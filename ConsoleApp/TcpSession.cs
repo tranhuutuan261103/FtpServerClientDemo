@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleApp
+namespace MyFtpClient
 {
     public class TcpSession
     {
@@ -17,6 +17,8 @@ namespace ConsoleApp
         private int _port;
         private string _username;
         private string _password;
+
+        public DateTime LastCommandTime { get; internal set; }
 
         public TcpSession(string host, int port, string username, string password)
         {
@@ -35,9 +37,20 @@ namespace ConsoleApp
 
         public bool Connect()
         {
-            if (_clientSession.Connected == false)
+            try
             {
-                _clientSession.Connect(_host, _port);
+                if (_clientSession == null || _clientSession.Client == null)
+                {
+                    _clientSession = new TcpClient();
+                }
+                if (_clientSession.Connected == false)
+                {
+                    _clientSession.Connect(_host, _port);
+                }
+            }
+            catch (Exception)
+            {
+                return false;
             }
             _status = TcpSessionStatus.Connected;
             return Login(_username, _password);
@@ -83,6 +96,10 @@ namespace ConsoleApp
         {
             try
             {
+                if (_clientSession == null)
+                {
+                    _clientSession = new TcpClient();
+                }
                 if (_clientSession.Connected == false)
                 {
                     _clientSession.Connect(_host, _port);
@@ -95,7 +112,7 @@ namespace ConsoleApp
                 string json = Newtonsoft.Json.JsonConvert.SerializeObject(request);
                 sw.WriteLine("REGISTER " + json);
                 sw.Flush();
-                
+
                 response = sr.ReadLine() ?? "";
                 if (response.StartsWith("230"))
                 {
@@ -117,6 +134,10 @@ namespace ConsoleApp
         {
             try
             {
+                if (_clientSession == null)
+                {
+                    _clientSession = new TcpClient();
+                }
                 if (_clientSession.Connected == false)
                 {
                     _clientSession.Connect(_host, _port);
@@ -145,10 +166,16 @@ namespace ConsoleApp
             }
         }
 
-        public void Close()
+        public void Disconnect()
         {
-            _clientSession.Close();
             _status = TcpSessionStatus.Closed;
+            try
+            {
+                _clientSession.Close();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public TcpSessionStatus GetStatus()
@@ -163,7 +190,7 @@ namespace ConsoleApp
 
         internal void Dispose()
         {
-            _clientSession.Dispose();
+            _clientSession.Close();
             _status = TcpSessionStatus.Closed;
         }
 
@@ -175,6 +202,16 @@ namespace ConsoleApp
         internal void SetPassword(string password)
         {
             _password = password;
+        }
+
+        internal void SetHost(string host)
+        {
+            _host = host;
+        }
+
+        internal void SetPort(int port)
+        {
+            _port = port;
         }
     }
 

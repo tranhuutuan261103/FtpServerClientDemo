@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleApp
+namespace MyFtpClient
 {
     public class DataTransferClient
     {
@@ -23,7 +23,7 @@ namespace ConsoleApp
             _writer = new StreamWriter(_tcpClient.GetStream()) { AutoFlush = true };
             _reader = new StreamReader(_tcpClient.GetStream());
             this.FileClientProcessingEvent = FileClientProcessingEvent;
-            this.Processing = processing;
+            Processing = processing;
 
             Thread thread = new Thread(UpdateProcessing);
             thread.Start();
@@ -45,6 +45,11 @@ namespace ConsoleApp
                 if (Processing != null)
                 {
                     FileClientProcessingEvent(Processing);
+                    if (Processing.Status == FileTransferProcessingStatus.Completed ||
+                        Processing.Status == FileTransferProcessingStatus.Failed)
+                    {
+                        break;
+                    }
                 }
                 Thread.Sleep(500);
             }
@@ -59,7 +64,7 @@ namespace ConsoleApp
             while (true)
             {
                 byteread = ns.Read(buffer, 0, 1024);
-                data += Encoding.ASCII.GetString(buffer, 0, byteread);
+                data += Encoding.UTF8.GetString(buffer, 0, byteread);
                 if (byteread == 0)
                 {
                     break;
@@ -86,69 +91,82 @@ namespace ConsoleApp
             return Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileInfor>>(data) ?? new List<FileInfor>();
         }
 
-        public void ReceiveFile(string fullFilePath)
+        public async Task ReceiveFileAsync(string fullFilePath)
         {
             NetworkStream ns = _tcpClient.GetStream();
             int blocksize = 1024;
             byte[] buffer = new byte[blocksize];
-            int byteread = 0;
+            int bytesRead = 0;
 
             long totalBytesRead = 0;
 
             Processing.Status = FileTransferProcessingStatus.Downloading;
             FileClientProcessingEvent(Processing);
 
-            using (FileStream fs = new FileStream(fullFilePath, FileMode.Append, FileAccess.Write))
+            try
             {
-                using (BinaryWriter bw = new BinaryWriter(fs))
+                using (FileStream fs = new FileStream(fullFilePath, FileMode.Append, FileAccess.Write))
                 {
-                    while (true)
+                    using (BinaryWriter bw = new BinaryWriter(fs))
                     {
-                        byteread = ns.Read(buffer, 0, blocksize);
-                        if (byteread == 0)
+                        while ((bytesRead = await ns.ReadAsync(buffer, 0, blocksize)) > 0)
                         {
-                            break;
+                            bw.Write(buffer, 0, bytesRead);
+                            totalBytesRead += bytesRead;
+                            Processing.SetFileTransferSize(totalBytesRead);
                         }
-                        bw.Write(buffer, 0, byteread);
-                        totalBytesRead += byteread;
-                        Processing.SetFileTransferSize(totalBytesRead);
                     }
                 }
+
+                Processing.Status = FileTransferProcessingStatus.Completed;
+                FileClientProcessingEvent(Processing);
             }
-
-
-            Processing.Status = FileTransferProcessingStatus.Completed;
-            FileClientProcessingEvent(Processing);
+            catch (Exception)
+            {
+                Processing.Status = FileTransferProcessingStatus.Failed;
+                FileClientProcessingEvent(Processing);
+            }
         }
 
-        public void SendFile(string fullFilePath)
+
+        public async Task SendFileAsync(string fullFilePath)
         {
             NetworkStream ns = _tcpClient.GetStream();
             int blocksize = 1024;
             byte[] buffer = new byte[blocksize];
-            int byteread = 0;
+            int bytesRead = 0;
 
             Processing.Status = FileTransferProcessingStatus.Uploading;
             FileClientProcessingEvent(Processing);
 
             long totalBytesRead = 0;
-            
 
-            FileStream fs = new FileStream(fullFilePath, FileMode.Open, FileAccess.Read);
-            Processing.FileSize = fs.Length;
-            while (true)
+            try
             {
-                byteread = fs.Read(buffer, 0, blocksize);
-                ns.Write(buffer, 0, byteread);
-                totalBytesRead += byteread;
-                Processing.SetFileTransferSize(totalBytesRead);
-                if (byteread == 0)
+                using (FileStream fs = new FileStream(fullFilePath, FileMode.Open, FileAccess.Read))
                 {
-                    break;
+                    Processing.FileSize = fs.Length;
+
+                    while ((bytesRead = await fs.ReadAsync(buffer, 0, blocksize)) > 0)
+                    {
+                        await ns.WriteAsync(buffer, 0, bytesRead);
+                        totalBytesRead += bytesRead;
+                        Processing.SetFileTransferSize(totalBytesRead);
+                    }
                 }
             }
-            ns.Flush();
-            ns.Close();
+            catch (Exception)
+            {
+                Processing.Status = FileTransferProcessingStatus.Failed;
+                FileClientProcessingEvent(Processing);
+                return;
+            }
+            finally
+            {
+                ns.Flush();
+                ns.Close();
+            }
         }
+
     }
 }

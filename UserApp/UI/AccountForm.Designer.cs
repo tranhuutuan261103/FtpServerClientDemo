@@ -31,10 +31,14 @@
             components = new System.ComponentModel.Container();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges1 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges9 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges10 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AccountForm));
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges8 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges5 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges6 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AccountForm));
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges4 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             panel_Container = new Panel();
             controlBox_Close = new Guna.UI2.WinForms.Guna2ControlBox();
@@ -42,6 +46,8 @@
             guna2ControlBox1 = new Guna.UI2.WinForms.Guna2ControlBox();
             guna2ShadowForm1 = new Guna.UI2.WinForms.Guna2ShadowForm(components);
             guna2PictureBox1 = new Guna.UI2.WinForms.Guna2PictureBox();
+            txt_IPAddress = new Guna.UI2.WinForms.Guna2TextBox();
+            txt_Port = new Guna.UI2.WinForms.Guna2TextBox();
             ((System.ComponentModel.ISupportInitialize)guna2PictureBox1).BeginInit();
             SuspendLayout();
             // 
@@ -76,12 +82,12 @@
             // 
             guna2ControlBox1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             guna2ControlBox1.ControlBoxType = Guna.UI2.WinForms.Enums.ControlBoxType.MinimizeBox;
-            guna2ControlBox1.CustomizableEdges = customizableEdges5;
+            guna2ControlBox1.CustomizableEdges = customizableEdges9;
             guna2ControlBox1.FillColor = Color.FromArgb(139, 152, 166);
             guna2ControlBox1.IconColor = Color.White;
             guna2ControlBox1.Location = new Point(330, 12);
             guna2ControlBox1.Name = "guna2ControlBox1";
-            guna2ControlBox1.ShadowDecoration.CustomizableEdges = customizableEdges6;
+            guna2ControlBox1.ShadowDecoration.CustomizableEdges = customizableEdges10;
             guna2ControlBox1.Size = new Size(36, 36);
             guna2ControlBox1.TabIndex = 1;
             // 
@@ -91,27 +97,78 @@
             // 
             // guna2PictureBox1
             // 
-            guna2PictureBox1.CustomizableEdges = customizableEdges3;
+            guna2PictureBox1.CustomizableEdges = customizableEdges7;
             guna2PictureBox1.Image = (Image)resources.GetObject("guna2PictureBox1.Image");
             guna2PictureBox1.ImageRotate = 0F;
             guna2PictureBox1.Location = new Point(145, 23);
             guna2PictureBox1.Name = "guna2PictureBox1";
-            guna2PictureBox1.ShadowDecoration.CustomizableEdges = customizableEdges4;
+            guna2PictureBox1.ShadowDecoration.CustomizableEdges = customizableEdges8;
             guna2PictureBox1.Size = new Size(115, 115);
             guna2PictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
             guna2PictureBox1.TabIndex = 2;
             guna2PictureBox1.TabStop = false;
+            // 
+            // txt_IPAddress
+            // 
+            txt_IPAddress.CustomizableEdges = customizableEdges5;
+            txt_IPAddress.DefaultText = "";
+            txt_IPAddress.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txt_IPAddress.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txt_IPAddress.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txt_IPAddress.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txt_IPAddress.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_IPAddress.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_IPAddress.ForeColor = Color.Black;
+            txt_IPAddress.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_IPAddress.Location = new Point(0, 88);
+            txt_IPAddress.Margin = new Padding(4, 5, 4, 5);
+            txt_IPAddress.Name = "txt_IPAddress";
+            txt_IPAddress.PasswordChar = '\0';
+            txt_IPAddress.PlaceholderText = "IP Address";
+            txt_IPAddress.SelectedText = "";
+            txt_IPAddress.ShadowDecoration.CustomizableEdges = customizableEdges6;
+            txt_IPAddress.Size = new Size(120, 50);
+            txt_IPAddress.TabIndex = 3;
+            // 
+            // txt_Port
+            // 
+            txt_Port.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            txt_Port.CustomizableEdges = customizableEdges3;
+            txt_Port.DefaultText = "";
+            txt_Port.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txt_Port.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txt_Port.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txt_Port.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txt_Port.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_Port.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_Port.ForeColor = Color.Black;
+            txt_Port.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
+            txt_Port.Location = new Point(332, 88);
+            txt_Port.Margin = new Padding(4, 5, 4, 5);
+            txt_Port.Name = "txt_Port";
+            txt_Port.PasswordChar = '\0';
+            txt_Port.PlaceholderText = "Port";
+            txt_Port.SelectedText = "";
+            txt_Port.ShadowDecoration.CustomizableEdges = customizableEdges4;
+            txt_Port.Size = new Size(87, 50);
+            txt_Port.TabIndex = 4;
+            txt_Port.TextAlign = HorizontalAlignment.Center;
+            txt_Port.TextChanged += txt_Port_TextChanged;
+            txt_Port.KeyPress += txt_Port_KeyPress;
             // 
             // AccountForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(420, 520);
+            Controls.Add(txt_Port);
+            Controls.Add(txt_IPAddress);
             Controls.Add(guna2PictureBox1);
             Controls.Add(guna2ControlBox1);
             Controls.Add(controlBox_Close);
             Controls.Add(panel_Container);
             FormBorderStyle = FormBorderStyle.None;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "AccountForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "AccountForm";
@@ -128,5 +185,7 @@
         private Guna.UI2.WinForms.Guna2ControlBox guna2ControlBox1;
         private Guna.UI2.WinForms.Guna2ShadowForm guna2ShadowForm1;
         private Guna.UI2.WinForms.Guna2PictureBox guna2PictureBox1;
+        private Guna.UI2.WinForms.Guna2TextBox txt_IPAddress;
+        private Guna.UI2.WinForms.Guna2TextBox txt_Port;
     }
 }

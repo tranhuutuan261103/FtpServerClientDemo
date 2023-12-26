@@ -8,9 +8,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using static ConsoleApp.DataTransferClient;
+using static MyFtpClient.DataTransferClient;
 
-namespace ConsoleApp
+namespace MyFtpClient
 {
     public class FtpClientProcessing
     {
@@ -199,45 +199,49 @@ namespace ConsoleApp
             return false;
         }
 
-        public void ReceiveFile(FileTransferProcessing processing, TcpClient tcpSessionClient)
+        public async Task ReceiveFileAsync(FileTransferProcessing processing, TcpClient tcpSessionClient)
         {
             StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
             StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
             string command, response;
             command = string.Format("CWD {0}", processing.RemotePath);
-            streamWriter.WriteLine(command);
-            response = streamReader.ReadLine() ?? "";
+            await streamWriter.WriteLineAsync(command);
+            response = await streamReader.ReadLineAsync() ?? "";
+
             if (response.StartsWith("250 "))
             {
                 command = "PASV";
-                streamWriter.WriteLine(command);
-                response = streamReader.ReadLine() ?? "";
+                await streamWriter.WriteLineAsync(command);
+                response = await streamReader.ReadLineAsync() ?? "";
+
                 if (response.StartsWith("227 ") == true)
                 {
-                    IPEndPoint server_data_endpoint = GetServerEndpoint(response);
-                    TcpClient data_channel = new TcpClient();
-                    data_channel.Connect(server_data_endpoint);
+                    IPEndPoint serverDataEndpoint = GetServerEndpoint(response);
+                    TcpClient dataChannel = new TcpClient();
+                    await dataChannel.ConnectAsync(serverDataEndpoint.Address, serverDataEndpoint.Port);
 
                     command = string.Format("RETR {0}", processing.FileName);
-                    streamWriter.WriteLine(command);
-                    response = streamReader.ReadLine() ?? "";
+                    await streamWriter.WriteLineAsync(command);
+                    response = await streamReader.ReadLineAsync() ?? "";
+
                     if (response.StartsWith("150 "))
                     {
-                        long fileSize = long.Parse(streamReader.ReadLine() ?? "0");
+                        long fileSize = long.Parse(await streamReader.ReadLineAsync() ?? "0");
                         processing.FileSize = fileSize;
 
-                        DataTransferClient fileClientProcessing = new DataTransferClient(data_channel, TransferProgressHandler, processing);
-                        fileClientProcessing.ReceiveFile(processing.LocalPath + @"\" + processing.FileName);
+                        DataTransferClient fileClientProcessing = new DataTransferClient(dataChannel, TransferProgressHandler, processing);
+                        await fileClientProcessing.ReceiveFileAsync(processing.LocalPath + @"\" + processing.FileName);
 
-                        response = streamReader.ReadLine() ?? "";
+                        response = await streamReader.ReadLineAsync() ?? "";
                         if (response.StartsWith("226 "))
                         {
-                            data_channel.Close();
+                            dataChannel.Close();
                         }
                     }
                 }
             }
         }
+
 
         public void ExpressReceiveFile(FileTransferProcessing request, TcpClient tcpSessionClient)
         {
@@ -315,35 +319,38 @@ namespace ConsoleApp
             }
         }
 
-        public void SendFile(FileTransferProcessing processing, TcpClient tcpSessionClient)
+        public async Task SendFileAsync(FileTransferProcessing processing, TcpClient tcpSessionClient)
         {
             StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
             StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
             string command, response;
 
             command = string.Format("CWD {0}", processing.RemotePath);
-            streamWriter.WriteLine(command);
-            response = streamReader.ReadLine() ?? "";
+            await streamWriter.WriteLineAsync(command);
+            response = await streamReader.ReadLineAsync() ?? "";
+
             if (response.StartsWith("250 "))
             {
                 command = "PASV";
-                streamWriter.WriteLine(command);
-                response = streamReader.ReadLine() ?? "";
+                await streamWriter.WriteLineAsync(command);
+                response = await streamReader.ReadLineAsync() ?? "";
+
                 if (response.StartsWith("227 ") == true)
                 {
                     IPEndPoint server_data_endpoint = GetServerEndpoint(response);
                     TcpClient data_channel = new TcpClient();
-                    data_channel.Connect(server_data_endpoint);
+                    await data_channel.ConnectAsync(server_data_endpoint.Address, server_data_endpoint.Port);
 
                     command = string.Format("STOR {0}", processing.FileName);
-                    streamWriter.WriteLine(command);
-                    response = streamReader.ReadLine() ?? "";
+                    await streamWriter.WriteLineAsync(command);
+                    response = await streamReader.ReadLineAsync() ?? "";
+
                     if (response.StartsWith("150 "))
                     {
                         DataTransferClient fileClientProcessing = new DataTransferClient(data_channel, TransferProgressHandler, processing);
-                        fileClientProcessing.SendFile(processing.LocalPath + @"\" + processing.FileName);
+                        await fileClientProcessing.SendFileAsync(processing.LocalPath + @"\" + processing.FileName);
 
-                        response = streamReader.ReadLine() ?? "";
+                        response = await streamReader.ReadLineAsync() ?? "";
                         if (response.StartsWith("226 "))
                         {
                             processing.Status = FileTransferProcessingStatus.Completed;
@@ -354,6 +361,7 @@ namespace ConsoleApp
                 }
             }
         }
+
         public FileInforPackage GetFileInforPackage(GetListFileRequest request)
         {
             FileInforPackage fileInforPackage = new FileInforPackage();
@@ -494,6 +502,25 @@ namespace ConsoleApp
                 command = "CHECKCANUPLOAD";
                 _writer.WriteLine(command);
                 response = _reader.ReadLine() ?? "";
+                if (response.StartsWith("200 ") == true)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public async Task<bool> CheckCanUploadAsync(string remotePath)
+        {
+            string command, response;
+            command = string.Format("CWD {0}", remotePath);
+            await _writer.WriteLineAsync(command);
+            response = await _reader.ReadLineAsync() ?? "";
+            if (response.StartsWith("250 ") == true)
+            {
+                command = "CHECKCANUPLOAD";
+                await _writer.WriteLineAsync(command);
+                response = await _reader.ReadLineAsync() ?? "";
                 if (response.StartsWith("200 ") == true)
                 {
                     return true;

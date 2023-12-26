@@ -1,8 +1,8 @@
-﻿using ConsoleApp;
-using MyClassLibrary;
+﻿using MyClassLibrary;
 using MyClassLibrary.Bean.Account;
 using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
+using MyFtpClient;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
@@ -20,7 +20,7 @@ namespace UserApp.UI
         private MainForm_BLL MainForm_BLL;
         private InterFont font = new InterFont();
         private string _email;
-        public MainForm(FtpClient ftpClient, string email)
+        public MainForm(FtpClient ftpClient, string email, LogoutEvent logoutEvent)
         {
             InitializeComponent();
             flowLayoutPanel_ListProcessing.AutoScroll = false;
@@ -29,9 +29,9 @@ namespace UserApp.UI
             flowLayoutPanel_ListProcessing.HorizontalScroll.Maximum = 0;
             flowLayoutPanel_ListProcessing.AutoScroll = true;
             _email = email;
-            MainForm_BLL = new MainForm_BLL(ftpClient, TransferProgress, ChangeFolderAndFileHandler, GetAccountInfor, GetDetailFileHandler);
+            MainForm_BLL = new MainForm_BLL(ftpClient, TransferProgress, ChangeFolderAndFileHandler, GetAccountInfor, GetDetailFileHandler, LogoutHandler);
             folderPathControl.ClickFolderItemControlEvent += ClickFolderItemControlHandler;
-
+            this.logoutEvent += logoutEvent;
             AddEvent();
         }
 
@@ -233,7 +233,17 @@ namespace UserApp.UI
         {
             if (flowLayoutPanel_ListProcessing.IsHandleCreated && !flowLayoutPanel_ListProcessing.IsDisposed)
             {
-                if (sender.Status == FileTransferProcessingStatus.Waiting)
+                bool isExist = false;
+                foreach (FileTransferProcessingControl control in flowLayoutPanel_ListProcessing.Controls)
+                {
+                    if (sender == control.GetFileTransferProcessing())
+                    {
+                        isExist = true;
+                        control.UpdateTransferProcessing(sender);
+                        break;
+                    }
+                }
+                if (!isExist)
                 {
                     flowLayoutPanel_ListProcessing.Invoke((MethodInvoker)delegate
                     {
@@ -242,18 +252,15 @@ namespace UserApp.UI
                         control.UpdateUI();
                     });
                 }
-                else
-                {
-                    foreach (FileTransferProcessingControl control in flowLayoutPanel_ListProcessing.Controls)
-                    {
-                        if (sender == control.GetFileTransferProcessing())
-                        {
-                            control.UpdateTransferProcessing(sender);
-                            break;
-                        }
-                    }
-                }
             }
+        }
+
+        public delegate void LogoutEvent();
+        public event LogoutEvent logoutEvent;
+
+        public void LogoutHandler()
+        {
+            logoutEvent();
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -261,6 +268,8 @@ namespace UserApp.UI
             // Dispose event processTransfer when form is closed.
             MainForm_BLL.Dispose();
             flowLayoutPanel_ListProcessing.Controls.Clear();
+            this.Dispose();
+            logoutEvent();
         }
 
         private void btn_Back_Click(object sender, EventArgs e)

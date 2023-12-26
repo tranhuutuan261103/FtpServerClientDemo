@@ -1,8 +1,8 @@
-﻿using ConsoleApp;
-using MyClassLibrary;
+﻿using MyClassLibrary;
 using MyClassLibrary.Bean.Account;
 using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
+using MyFtpClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,15 +17,16 @@ namespace UserApp.BLL
         private readonly FtpClient ftpClient;
         private string _remoteFolderPath = "";
 
-        public MainForm_BLL(FtpClient ftpClient, TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile)
+        public MainForm_BLL(FtpClient ftpClient, TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile, LogoutDelegate logoutDelegate)
         {
             fileManager = new FileManager();
             this.ftpClient = ftpClient;
-            ftpClient.Start(TransferProgressHandler, ChangeFoldersAndFileHandler, GetAccountInfor, OnGetDetailFileHandler, OnGetListFileAccessHandler);
+            ftpClient.Start(TransferProgressHandler, ChangeFoldersAndFileHandler, GetAccountInfor, OnGetDetailFileHandler, OnGetListFileAccessHandler, LogoutHandler);
             progress += process;
             this.changeFolderAndFile += changeFolderAndFile;
             this.getAccountInfor += onGetAccountInfor;
             this.getDetailFile += onGetDetailFile;
+            this.logout += logoutDelegate;
         }
 
         public void GetFileInfos()
@@ -186,6 +187,14 @@ namespace UserApp.BLL
         public void RestoreFile(RestoreFileRequest request)
         {
             ftpClient.RestoreFile(request);
+        }
+
+        public delegate void LogoutDelegate();
+        public event LogoutDelegate logout;
+
+        private void LogoutHandler()
+        {
+            logout();
         }
     }
 }

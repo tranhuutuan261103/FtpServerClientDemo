@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MyClassLibrary.Common;
 
-namespace ConsoleApp
+namespace MyFtpClient
 {
     public class DataExpressTransferClient
     {
@@ -26,7 +26,7 @@ namespace ConsoleApp
             _fullPath = fullPath;
             _fileSize = fileSize;
             this.FileClientProcessingEvent = FileClientProcessingEvent;
-            this.Processing = processing;
+            Processing = processing;
             Processing.FileSize = fileSize;
 
             Thread thread = new Thread(UpdateProcessing);
@@ -91,7 +91,7 @@ namespace ConsoleApp
         private long bytesReceived = 0;
         private int _totalThread;
         private int _currentSuccessThreadCount = 0;
-        
+
         public void ExpressReceiveFile()
         {
             Processing.Status = FileTransferProcessingStatus.Downloading;

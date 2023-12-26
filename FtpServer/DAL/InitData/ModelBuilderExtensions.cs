@@ -16,7 +16,7 @@ namespace MyFtpServer.DAL.InitData
                 new Account
                 {
                     Id = 10000,
-                    Username = "tuan",
+                    Email = "tuan",
                     Password = "tuan",
                     FirstName = "Admin",
                     LastName = "Admin",
@@ -27,7 +27,7 @@ namespace MyFtpServer.DAL.InitData
                 new Account
                 {
                     Id = 10001,
-                    Username = "user",
+                    Email = "user",
                     Password = "user",
                     FirstName = "User",
                     LastName = "User",

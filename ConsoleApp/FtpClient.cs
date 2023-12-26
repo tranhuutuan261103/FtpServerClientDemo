@@ -13,7 +13,7 @@ using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleApp
+namespace MyFtpClient
 {
     public class FtpClient
     {
@@ -34,6 +34,12 @@ namespace ConsoleApp
             }
         }
 
+        public void SetIPAdressAndPort(string ipAddress, int port)
+        {
+            _host = ipAddress; 
+            _port = port;
+        }
+
         public bool Register(RegisterRequest request)
         {
             return _mainTcpSession.Register(request);
@@ -49,25 +55,29 @@ namespace ConsoleApp
         {
             _mainTcpSession.SetUsername(username);
             _mainTcpSession.SetPassword(password);
+            _mainTcpSession.SetHost(_host);
+            _mainTcpSession.SetPort(_port);
             if (_mainTcpSession.Connect())
             {
                 for (int i = 0; i < subTcpSession.Length; i++)
                 {
                     subTcpSession[i].SetUsername(username);
                     subTcpSession[i].SetPassword(password);
+                    subTcpSession[i].SetHost(_host);
+                    subTcpSession[i].SetPort(_port);
                 }
                 return true;
             }
             return false;
         }
 
-        public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile, OnGetListFileAccess onGetListFileAccess)
-        {   
+        public void Start(TransferProgress process, OnChangeFolderAndFile changeFolderAndFile, OnGetAccountInfor onGetAccountInfor, OnGetDetailFile onGetDetailFile, OnGetListFileAccess onGetListFileAccess, LogoutDelegate logout)
+        {
+            this.logout += logout;
             Thread threadMain = new Thread(MainProcess);
             threadMain.Start();
 
-            Thread threadSub = new Thread(SubProcess);
-            threadSub.Start();
+            Task.Run(async () => await SubProcessAsync());
 
             progress += process;
             this.changeFolderAndFile += changeFolderAndFile;
@@ -78,15 +88,16 @@ namespace ConsoleApp
 
         private void PushMainTaskSession(TaskSession taskSession)
         {
-            lock(_mainTaskSessionLock)
+            lock (_mainTaskSessionLock)
             {
                 _mainTaskSessions.Add(taskSession);
             }
         }
 
+        private object _sub = new object();
         private void PushSubTaskSession(FileTransferProcessing taskSession)
         {
-            lock (_subTaskSessionLock)
+            lock (_sub)
             {
                 _subTaskSessions.Add(taskSession);
             }
@@ -97,6 +108,12 @@ namespace ConsoleApp
         {
             while (true)
             {
+                if (_mainTcpSession.GetTcpClient().Client == null 
+                    || _mainTcpSession.GetTcpClient().Connected == false)
+                {
+                    //logout();
+                    break;
+                }
                 lock (_mainTaskSessionLock)
                 {
                     if (_mainTaskSessions.Count > 0)
@@ -110,58 +127,85 @@ namespace ConsoleApp
         }
         private bool PopSubTaskSession()
         {
-            if (_subTaskSessions.Count > 0)
+            lock (_lockObject)
             {
-                _subTaskSessions.RemoveAt(0);
-                return true;
+                if (_subTaskSessions.Count > 0)
+                {
+                    _subTaskSessions.RemoveAt(0);
+                    return true;
+                }
+                return false;
             }
-            return false;
         }
 
         private FileTransferProcessing? GetFirstSubTaskSession()
         {
-            if (_subTaskSessions.Count > 0)
+            lock (_subTaskSessionLock)
             {
-                return _subTaskSessions[0];
+                if (_subTaskSessions.Count > 0)
+                {
+                    return _subTaskSessions[0];
+                }
+                return null;
             }
-            return null;
         }
 
-        private void SubProcess()
+        // Disconnect if connected and command null during 30s in SubProcess
+        private readonly object _lockObject = new object(); // For thread safety
+        private async Task SubProcessAsync()
         {
             while (true)
             {
                 FileTransferProcessing? command = GetFirstSubTaskSession();
                 if (command != null)
                 {
-                    foreach (TcpSession tcpSession in subTcpSession)
+                    TcpSession? availableSession = subTcpSession.FirstOrDefault(session => session.GetStatus() == TcpSessionStatus.Connected);
+                    if (availableSession == null)
                     {
-                        if (tcpSession.GetStatus() == TcpSessionStatus.Connected)
+                        availableSession = subTcpSession.FirstOrDefault(session => session.GetStatus() == TcpSessionStatus.Closed);
+                        if (availableSession != null)
                         {
-                            PopSubTaskSession();
-                            tcpSession.SetStatus(TcpSessionStatus.Busy);
-                            Thread thread = new Thread(() => HandleCommand(command, tcpSession));
-                            thread.Start();
-                            break;
+                            availableSession.Connect();
                         }
-                        else if (tcpSession.GetStatus() == TcpSessionStatus.Closed)
+                    }
+
+                    if (availableSession != null && availableSession.GetStatus() == TcpSessionStatus.Connected)
+                    {
+                        availableSession.LastCommandTime = DateTime.Now;
+                        availableSession.SetStatus(TcpSessionStatus.Busy);
+                        PopSubTaskSession();
+
+                        // Process the command asynchronously in a separate task
+                        _ = Task.Run(async () =>
                         {
-                            tcpSession.Connect();
-                            PopSubTaskSession();
-                            tcpSession.SetStatus(TcpSessionStatus.Busy);
-                            Thread thread = new Thread(() => HandleCommand(command, tcpSession));
-                            thread.Start();
-                            break;
+                            await HandleCommandAsync(command, availableSession);
+                            availableSession.SetStatus(TcpSessionStatus.Connected);
+                            availableSession.LastCommandTime = DateTime.Now;
+                        });
+                    }
+                }
+                else
+                {
+                    foreach (TcpSession session in subTcpSession)
+                    {
+                        if (session.GetStatus() == TcpSessionStatus.Connected &&
+                            DateTime.Now - session.LastCommandTime > TimeSpan.FromSeconds(30))
+                        {
+                            // Gracefully disconnect the session
+                            session.Disconnect();
                         }
                     }
                 }
+
+                // If no command, wait 500ms to avoid constant looping
+                await Task.Delay(500);
             }
         }
 
-        private void HandleCommand(FileTransferProcessing command, TcpSession tcpSession)
+
+        private async Task HandleCommandAsync(FileTransferProcessing command, TcpSession tcpSession)
         {
-            ExecuteSubTaskSession(command, tcpSession.GetTcpClient());
-            tcpSession.SetStatus(TcpSessionStatus.Connected);
+            await ExecuteSubTaskSession(command, tcpSession.GetTcpClient());
         }
 
         private void ExecuteMainTaskSession(TaskSession taskSession)
@@ -265,7 +309,7 @@ namespace ConsoleApp
                 case "UPLOADFOLDER":
                     {
                         UploadFolderRequest uploadFolderRequest = (UploadFolderRequest)taskSession.Data;
-                        if (fcp.CheckCanUpload(uploadFolderRequest.ParentFolderId) == true) 
+                        if (fcp.CheckCanUpload(uploadFolderRequest.ParentFolderId) == true)
                         {
                             fcp.UploadFolder(uploadFolderRequest.FolderName, uploadFolderRequest.FullLocalPath);
                         }
@@ -288,16 +332,16 @@ namespace ConsoleApp
             }
         }
 
-        private void ExecuteSubTaskSession(FileTransferProcessing request, TcpClient tcpSessionClient)
+        private async Task ExecuteSubTaskSession(FileTransferProcessing request, TcpClient tcpSessionClient)
         {
             FtpClientProcessing fcp = new FtpClientProcessing(tcpSessionClient, TransferProgressHandler, TransferRequestHandler);
             string command = request.Type;
             switch (command)
             {
                 case "STOR":
-                    if (fcp.CheckCanUpload(request.RemotePath) == true)
+                    if (await fcp.CheckCanUploadAsync(request.RemotePath) == true)
                     {
-                        fcp.SendFile(request, tcpSessionClient);
+                        await fcp.SendFileAsync(request, tcpSessionClient);
                     }
                     else
                     {
@@ -306,13 +350,13 @@ namespace ConsoleApp
                     }
                     break;
                 case "EXPRESSUPLOAD":
-                    fcp.ExpressSendFile(request, tcpSessionClient);
+                    //await fcp.ExpressSendFile(request, tcpSessionClient);
                     break;
                 case "RETR":
-                    fcp.ReceiveFile(request, tcpSessionClient);
+                    await fcp.ReceiveFileAsync(request, tcpSessionClient);
                     break;
                 case "EXPRESSDOWNLOAD":
-                    fcp.ExpressReceiveFile(request, tcpSessionClient);
+                    //await fcp.ExpressReceiveFile(request, tcpSessionClient);
                     break;
                 default:
                     break;
@@ -481,6 +525,9 @@ namespace ConsoleApp
             TaskSession taskSession = new TaskSession("RESTOREFILE", request);
             PushMainTaskSession(taskSession);
         }
+
+        public delegate void LogoutDelegate();
+        public event LogoutDelegate logout;
 
         private object _mainTaskSessionLock = new object();
         private object _subTaskSessionLock = new object();

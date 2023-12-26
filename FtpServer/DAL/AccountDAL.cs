@@ -16,7 +16,7 @@ namespace MyFtpServer.DAL
         {
             using (var db = new FileStorageDBContext())
             {
-                var account = db.Accounts.FirstOrDefault(a => a.Username == username && a.Password == password);
+                var account = db.Accounts.FirstOrDefault(a => a.Email == username && a.Password == password && a.IsDeleted == false);
                 if (account != null)
                 {
                     return account.Id;
@@ -29,14 +29,14 @@ namespace MyFtpServer.DAL
         {
             using (var db = new FileStorageDBContext())
             {
-                var account = db.Accounts.FirstOrDefault(a => a.Username == request.Username);
+                var account = db.Accounts.FirstOrDefault(a => a.Email == request.Email);
                 if (account != null)
                 {
                     return false;
                 }
                 account = new Account()
                 {
-                    Username = request.Username,
+                    Email = request.Email,
                     Password = request.Password,
                     FirstName = request.FirstName,
                     LastName = request.LastName,
@@ -52,7 +52,7 @@ namespace MyFtpServer.DAL
         {
             using (var db = new FileStorageDBContext())
             {
-                var account = db.Accounts.FirstOrDefault(a => a.Username == request.Email);
+                var account = db.Accounts.FirstOrDefault(a => a.Email == request.Email);
                 if (account == null)
                 {
                     return false;
@@ -74,13 +74,37 @@ namespace MyFtpServer.DAL
                 }
                 return new AccountInfoVM()
                 {
-                    Email = account.Username,
+                    Email = account.Email,
                     FirstName = account.FirstName,
                     LastName = account.LastName,
                     UsedStorage = 0,
                     CreationDate = account.CreateDate,
                     Avatar = null
                 };
+            }
+        }
+
+        public List<AccountInfoVM> GetAccounts(string rootPath)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var accounts = db.Accounts.ToList();
+                List<AccountInfoVM> accountInfoVMs = new List<AccountInfoVM>();
+                foreach(var account in accounts)
+                {
+                    accountInfoVMs.Add(new AccountInfoVM()
+                    {
+                        Id = account.Id,
+                        Email = account.Email,
+                        FirstName = account.FirstName,
+                        LastName = account.LastName,
+                        UsedStorage = 0,
+                        CreationDate = account.CreateDate,
+                        Avatar = GetAvatar(account.Id, rootPath),
+                        IsDeleted = account.IsDeleted
+                    });
+                }
+                return accountInfoVMs;
             }
         }
 
@@ -130,6 +154,36 @@ namespace MyFtpServer.DAL
                     return false;
                 }
                 account.Avatar = avatarPath;
+                db.SaveChanges();
+                return true;
+            }
+        }
+
+        public bool DeleteAccount(int idAccount)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var account = db.Accounts.FirstOrDefault(a => a.Id == idAccount);
+                if(account == null)
+                {
+                    return false;
+                }
+                account.IsDeleted = true;
+                db.SaveChanges();
+                return true;
+            }
+        }
+
+        public bool RestoreAccount(int idAccount)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var account = db.Accounts.FirstOrDefault(a => a.Id == idAccount);
+                if(account == null)
+                {
+                    return false;
+                }
+                account.IsDeleted = false;
                 db.SaveChanges();
                 return true;
             }
