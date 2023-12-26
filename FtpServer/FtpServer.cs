@@ -35,6 +35,7 @@ namespace MyFtpServer
             {
                 _host = host;
                 _port = port;
+                _rootPath = rootPath;
                 CommandReceived += commandReceived;
                 _controlSocket = new TcpListener(IPAddress.Parse(_host), _port);
                 _controlSocket.Start();

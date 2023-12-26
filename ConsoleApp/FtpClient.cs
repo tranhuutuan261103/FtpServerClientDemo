@@ -76,8 +76,7 @@ namespace MyFtpClient
             Thread threadMain = new Thread(MainProcess);
             threadMain.Start();
 
-            Thread threadSub = new Thread(SubProcess);
-            threadSub.Start();
+            Task.Run(async () => await SubProcessAsync());
 
             progress += process;
             this.changeFolderAndFile += changeFolderAndFile;
@@ -120,58 +119,85 @@ namespace MyFtpClient
         }
         private bool PopSubTaskSession()
         {
-            if (_subTaskSessions.Count > 0)
+            lock (_subTaskSessionLock)
             {
-                _subTaskSessions.RemoveAt(0);
-                return true;
+                if (_subTaskSessions.Count > 0)
+                {
+                    _subTaskSessions.RemoveAt(0);
+                    return true;
+                }
+                return false;
             }
-            return false;
         }
 
         private FileTransferProcessing? GetFirstSubTaskSession()
         {
-            if (_subTaskSessions.Count > 0)
+            lock (_subTaskSessionLock)
             {
-                return _subTaskSessions[0];
+                if (_subTaskSessions.Count > 0)
+                {
+                    return _subTaskSessions[0];
+                }
+                return null;
             }
-            return null;
         }
 
-        private void SubProcess()
+        // Disconnect if connected and command null during 30s in SubProcess
+        private readonly object _lockObject = new object(); // For thread safety
+        private async Task SubProcessAsync()
         {
             while (true)
             {
                 FileTransferProcessing? command = GetFirstSubTaskSession();
                 if (command != null)
                 {
-                    foreach (TcpSession tcpSession in subTcpSession)
+                    TcpSession? availableSession = subTcpSession.FirstOrDefault(session => session.GetStatus() == TcpSessionStatus.Connected);
+                    if (availableSession == null)
                     {
-                        if (tcpSession.GetStatus() == TcpSessionStatus.Connected)
+                        availableSession = subTcpSession.FirstOrDefault(session => session.GetStatus() == TcpSessionStatus.Closed);
+                        if (availableSession != null)
                         {
-                            PopSubTaskSession();
-                            tcpSession.SetStatus(TcpSessionStatus.Busy);
-                            Thread thread = new Thread(() => HandleCommand(command, tcpSession));
-                            thread.Start();
-                            break;
+                            availableSession.Connect();
                         }
-                        else if (tcpSession.GetStatus() == TcpSessionStatus.Closed)
+                    }
+
+                    if (availableSession != null && availableSession.GetStatus() == TcpSessionStatus.Connected)
+                    {
+                        availableSession.LastCommandTime = DateTime.Now;
+                        availableSession.SetStatus(TcpSessionStatus.Busy);
+                        PopSubTaskSession();
+
+                        // Process the command asynchronously in a separate task
+                        _ = Task.Run(async () =>
                         {
-                            tcpSession.Connect();
-                            PopSubTaskSession();
-                            tcpSession.SetStatus(TcpSessionStatus.Busy);
-                            Thread thread = new Thread(() => HandleCommand(command, tcpSession));
-                            thread.Start();
-                            break;
+                            await HandleCommandAsync(command, availableSession);
+                        });
+                    }
+                }
+                else
+                {
+                    foreach (TcpSession session in subTcpSession)
+                    {
+                        if (session.GetStatus() == TcpSessionStatus.Connected &&
+                            DateTime.Now - session.LastCommandTime > TimeSpan.FromSeconds(30))
+                        {
+                            // Gracefully disconnect the session
+                            session.Disconnect();
                         }
                     }
                 }
+
+                // If no command, wait 500ms to avoid constant looping
+                await Task.Delay(500);
             }
         }
 
-        private void HandleCommand(FileTransferProcessing command, TcpSession tcpSession)
+
+        private async Task HandleCommandAsync(FileTransferProcessing command, TcpSession tcpSession)
         {
-            ExecuteSubTaskSession(command, tcpSession.GetTcpClient());
+            await ExecuteSubTaskSession(command, tcpSession.GetTcpClient());
             tcpSession.SetStatus(TcpSessionStatus.Connected);
+            tcpSession.LastCommandTime = DateTime.Now;
         }
 
         private void ExecuteMainTaskSession(TaskSession taskSession)
@@ -298,16 +324,16 @@ namespace MyFtpClient
             }
         }
 
-        private void ExecuteSubTaskSession(FileTransferProcessing request, TcpClient tcpSessionClient)
+        private async Task ExecuteSubTaskSession(FileTransferProcessing request, TcpClient tcpSessionClient)
         {
             FtpClientProcessing fcp = new FtpClientProcessing(tcpSessionClient, TransferProgressHandler, TransferRequestHandler);
             string command = request.Type;
             switch (command)
             {
                 case "STOR":
-                    if (fcp.CheckCanUpload(request.RemotePath) == true)
+                    if (await fcp.CheckCanUploadAsync(request.RemotePath) == true)
                     {
-                        fcp.SendFile(request, tcpSessionClient);
+                        await fcp.SendFileAsync(request, tcpSessionClient);
                     }
                     else
                     {
@@ -316,13 +342,13 @@ namespace MyFtpClient
                     }
                     break;
                 case "EXPRESSUPLOAD":
-                    fcp.ExpressSendFile(request, tcpSessionClient);
+                    //await fcp.ExpressSendFile(request, tcpSessionClient);
                     break;
                 case "RETR":
-                    fcp.ReceiveFile(request, tcpSessionClient);
+                    await fcp.ReceiveFileAsync(request, tcpSessionClient);
                     break;
                 case "EXPRESSDOWNLOAD":
-                    fcp.ExpressReceiveFile(request, tcpSessionClient);
+                    //await fcp.ExpressReceiveFile(request, tcpSessionClient);
                     break;
                 default:
                     break;

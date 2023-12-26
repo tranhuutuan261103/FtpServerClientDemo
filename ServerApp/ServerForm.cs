@@ -12,7 +12,7 @@ namespace ServerApp
         private FtpServer _ftpServer;
         private string _serverIp;
         private int _serverPort;
-        private string _rootPath = "D:\\FileServer";
+        private string _rootPath = "C:\\FileServer";
         public ServerForm()
         {
             InitializeComponent();
@@ -32,6 +32,7 @@ namespace ServerApp
             _serverPort = 1234;
             txt_IP.Text = _serverIp;
             txt_Port.Text = _serverPort.ToString();
+            txt_rootPath.Text = _rootPath;
         }
 
         private void btn_Start_Click(object sender, EventArgs e)
@@ -167,7 +168,7 @@ namespace ServerApp
         private void SetListUser()
         {
             AccountDAL accountDAL = new AccountDAL();
-            List<AccountInfoVM> accountInfoVMs = accountDAL.GetAccounts("D:\\FileServer");
+            List<AccountInfoVM> accountInfoVMs = accountDAL.GetAccounts(_rootPath);
             lock(_lock)
             {
                 flowLayoutPanel_Account.Controls.Clear();
