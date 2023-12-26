@@ -6,6 +6,8 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net.Sockets;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -26,9 +28,9 @@ namespace UserApp.UI
             loginControl = new LoginControl(LoginInvoke, SetFormRegisterInvoke, SetFormResetPasswordInvoke);
             registerControl = new RegisterControl(RegisterInvoke, SetFormLoginInvoke);
             resetPasswordControl = new ResetPasswordControl(ResetPasswordInvoke, SetFormLogin);
-            txt_IPAddress.Text = "127.0.0.1";
+            txt_IPAddress.Text = GetLocalIPAddress();
             txt_Port.Text = "1234";
-            ftpClient = new FtpClient("127.0.0.1", 1234);
+            ftpClient = new FtpClient(txt_IPAddress.Text, 1234);
         }
 
         public delegate void SetFormLoginDelegate();
@@ -173,6 +175,29 @@ namespace UserApp.UI
             int port = int.Parse(txt_Port.Text);
             ftpClient.SetIPAdressAndPort(ipAddress, port);
             return ftpClient;
+        }
+
+        private string GetLocalIPAddress()
+        {
+            string localIp = "127.0.0.1";
+            try
+            {
+                IPAddress[] localIPs = Dns.GetHostAddresses(Dns.GetHostName());
+
+                foreach (IPAddress ipAddress in localIPs)
+                {
+                    if (ipAddress.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        localIp = ipAddress.ToString();
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return localIp;
         }
     }
 }

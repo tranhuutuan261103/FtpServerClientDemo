@@ -18,6 +18,8 @@ namespace MyFtpClient
         private string _username;
         private string _password;
 
+        public DateTime LastCommandTime { get; internal set; }
+
         public TcpSession(string host, int port, string username, string password)
         {
             _clientSession = new TcpClient();
@@ -152,7 +154,7 @@ namespace MyFtpClient
             }
         }
 
-        public void Close()
+        public void Disconnect()
         {
             _clientSession.Close();
             _status = TcpSessionStatus.Closed;
