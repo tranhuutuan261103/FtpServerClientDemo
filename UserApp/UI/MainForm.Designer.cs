@@ -539,7 +539,6 @@
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Transfer data";
-            TopMost = true;
             FormClosed += MainForm_FormClosed;
             Load += MainForm_Load;
             guna2ContextMenuStrip_btnNew.ResumeLayout(false);

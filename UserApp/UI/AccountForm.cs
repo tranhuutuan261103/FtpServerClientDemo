@@ -99,6 +99,7 @@ namespace UserApp.UI
 
         private void LogoutHandler()
         {
+            ftpClient = new FtpClient(txt_IPAddress.Text, int.Parse(txt_Port.Text));
             this.Show();
         }
 

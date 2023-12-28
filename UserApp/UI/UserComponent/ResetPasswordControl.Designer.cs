@@ -150,12 +150,13 @@
             txt_ConfirmNewPassword.Location = new Point(70, 210);
             txt_ConfirmNewPassword.Margin = new Padding(4, 5, 4, 5);
             txt_ConfirmNewPassword.Name = "txt_ConfirmNewPassword";
-            txt_ConfirmNewPassword.PasswordChar = '\0';
+            txt_ConfirmNewPassword.PasswordChar = '●';
             txt_ConfirmNewPassword.PlaceholderText = "Confirm new password";
             txt_ConfirmNewPassword.SelectedText = "";
             txt_ConfirmNewPassword.ShadowDecoration.CustomizableEdges = customizableEdges10;
             txt_ConfirmNewPassword.Size = new Size(280, 40);
             txt_ConfirmNewPassword.TabIndex = 4;
+            txt_ConfirmNewPassword.UseSystemPasswordChar = true;
             // 
             // btb_Submit
             // 
