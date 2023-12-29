@@ -1,5 +1,4 @@
-﻿using MyClassLibrary.Bean;
-using MyClassLibrary.Bean.Account;
+﻿using MyClassLibrary.Bean.Account;
 using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
 using MyFtpServer.DAL;
