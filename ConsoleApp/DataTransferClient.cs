@@ -57,20 +57,29 @@ namespace MyFtpClient
 
         public FileInforPackage ReceiveFileInforPackage()
         {
-            NetworkStream ns = _tcpClient.GetStream();
-            byte[] buffer = new byte[1024];
-            int byteread = 0;
-            string data = "";
-            while (true)
+            try
             {
-                byteread = ns.Read(buffer, 0, 1024);
-                data += Encoding.UTF8.GetString(buffer, 0, byteread);
-                if (byteread == 0)
+                NetworkStream ns = _tcpClient.GetStream();
+                byte[] buffer = new byte[1024];
+                int byteread = 0;
+                string data = "";
+                while (true)
                 {
-                    break;
+                    byteread = ns.Read(buffer, 0, 1024);
+                    data += Encoding.UTF8.GetString(buffer, 0, byteread);
+                    if (byteread == 0)
+                    {
+                        break;
+                    }
                 }
+                return Newtonsoft.Json.JsonConvert.DeserializeObject<FileInforPackage>(data) ?? new FileInforPackage();
+            } catch (Exception)
+            {
+                return new FileInforPackage();
+            } finally
+            {
+                _tcpClient.Close();
             }
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<FileInforPackage>(data) ?? new FileInforPackage();
         }
 
         public List<FileInfor> ReceiveListRemoteFiles()
@@ -118,6 +127,13 @@ namespace MyFtpClient
                     }
                 }
 
+                if (totalBytesRead != Processing.FileSize)
+                {
+                    Processing.Status = FileTransferProcessingStatus.Failed;
+                    FileClientProcessingEvent(Processing);
+                    return;
+                }
+
                 Processing.Status = FileTransferProcessingStatus.Completed;
                 FileClientProcessingEvent(Processing);
             }
@@ -125,6 +141,10 @@ namespace MyFtpClient
             {
                 Processing.Status = FileTransferProcessingStatus.Failed;
                 FileClientProcessingEvent(Processing);
+            } finally
+            {
+                ns.Flush();
+                ns.Close();
             }
         }
 

@@ -30,7 +30,20 @@ namespace UserApp.UI
             flowLayoutPanel_ListProcessing.AutoScroll = true;
             _email = email;
             MainForm_BLL = new MainForm_BLL(ftpClient, TransferProgress, ChangeFolderAndFileHandler, GetAccountInfor, GetDetailFileHandler, LogoutHandler);
+            folderPathControl.Root = new FolderItemVM()
+            {
+                IdFolder = "",
+                NameFolder = "My Drive",
+                type = FileControlRequestType.ChangeFolder
+            };
             folderPathControl.ClickFolderItemControlEvent += ClickFolderItemControlHandler;
+            folderPathControl_Shared.Root = new FolderItemVM()
+            {
+                IdFolder = "",
+                NameFolder = "Shared",
+                type = FileControlRequestType.ChangeSharedFolder
+            };
+            folderPathControl_Shared.ClickFolderItemControlEvent += ClickFolderItemControlHandler;
             this.logoutEvent += logoutEvent;
             AddEvent();
         }
@@ -95,7 +108,14 @@ namespace UserApp.UI
 
         private void ClickFolderItemControlHandler(FolderItemVM folderItemVM)
         {
-            MainForm_BLL.ChangeFolder(folderItemVM.IdFolder);
+            if (folderItemVM.type == FileControlRequestType.ChangeFolder)
+            {
+                MainForm_BLL.ChangeFolder(folderItemVM.IdFolder);
+            }
+            else if (folderItemVM.type == FileControlRequestType.ChangeSharedFolder)
+            {
+                MainForm_BLL.ChangeSharedFolder(folderItemVM.IdFolder);
+            }
         }
 
         private void ChangeFolderAndFileHandler(FileInforPackage sender)
@@ -135,6 +155,7 @@ namespace UserApp.UI
                                 {
                                     IdFolder = fileInforPackage.IdFolder,
                                     NameFolder = fileInforPackage.NameFolder,
+                                    type = FileControlRequestType.ChangeFolder
                                 });
                             }
                         }
@@ -161,6 +182,34 @@ namespace UserApp.UI
                         grid_ListFileAndFolderShared.Controls.Clear();
                     });
                 }
+
+                if (folderPathControl_Shared.IsHandleCreated && !folderPathControl_Shared.IsDisposed)
+                {
+                    folderPathControl_Shared.BeginInvoke((MethodInvoker)delegate
+                    {
+                        if (fileInforPackage.IdFolder == "")
+                        {
+                            folderPathControl_Shared.Reset();
+                        }
+                        else
+                        {
+                            if (folderPathControl_Shared.HasFolderItemVM(fileInforPackage.IdFolder))
+                            {
+                                folderPathControl_Shared.RemoveItem(fileInforPackage.IdFolder);
+                            }
+                            else
+                            {
+                                folderPathControl_Shared.AddItem(new FolderItemVM()
+                                {
+                                    IdFolder = fileInforPackage.IdFolder,
+                                    NameFolder = fileInforPackage.NameFolder,
+                                    type = FileControlRequestType.ChangeSharedFolder
+                                });
+                            }
+                        }
+                    });
+                }
+
                 foreach (var item in fileInforPackage.fileInfors)
                 {
                     if (grid_ListFileAndFolderShared.IsHandleCreated && !grid_ListFileAndFolderShared.IsDisposed)
@@ -260,7 +309,21 @@ namespace UserApp.UI
 
         public void LogoutHandler()
         {
-            logoutEvent();
+            if (this.InvokeRequired)
+            {
+                // If we are not on the UI thread, invoke the method on the UI thread
+                this.Invoke(new Action(LogoutHandler));
+            }
+            else
+            {
+                // We are on the UI thread, perform UI-related operations
+                if (logoutEvent != null)
+                {
+                    MessageBox.Show("Disconnected from the server. Please log in again!");
+                    this.Close();
+                    logoutEvent.Invoke();
+                }
+            }
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)

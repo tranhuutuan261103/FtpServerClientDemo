@@ -10,5 +10,6 @@ namespace UserApp.DTO
     {
         public string IdFolder { get; set; } = "";
         public string NameFolder { get; set; } = "";
+        public FileControlRequestType type { get; set; }
     }
 }

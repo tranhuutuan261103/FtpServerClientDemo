@@ -53,192 +53,256 @@ namespace MyFtpClient
         }
         public bool CreateFolder(CreateFolderRequest request)
         {
-            if (SetRemoteFolderPath(request.ParentFolderId) == false)
-            {
+            try {
+                if (SetRemoteFolderPath(request.ParentFolderId) == false)
+                {
+                    return false;
+                }
+                string Command = "", Response = "";
+                Command = string.Format("MKD {0}", request.FolderName);
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("257 ") == true)
+                {
+                    return true;
+                }
                 return false;
-            }
-            string Command = "", Response = "";
-            Command = string.Format("MKD {0}", request.FolderName);
-            _writer.WriteLine(Command);
-            Response = _reader.ReadLine() ?? "";
-            if (Response.StartsWith("257 ") == true)
+            } catch (Exception)
             {
-                return true;
+                throw new Exception("Disconnected");
             }
-            return false;
         }
 
         public FileDetailVM? GetDetailFile(string id)
         {
-            string Command = "", Response = "";
-            Command = string.Format("GETDETAILFILE {0}", id);
-            _writer.WriteLine(Command);
-            Response = _reader.ReadLine() ?? "";
-            if (Response.StartsWith("257 ") == true)
+            try
             {
-                string dataJson = Response.Substring(Response.IndexOf(" ") + 1);
-                if (string.IsNullOrEmpty(dataJson) == false)
+                string Command = "", Response = "";
+                Command = string.Format("GETDETAILFILE {0}", id);
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("257 ") == true)
                 {
-                    FileDetailVM fileDetailVM = JsonConvert.DeserializeObject<FileDetailVM>(dataJson);
-                    return fileDetailVM;
+                    string dataJson = Response.Substring(Response.IndexOf(" ") + 1);
+                    if (string.IsNullOrEmpty(dataJson) == false)
+                    {
+                        FileDetailVM fileDetailVM = JsonConvert.DeserializeObject<FileDetailVM>(dataJson);
+                        return fileDetailVM;
+                    }
+                    return null;
                 }
                 return null;
+            } catch (Exception)
+            {
+                throw new Exception("Disconnected");
             }
-            return null;
         }
 
         public bool RenameFile(RenameFileRequest request)
         {
-            if (SetRemoteFolderPath(request.Id) == false)
+            try
             {
+                if (SetRemoteFolderPath(request.Id) == false)
+                {
+                    return false;
+                }
+                string Command = "", Response = "";
+                Command = string.Format("RNTO {0}", request.NewName);
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("250 ") == true)
+                {
+                    return true;
+                }
                 return false;
-            }
-            string Command = "", Response = "";
-            Command = string.Format("RNTO {0}", request.NewName);
-            _writer.WriteLine(Command);
-            Response = _reader.ReadLine() ?? "";
-            if (Response.StartsWith("250 ") == true)
+            } catch (Exception ex)
             {
-                return true;
+                throw new Exception("Disconnected");
             }
-            return false;
         }
 
         public void DeleteFile(DeleteFileRequest request)
         {
-            string Command, Response;
-            Command = string.Format("DELE {0}", request.Id);
-            _writer.WriteLine(Command);
-            Response = _reader.ReadLine() ?? "";
-            if (Response.StartsWith("250 ") == true)
+            try
             {
-                return;
+                string Command, Response;
+                Command = string.Format("DELE {0}", request.Id);
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("250 ") == true)
+                {
+                    return;
+                }
+            } catch (Exception)
+            {
+                throw new Exception("Disconnected");
             }
         }
 
         public void DeleteFolder(DeleteFileRequest request)
         {
-            string Command, Response;
-            Command = string.Format("RMD {0}", request.Id);
-            _writer.WriteLine(Command);
-            Response = _reader.ReadLine() ?? "";
-            if (Response.StartsWith("250 ") == true)
+            try
             {
-                return;
+                string Command, Response;
+                Command = string.Format("RMD {0}", request.Id);
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("250 ") == true)
+                {
+                    return;
+                }
+            } catch (Exception)
+            {
+                throw new Exception("Disconnected");
             }
         }
 
         public bool RestoreFile(string fileId)
         {
-            string Command, Response;
-            Command = string.Format("RESTOREFILE {0}", fileId);
-            _writer.WriteLine(Command);
-            Response = _reader.ReadLine() ?? "";
-            if (Response.StartsWith("250 ") == true)
+            try {
+                string Command, Response;
+                Command = string.Format("RESTOREFILE {0}", fileId);
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("250 ") == true)
+                {
+                    return true;
+                }
+                return false;
+            } catch (Exception)
             {
-                return true;
+                throw new Exception("Disconnected");
             }
-            return false;
         }
 
         public List<FileAccessVM> GetListFileAccess(string id)
         {
-            string Command = "", Response = "";
-            Command = string.Format("GETLISTFILEACCESS {0}", id);
-            _writer.WriteLine(Command);
-            Response = _reader.ReadLine() ?? "";
-            if (Response.StartsWith("257 ") == true)
+            try
             {
-                string dataJson = Response.Substring(Response.IndexOf(" ") + 1);
-                if (string.IsNullOrEmpty(dataJson) == false)
+                string Command = "", Response = "";
+                Command = string.Format("GETLISTFILEACCESS {0}", id);
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("257 ") == true)
                 {
-                    List<FileAccessVM> fileAccessVMs = JsonConvert.DeserializeObject<List<FileAccessVM>>(dataJson);
-                    return fileAccessVMs;
+                    string dataJson = Response.Substring(Response.IndexOf(" ") + 1);
+                    if (string.IsNullOrEmpty(dataJson) == false)
+                    {
+                        List<FileAccessVM> fileAccessVMs = JsonConvert.DeserializeObject<List<FileAccessVM>>(dataJson);
+                        return fileAccessVMs;
+                    }
+                    return new List<FileAccessVM>();
                 }
                 return new List<FileAccessVM>();
+            } catch (Exception)
+            {
+                throw new Exception("Disconnected");
             }
-            return new List<FileAccessVM>();
         }
 
         public bool UpdateFileAccess(List<FileAccessVM> request)
         {
-            string Command, Response;
-            Command = string.Format("UPDATEFILEACCESS {0}", JsonConvert.SerializeObject(request));
-            _writer.WriteLine(Command);
-            Response = _reader.ReadLine() ?? "";
-            if (Response.StartsWith("257 ") == true)
+            try
             {
-                return true;
+                string Command, Response;
+                Command = string.Format("UPDATEFILEACCESS {0}", JsonConvert.SerializeObject(request));
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("257 ") == true)
+                {
+                    return true;
+                }
+                return false;
+            } catch (Exception)
+            {
+                throw new Exception("Disconnected");
             }
-            return false;
         }
 
         public string CreateNewRemoteFolder(string remoteFolderName)
         {
-            string Command = "", Response = "";
-            Command = string.Format("MKD {0}", remoteFolderName);
-            _writer.WriteLine(Command);
-            Response = _reader.ReadLine() ?? "";
-            if (Response.StartsWith("257 ") == true)
+            try
             {
-                return Response.Substring(Response.IndexOf(" ") + 1);
+                string Command = "", Response = "";
+                Command = string.Format("MKD {0}", remoteFolderName);
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("257 ") == true)
+                {
+                    return Response.Substring(Response.IndexOf(" ") + 1);
+                }
+                return "";
+            } catch (Exception)
+            {
+                throw new Exception("Disconnected");
             }
-            return "";
         }
         public bool SetRemoteFolderPath(string remoteFolderPath)
         {
-            string command, response;
-
-            command = string.Format("CWD {0}", remoteFolderPath);
-            _writer.WriteLine(command);
-            response = _reader.ReadLine() ?? "";
-            if (response.StartsWith("250 ") == true)
+            try
             {
-                return true;
+                string command, response;
+
+                command = string.Format("CWD {0}", remoteFolderPath);
+                _writer.WriteLine(command);
+                response = _reader.ReadLine() ?? "";
+                if (response.StartsWith("250 ") == true)
+                {
+                    return true;
+                }
+                return false;
+            } catch (Exception)
+            {
+                throw new Exception("Disconnected");
             }
-            return false;
         }
 
         public async Task ReceiveFileAsync(FileTransferProcessing processing, TcpClient tcpSessionClient)
         {
-            StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
-            StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
-            string command, response;
-            command = string.Format("CWD {0}", processing.RemotePath);
-            await streamWriter.WriteLineAsync(command);
-            response = await streamReader.ReadLineAsync() ?? "";
-
-            if (response.StartsWith("250 "))
+            try
             {
-                command = "PASV";
+                StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
+                StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
+                string command, response;
+                command = string.Format("CWD {0}", processing.RemotePath);
                 await streamWriter.WriteLineAsync(command);
                 response = await streamReader.ReadLineAsync() ?? "";
 
-                if (response.StartsWith("227 ") == true)
+                if (response.StartsWith("250 "))
                 {
-                    IPEndPoint serverDataEndpoint = GetServerEndpoint(response);
-                    TcpClient dataChannel = new TcpClient();
-                    await dataChannel.ConnectAsync(serverDataEndpoint.Address, serverDataEndpoint.Port);
-
-                    command = string.Format("RETR {0}", processing.FileName);
+                    command = "PASV";
                     await streamWriter.WriteLineAsync(command);
                     response = await streamReader.ReadLineAsync() ?? "";
 
-                    if (response.StartsWith("150 "))
+                    if (response.StartsWith("227 ") == true)
                     {
-                        long fileSize = long.Parse(await streamReader.ReadLineAsync() ?? "0");
-                        processing.FileSize = fileSize;
+                        IPEndPoint serverDataEndpoint = GetServerEndpoint(response);
+                        TcpClient dataChannel = new TcpClient();
+                        await dataChannel.ConnectAsync(serverDataEndpoint.Address, serverDataEndpoint.Port);
 
-                        DataTransferClient fileClientProcessing = new DataTransferClient(dataChannel, TransferProgressHandler, processing);
-                        await fileClientProcessing.ReceiveFileAsync(processing.LocalPath + @"\" + processing.FileName);
-
+                        command = string.Format("RETR {0}", processing.FileName);
+                        await streamWriter.WriteLineAsync(command);
                         response = await streamReader.ReadLineAsync() ?? "";
-                        if (response.StartsWith("226 "))
+
+                        if (response.StartsWith("150 "))
                         {
-                            dataChannel.Close();
+                            long fileSize = long.Parse(await streamReader.ReadLineAsync() ?? "0");
+                            processing.FileSize = fileSize;
+
+                            DataTransferClient fileClientProcessing = new DataTransferClient(dataChannel, TransferProgressHandler, processing);
+                            await fileClientProcessing.ReceiveFileAsync(processing.LocalPath + @"\" + processing.FileName);
+
+                            response = await streamReader.ReadLineAsync() ?? "";
+                            if (response.StartsWith("226 "))
+                            {
+                                dataChannel.Close();
+                            }
                         }
                     }
                 }
+            } catch (Exception)
+            {
+                throw new Exception("Disconnected");
             }
         }
 
@@ -321,94 +385,107 @@ namespace MyFtpClient
 
         public async Task SendFileAsync(FileTransferProcessing processing, TcpClient tcpSessionClient)
         {
-            StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
-            StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
-            string command, response;
+            try {
+                StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
+                StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
+                string command, response;
 
-            command = string.Format("CWD {0}", processing.RemotePath);
-            await streamWriter.WriteLineAsync(command);
-            response = await streamReader.ReadLineAsync() ?? "";
-
-            if (response.StartsWith("250 "))
-            {
-                command = "PASV";
+                command = string.Format("CWD {0}", processing.RemotePath);
                 await streamWriter.WriteLineAsync(command);
                 response = await streamReader.ReadLineAsync() ?? "";
 
-                if (response.StartsWith("227 ") == true)
+                if (response.StartsWith("250 "))
                 {
-                    IPEndPoint server_data_endpoint = GetServerEndpoint(response);
-                    TcpClient data_channel = new TcpClient();
-                    await data_channel.ConnectAsync(server_data_endpoint.Address, server_data_endpoint.Port);
-
-                    command = string.Format("STOR {0}", processing.FileName);
+                    command = "PASV";
                     await streamWriter.WriteLineAsync(command);
                     response = await streamReader.ReadLineAsync() ?? "";
 
-                    if (response.StartsWith("150 "))
+                    if (response.StartsWith("227 ") == true)
                     {
-                        DataTransferClient fileClientProcessing = new DataTransferClient(data_channel, TransferProgressHandler, processing);
-                        await fileClientProcessing.SendFileAsync(processing.LocalPath + @"\" + processing.FileName);
+                        IPEndPoint server_data_endpoint = GetServerEndpoint(response);
+                        TcpClient data_channel = new TcpClient();
+                        await data_channel.ConnectAsync(server_data_endpoint.Address, server_data_endpoint.Port);
 
+                        command = string.Format("STOR {0}", processing.FileName);
+                        await streamWriter.WriteLineAsync(command);
                         response = await streamReader.ReadLineAsync() ?? "";
-                        if (response.StartsWith("226 "))
+
+                        if (response.StartsWith("150 "))
                         {
-                            processing.Status = FileTransferProcessingStatus.Completed;
-                            TransferProgressHandler(processing);
-                            data_channel.Close();
+                            DataTransferClient fileClientProcessing = new DataTransferClient(data_channel, TransferProgressHandler, processing);
+                            await fileClientProcessing.SendFileAsync(processing.LocalPath + @"\" + processing.FileName);
+
+                            response = await streamReader.ReadLineAsync() ?? "";
+                            if (response.StartsWith("226 "))
+                            {
+                                processing.Status = FileTransferProcessingStatus.Completed;
+                                TransferProgressHandler(processing);
+                                data_channel.Close();
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception)
+            {
+                throw new Exception("Disconnected");
             }
         }
 
         public FileInforPackage GetFileInforPackage(GetListFileRequest request)
         {
-            FileInforPackage fileInforPackage = new FileInforPackage();
-            string command, response;
-
-            command = string.Format("CWD {0}", request.IdParent);
-            _writer.WriteLine(command);
-            response = _reader.ReadLine() ?? "";
-
-            command = "PWD";
-            _writer.WriteLine(command);
-            response = _reader.ReadLine() ?? "";
-            //Console.WriteLine(Response); // Console command line
-            if (response.StartsWith("257 ") == true)
+            try
             {
-                string[] tokens = response.Split('"');
-                //Console.WriteLine(tokens[1]); // Console command line
-            }
+                FileInforPackage fileInforPackage = new FileInforPackage();
+                string command, response;
 
-            command = "PASV";
-            _writer.WriteLine(command);
-            response = _reader.ReadLine() ?? "";
-            //Console.WriteLine(Response); // Console command line
-            if (response.StartsWith("227 ") == true)
-            {
-                IPEndPoint server_data_endpoint = GetServerEndpoint(response);
-                string json = JsonConvert.SerializeObject(request);
-                command = "MLSD " + json;
+                command = string.Format("CWD {0}", request.IdParent);
                 _writer.WriteLine(command);
-                TcpClient data_channel = new TcpClient();
-                data_channel.Connect(server_data_endpoint);
+                response = _reader.ReadLine() ?? "";
+
+                command = "PWD";
+                _writer.WriteLine(command);
                 response = _reader.ReadLine() ?? "";
                 //Console.WriteLine(Response); // Console command line
-                if (response.StartsWith("150 "))
+                if (response.StartsWith("257 ") == true)
                 {
-                    DataTransferClient fileClientProcessing = new DataTransferClient(data_channel);
-                    fileInforPackage = fileClientProcessing.ReceiveFileInforPackage();
+                    string[] tokens = response.Split('"');
+                    //Console.WriteLine(tokens[1]); // Console command line
+                }
 
+                command = "PASV";
+                _writer.WriteLine(command);
+                response = _reader.ReadLine() ?? "";
+                //Console.WriteLine(Response); // Console command line
+                if (response.StartsWith("227 ") == true)
+                {
+                    IPEndPoint server_data_endpoint = GetServerEndpoint(response);
+                    string json = JsonConvert.SerializeObject(request);
+                    command = "MLSD " + json;
+                    _writer.WriteLine(command);
+                    TcpClient data_channel = new TcpClient();
+                    data_channel.Connect(server_data_endpoint);
                     response = _reader.ReadLine() ?? "";
-                    if (response.StartsWith("226 "))
+                    //Console.WriteLine(Response); // Console command line
+                    if (response.StartsWith("150 "))
                     {
-                        //Console.WriteLine(Response); // Console command line
-                        data_channel.Close();
+                        DataTransferClient fileClientProcessing = new DataTransferClient(data_channel);
+                        fileInforPackage = fileClientProcessing.ReceiveFileInforPackage();
+
+                        response = _reader.ReadLine() ?? "";
+                        if (response.StartsWith("226 "))
+                        {
+                            //Console.WriteLine(Response); // Console command line
+                            data_channel.Close();
+                        }
                     }
                 }
+                return fileInforPackage;
             }
-            return fileInforPackage;
+            catch (Exception)
+            {
+                throw new Exception("Disconnected");
+            }
         }
 
         public List<FileInfor> ListRemoteFoldersAndFiles(string remoteFolderPath)
@@ -493,40 +570,54 @@ namespace MyFtpClient
 
         public bool CheckCanUpload(string remotePath)
         {
-            string command, response;
-            command = string.Format("CWD {0}", remotePath);
-            _writer.WriteLine(command);
-            response = _reader.ReadLine() ?? "";
-            if (response.StartsWith("250 ") == true)
+            try
             {
-                command = "CHECKCANUPLOAD";
+                string command, response;
+                command = string.Format("CWD {0}", remotePath);
                 _writer.WriteLine(command);
                 response = _reader.ReadLine() ?? "";
-                if (response.StartsWith("200 ") == true)
+                if (response.StartsWith("250 ") == true)
                 {
-                    return true;
+                    command = "CHECKCANUPLOAD";
+                    _writer.WriteLine(command);
+                    response = _reader.ReadLine() ?? "";
+                    if (response.StartsWith("200 ") == true)
+                    {
+                        return true;
+                    }
                 }
+                return false;
+            } 
+            catch (Exception)
+            {
+                throw new Exception("Disconnected");
             }
-            return false;
         }
 
         public async Task<bool> CheckCanUploadAsync(string remotePath)
         {
-            string command, response;
-            command = string.Format("CWD {0}", remotePath);
-            await _writer.WriteLineAsync(command);
-            response = await _reader.ReadLineAsync() ?? "";
-            if (response.StartsWith("250 ") == true)
+            try
             {
-                command = "CHECKCANUPLOAD";
+                string command, response;
+                command = string.Format("CWD {0}", remotePath);
                 await _writer.WriteLineAsync(command);
                 response = await _reader.ReadLineAsync() ?? "";
-                if (response.StartsWith("200 ") == true)
+                if (response.StartsWith("250 ") == true)
                 {
-                    return true;
+                    command = "CHECKCANUPLOAD";
+                    await _writer.WriteLineAsync(command);
+                    response = await _reader.ReadLineAsync() ?? "";
+                    if (response.StartsWith("200 ") == true)
+                    {
+                        return true;
+                    }
                 }
+                return false;
+            } 
+            catch (Exception)
+            {
+                throw new Exception("Disconnected");
             }
-            return false;
         }
 
         public void UploadFolder(string remoteFolderPath, string localFolderPath)
