@@ -1,5 +1,4 @@
-﻿using MyClassLibrary.Bean;
-using MyClassLibrary.Bean.Account;
+﻿using MyClassLibrary.Bean.Account;
 using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
 using MyFtpServer.DAL;
@@ -330,6 +329,7 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"425 Can't open data connection.");
                             continue;
                         }
+                        clientConnection.DataClient = data_channel;
                         FileServerProcessing processing = new FileServerProcessing(data_channel);
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, "150 Opening data connection");
@@ -362,6 +362,7 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"425 Can't open data connection.");
                             continue;
                         }
+                        clientConnection.DataClient = data_channel;
                         FileServerProcessing processing = new FileServerProcessing(data_channel);
 
                         writer.WriteLine("150 Opening data connection");
@@ -413,6 +414,7 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"425 Can't open data connection.");
                             continue;
                         }
+                        clientConnection.DataClient = data_channel;
                         FileServerProcessing processing = new FileServerProcessing(data_channel);
 
                         writer.WriteLine("150 Opening data connection");
@@ -503,6 +505,7 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"425 Can't open data connection.");
                             continue;
                         }
+                        clientConnection.DataClient = data_channel;
 
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, $"150 Opening data connection");
@@ -522,6 +525,7 @@ namespace MyFtpServer
                             ResponseStatus(sessionID, $"425 Can't open data connection.");
                             continue;
                         }
+                        clientConnection.DataClient = data_channel;
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, $"150 Opening data connection");
                         AccountServerProcessing asp = new AccountServerProcessing(data_channel);

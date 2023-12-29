@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyClassLibrary.Bean
+namespace MyClassLibrary.Bean.Account
 {
     public class ResetPasswordRequest
     {

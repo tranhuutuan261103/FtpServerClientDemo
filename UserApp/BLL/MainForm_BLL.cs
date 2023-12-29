@@ -82,7 +82,12 @@ namespace UserApp.BLL
 
         public void DownloadFolder(FileInfor fileInfor)
         {
-            ftpClient.DownloadFolder(fileInfor.Id, $"{fileManager.GetCurrentPath()}\\{fileInfor.Name}");
+            DownloadFolderRequest request = new DownloadFolderRequest()
+            {
+                RemoteFolderId = fileInfor.Id,
+                FullLocalPath = $"{fileManager.GetCurrentPath()}\\{fileInfor.Name}",
+            };
+            ftpClient.DownloadFolder(request);
         }
         public void ChangeFolder(string idFolder)
         {

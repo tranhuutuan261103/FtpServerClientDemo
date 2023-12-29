@@ -1,5 +1,4 @@
-﻿using MyClassLibrary.Bean;
-using MyFtpClient;
+﻿using MyFtpClient;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using UserApp.DTO;
 using UserApp.UI.UserComponent;
+using MyClassLibrary.Bean.Account;
 
 namespace UserApp.UI
 {
@@ -99,6 +99,14 @@ namespace UserApp.UI
 
         private void LogoutHandler()
         {
+            // Check if invoke is required and execute the method on the UI thread
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(LogoutHandler));
+                return;
+            }
+
+            ftpClient = new FtpClient(txt_IPAddress.Text, int.Parse(txt_Port.Text));
             this.Show();
         }
 

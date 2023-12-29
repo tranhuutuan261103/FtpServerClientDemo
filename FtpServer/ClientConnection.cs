@@ -11,11 +11,13 @@ namespace MyFtpServer
     {
         private int _idAccount;
         private TcpClient _tcpClient;
+        private TcpClient _dataClient;
 
         public ClientConnection(int idAccount, TcpClient tcpClient)
         {
             _idAccount = idAccount;
             _tcpClient = tcpClient;
+            _dataClient = tcpClient;
         }
 
         public int IdAccount
@@ -30,9 +32,21 @@ namespace MyFtpServer
             set { _tcpClient = value; }
         }
 
+        public TcpClient DataClient
+        {
+            get { return _dataClient; }
+            set { _dataClient = value; }
+        }
+
         internal void Close()
         {
-            _tcpClient.Close();
+            try {
+                _tcpClient.Close();
+                _dataClient.Close();
+            } catch (Exception)
+            {
+
+            }
         }
     }
 }

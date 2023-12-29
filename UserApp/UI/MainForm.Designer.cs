@@ -29,19 +29,19 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges13 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges14 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges1 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges4 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges5 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges6 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges8 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges9 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges10 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges11 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges12 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges15 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges16 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges17 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges18 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges19 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges20 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges21 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges22 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             grid_FileAndFolder = new FlowLayoutPanel();
             btn_New = new Guna.UI2.WinForms.Guna2Button();
             guna2ContextMenuStrip_btnNew = new Guna.UI2.WinForms.Guna2ContextMenuStrip();
@@ -76,6 +76,7 @@
             guna2Elipse1 = new Guna.UI2.WinForms.Guna2Elipse(components);
             guna2Elipse2 = new Guna.UI2.WinForms.Guna2Elipse(components);
             lbl_Title = new Guna.UI2.WinForms.Guna2HtmlLabel();
+            folderPathControl_Shared = new UserComponent.FolderPathControl();
             guna2ContextMenuStrip_btnNew.SuspendLayout();
             tabControl_Profile.SuspendLayout();
             tabPage1.SuspendLayout();
@@ -102,7 +103,7 @@
             btn_New.BorderRadius = 10;
             btn_New.ContextMenuStrip = guna2ContextMenuStrip_btnNew;
             btn_New.Cursor = Cursors.Hand;
-            btn_New.CustomizableEdges = customizableEdges1;
+            btn_New.CustomizableEdges = customizableEdges13;
             btn_New.DisabledState.BorderColor = Color.DarkGray;
             btn_New.DisabledState.CustomBorderColor = Color.DarkGray;
             btn_New.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -114,7 +115,7 @@
             btn_New.Location = new Point(12, 12);
             btn_New.Name = "btn_New";
             btn_New.ShadowDecoration.BorderRadius = 10;
-            btn_New.ShadowDecoration.CustomizableEdges = customizableEdges2;
+            btn_New.ShadowDecoration.CustomizableEdges = customizableEdges14;
             btn_New.ShadowDecoration.Enabled = true;
             btn_New.ShadowDecoration.Shadow = new Padding(0, 0, 5, 5);
             btn_New.Size = new Size(93, 63);
@@ -187,7 +188,7 @@
             btn_TransferInfor.Location = new Point(970, 12);
             btn_TransferInfor.Margin = new Padding(0);
             btn_TransferInfor.Name = "btn_TransferInfor";
-            btn_TransferInfor.ShadowDecoration.CustomizableEdges = customizableEdges3;
+            btn_TransferInfor.ShadowDecoration.CustomizableEdges = customizableEdges1;
             btn_TransferInfor.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
             btn_TransferInfor.Size = new Size(50, 50);
             btn_TransferInfor.TabIndex = 4;
@@ -251,6 +252,7 @@
             // tabPage2
             // 
             tabPage2.BackColor = Color.FromArgb(233, 244, 255);
+            tabPage2.Controls.Add(folderPathControl_Shared);
             tabPage2.Controls.Add(grid_ListFileAndFolderShared);
             tabPage2.Location = new Point(184, 4);
             tabPage2.Name = "tabPage2";
@@ -333,7 +335,7 @@
             // 
             // txt_Email
             // 
-            txt_Email.CustomizableEdges = customizableEdges4;
+            txt_Email.CustomizableEdges = customizableEdges2;
             txt_Email.DefaultText = "";
             txt_Email.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
             txt_Email.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
@@ -350,7 +352,7 @@
             txt_Email.PlaceholderText = "";
             txt_Email.ReadOnly = true;
             txt_Email.SelectedText = "";
-            txt_Email.ShadowDecoration.CustomizableEdges = customizableEdges5;
+            txt_Email.ShadowDecoration.CustomizableEdges = customizableEdges15;
             txt_Email.Size = new Size(350, 40);
             txt_Email.TabIndex = 11;
             // 
@@ -366,7 +368,7 @@
             // 
             // btn_UpdateProfile
             // 
-            btn_UpdateProfile.CustomizableEdges = customizableEdges6;
+            btn_UpdateProfile.CustomizableEdges = customizableEdges16;
             btn_UpdateProfile.DisabledState.BorderColor = Color.DarkGray;
             btn_UpdateProfile.DisabledState.CustomBorderColor = Color.DarkGray;
             btn_UpdateProfile.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -376,7 +378,7 @@
             btn_UpdateProfile.ForeColor = Color.White;
             btn_UpdateProfile.Location = new Point(304, 423);
             btn_UpdateProfile.Name = "btn_UpdateProfile";
-            btn_UpdateProfile.ShadowDecoration.CustomizableEdges = customizableEdges7;
+            btn_UpdateProfile.ShadowDecoration.CustomizableEdges = customizableEdges17;
             btn_UpdateProfile.Size = new Size(168, 47);
             btn_UpdateProfile.TabIndex = 8;
             btn_UpdateProfile.Text = "Update profile";
@@ -424,7 +426,7 @@
             // 
             // txt_LastName
             // 
-            txt_LastName.CustomizableEdges = customizableEdges8;
+            txt_LastName.CustomizableEdges = customizableEdges18;
             txt_LastName.DefaultText = "";
             txt_LastName.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
             txt_LastName.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
@@ -440,13 +442,13 @@
             txt_LastName.PasswordChar = '\0';
             txt_LastName.PlaceholderText = "";
             txt_LastName.SelectedText = "";
-            txt_LastName.ShadowDecoration.CustomizableEdges = customizableEdges9;
+            txt_LastName.ShadowDecoration.CustomizableEdges = customizableEdges19;
             txt_LastName.Size = new Size(250, 40);
             txt_LastName.TabIndex = 3;
             // 
             // txt_FirstName
             // 
-            txt_FirstName.CustomizableEdges = customizableEdges10;
+            txt_FirstName.CustomizableEdges = customizableEdges20;
             txt_FirstName.DefaultText = "";
             txt_FirstName.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
             txt_FirstName.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
@@ -462,7 +464,7 @@
             txt_FirstName.PasswordChar = '\0';
             txt_FirstName.PlaceholderText = "";
             txt_FirstName.SelectedText = "";
-            txt_FirstName.ShadowDecoration.CustomizableEdges = customizableEdges11;
+            txt_FirstName.ShadowDecoration.CustomizableEdges = customizableEdges21;
             txt_FirstName.Size = new Size(250, 40);
             txt_FirstName.TabIndex = 2;
             // 
@@ -483,7 +485,7 @@
             pic_Avatar.InitialImage = (Image)resources.GetObject("pic_Avatar.InitialImage");
             pic_Avatar.Location = new Point(40, 40);
             pic_Avatar.Name = "pic_Avatar";
-            pic_Avatar.ShadowDecoration.CustomizableEdges = customizableEdges12;
+            pic_Avatar.ShadowDecoration.CustomizableEdges = customizableEdges22;
             pic_Avatar.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
             pic_Avatar.Size = new Size(160, 160);
             pic_Avatar.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -524,6 +526,13 @@
             lbl_Title.TabIndex = 5;
             lbl_Title.Text = "File storage service";
             // 
+            // folderPathControl_Shared
+            // 
+            folderPathControl_Shared.Location = new Point(37, 5);
+            folderPathControl_Shared.Name = "folderPathControl_Shared";
+            folderPathControl_Shared.Size = new Size(780, 50);
+            folderPathControl_Shared.TabIndex = 1;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -539,7 +548,6 @@
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Transfer data";
-            TopMost = true;
             FormClosed += MainForm_FormClosed;
             Load += MainForm_Load;
             guna2ContextMenuStrip_btnNew.ResumeLayout(false);
@@ -590,5 +598,6 @@
         private Guna.UI2.WinForms.Guna2HtmlLabel lbl_Title;
         public TabPage tabPage1;
         public Guna.UI2.WinForms.Guna2TabControl tabControl_Profile;
+        private UserComponent.FolderPathControl folderPathControl_Shared;
     }
 }
