@@ -1,4 +1,4 @@
-﻿using MyClassLibrary.Bean;
+﻿using MyClassLibrary.Bean.Account;
 using System;
 using System.Collections.Generic;
 using System.Linq;

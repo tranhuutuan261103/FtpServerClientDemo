@@ -1,5 +1,4 @@
 ﻿using MyClassLibrary;
-using MyClassLibrary.Bean;
 using MyClassLibrary.Bean.Account;
 using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
@@ -305,7 +304,8 @@ namespace MyFtpClient
                         break;
                     case "DOWNLOADFOLDER":
                         {
-                            fcp.DownloadFolder(taskSession.RemotePath, taskSession.LocalPath);
+                            DownloadFolderRequest request = (DownloadFolderRequest)taskSession.Data;
+                            fcp.DownloadFolder(request.RemoteFolderId, request.FullLocalPath);
                         }
                         break;
                     case "UPLOADFOLDER":
@@ -463,9 +463,9 @@ namespace MyFtpClient
             PushSubTaskSession(taskSession);
         }
 
-        public void DownloadFolder(string remoteFolderPath, string localFolderPath)
+        public void DownloadFolder(DownloadFolderRequest request)
         {
-            TaskSession taskSession = new TaskSession("DOWNLOADFOLDER", remoteFolderPath, "", localFolderPath);
+            TaskSession taskSession = new TaskSession("DOWNLOADFOLDER", request);
             PushMainTaskSession(taskSession);
         }
 
@@ -490,7 +490,7 @@ namespace MyFtpClient
         // Manage account
         public void GetAccountInfor()
         {
-            TaskSession taskSession = new TaskSession("GETACCOUNTINFOR", "", "", "");
+            TaskSession taskSession = new TaskSession("GETACCOUNTINFOR", "");
             PushMainTaskSession(taskSession);
         }
 
