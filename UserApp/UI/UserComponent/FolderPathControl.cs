@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design.Serialization;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -15,6 +16,22 @@ namespace UserApp.UI.UserComponent
     public partial class FolderPathControl : UserControl
     {
         List<FolderItemVM> folderItemVMs = new List<FolderItemVM>();
+        private FolderItemVM _root;
+
+        public FolderItemVM Root
+        {
+            get
+            {
+                return _root;
+            }
+            set
+            {
+                _root = value;
+                lbl_MyDrive.Text = _root.NameFolder;
+                flowLayoutPanel.Size = new Size(Width - lbl_MyDrive.Width - 5, flowLayoutPanel.Height);
+                flowLayoutPanel.Location = new Point(lbl_MyDrive.Location.X + lbl_MyDrive.Width + 5, flowLayoutPanel.Location.Y);
+            }
+        }
         public FolderPathControl()
         {
             InitializeComponent();
@@ -42,7 +59,7 @@ namespace UserApp.UI.UserComponent
         private void lbl_MyDrive_Click(object sender, EventArgs e)
         {
             lbl_MyDrive.ForeColor = Color.Blue;
-            ClickFolderItemControlEvent?.Invoke(new FolderItemVM() { IdFolder = "", NameFolder = "My Drive" });
+            ClickFolderItemControlEvent?.Invoke(_root ?? new FolderItemVM() { IdFolder = "", NameFolder = "My Drive" });
         }
 
         public bool HasFolderItemVM(string idFolder)

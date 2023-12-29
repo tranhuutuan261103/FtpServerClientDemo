@@ -161,10 +161,13 @@ namespace MyFtpServer.DAL
                         };
                         fileInfors.Add(fileInfor);
                     }
+                    var folderParent = db.Folders.FirstOrDefault(f => f.Id == idParent);
                     return new FileInforPackage()
                     {
                         Category = Category.Shared,
-                        fileInfors = fileInfors
+                        fileInfors = fileInfors,
+                        IdFolder = idParent,
+                        NameFolder = folderParent == null ? "" : folderParent.Name
                     };
                 }
             }

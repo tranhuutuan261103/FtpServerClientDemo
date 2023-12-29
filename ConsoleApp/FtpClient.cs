@@ -210,156 +210,176 @@ namespace MyFtpClient
 
         private void ExecuteMainTaskSession(TaskSession taskSession)
         {
-            FtpClientProcessing fcp = new FtpClientProcessing(_mainTcpSession.GetTcpClient(), TransferProgressHandler, TransferRequestHandler);
-            AccountClientProcessing ap = new AccountClientProcessing(_mainTcpSession.GetTcpClient());
-            switch (taskSession.Type)
+            try
             {
-                case "CREATEFOLDER":
-                    {
-                        CreateFolderRequest request = (CreateFolderRequest)taskSession.Data;
-                        fcp.CreateFolder(request);
-                    }
-                    break;
-                case "GETDETAILFILE":
-                    {
-                        string id = (string)taskSession.Data;
-                        FileDetailVM? fileDetailVM = fcp.GetDetailFile(id);
-                        if (fileDetailVM != null)
+                FtpClientProcessing fcp = new FtpClientProcessing(_mainTcpSession.GetTcpClient(), TransferProgressHandler, TransferRequestHandler);
+                AccountClientProcessing ap = new AccountClientProcessing(_mainTcpSession.GetTcpClient());
+                switch (taskSession.Type)
+                {
+                    case "CREATEFOLDER":
                         {
+                            CreateFolderRequest request = (CreateFolderRequest)taskSession.Data;
+                            fcp.CreateFolder(request);
+                        }
+                        break;
+                    case "GETDETAILFILE":
+                        {
+                            string id = (string)taskSession.Data;
+                            FileDetailVM? fileDetailVM = fcp.GetDetailFile(id);
+                            if (fileDetailVM != null)
+                            {
+                                List<FileAccessVM> fileAccessVMs = fcp.GetListFileAccess(id);
+                                GetDetailFileHandler(fileDetailVM, fileAccessVMs);
+                            }
+                        }
+                        break;
+                    case "RENAMEFILE":
+                        {
+                            RenameFileRequest request = (RenameFileRequest)taskSession.Data;
+                            fcp.RenameFile(request);
+                        }
+                        break;
+                    case "DELETEFILE":
+                        {
+                            DeleteFileRequest request = (DeleteFileRequest)taskSession.Data;
+                            fcp.DeleteFile(request);
+                        }
+                        break;
+                    case "DELETEFOLDER":
+                        {
+                            DeleteFileRequest request = (DeleteFileRequest)taskSession.Data;
+                            fcp.DeleteFolder(request);
+                        }
+                        break;
+                    case "RESTOREFILE":
+                        {
+                            RestoreFileRequest request = (RestoreFileRequest)taskSession.Data;
+                            fcp.RestoreFile(request.FileId);
+                        }
+                        break;
+                    case "GETLISTFILEACCESS":
+                        {
+                            string id = (string)taskSession.Data;
                             List<FileAccessVM> fileAccessVMs = fcp.GetListFileAccess(id);
-                            GetDetailFileHandler(fileDetailVM, fileAccessVMs);
+                            GetListFileAccessHandler(fileAccessVMs);
                         }
-                    }
-                    break;
-                case "RENAMEFILE":
-                    {
-                        RenameFileRequest request = (RenameFileRequest)taskSession.Data;
-                        fcp.RenameFile(request);
-                    }
-                    break;
-                case "DELETEFILE":
-                    {
-                        DeleteFileRequest request = (DeleteFileRequest)taskSession.Data;
-                        fcp.DeleteFile(request);
-                    }
-                    break;
-                case "DELETEFOLDER":
-                    {
-                        DeleteFileRequest request = (DeleteFileRequest)taskSession.Data;
-                        fcp.DeleteFolder(request);
-                    }
-                    break;
-                case "RESTOREFILE":
-                    {
-                        RestoreFileRequest request = (RestoreFileRequest)taskSession.Data;
-                        fcp.RestoreFile(request.FileId);
-                    }
-                    break;
-                case "GETLISTFILEACCESS":
-                    {
-                        string id = (string)taskSession.Data;
-                        List<FileAccessVM> fileAccessVMs = fcp.GetListFileAccess(id);
-                        GetListFileAccessHandler(fileAccessVMs);
-                    }
-                    break;
-                case "UPDATEFILEACCESS":
-                    {
-                        List<FileAccessVM> request = (List<FileAccessVM>)taskSession.Data;
-                        fcp.UpdateFileAccess(request);
-                    }
-                    break;
-                case "GETLISTSHAREDFILE":
-                    {
-                        GetListFileRequest request = new GetListFileRequest()
+                        break;
+                    case "UPDATEFILEACCESS":
                         {
-                            IdParent = (string)taskSession.Data ?? "",
-                            IdAccess = IdAccess.Shared
-                        };
-                        FileInforPackage fileInfors = fcp.GetFileInforPackage(request);
-                        ChangeFolderAndFileHandler(fileInfors);
-                    }
-                    break;
-                case "GETLISTDELETEDFILE":
-                    {
-                        GetListFileRequest request = new GetListFileRequest()
-                        {
-                            IdParent = (string)taskSession.Data ?? "",
-                            IdAccess = IdAccess.Deleted
-                        };
-                        FileInforPackage fileInfors = fcp.GetFileInforPackage(request);
-                        ChangeFolderAndFileHandler(fileInfors);
-                    }
-                    break;
-                case "LIST":
-                    {
-                        GetListFileRequest request = new GetListFileRequest()
-                        {
-                            IdParent = (string)taskSession.Data ?? "",
-                            IdAccess = IdAccess.Owner
-                        };
-                        FileInforPackage fileInfors = fcp.GetFileInforPackage(request);
-                        ChangeFolderAndFileHandler(fileInfors);
-                    }
-                    break;
-                case "DOWNLOADFOLDER":
-                    {
-                        fcp.DownloadFolder(taskSession.RemotePath, taskSession.LocalPath);
-                    }
-                    break;
-                case "UPLOADFOLDER":
-                    {
-                        UploadFolderRequest uploadFolderRequest = (UploadFolderRequest)taskSession.Data;
-                        if (fcp.CheckCanUpload(uploadFolderRequest.ParentFolderId) == true)
-                        {
-                            fcp.UploadFolder(uploadFolderRequest.FolderName, uploadFolderRequest.FullLocalPath);
+                            List<FileAccessVM> request = (List<FileAccessVM>)taskSession.Data;
+                            fcp.UpdateFileAccess(request);
                         }
-                    }
-                    break;
-                case "GETACCOUNTINFOR":
-                    {
-                        AccountInfoVM accountInfoVM = ap.GetAccountInfor();
-                        GetAccountInforHandler(accountInfoVM);
-                    }
-                    break;
-                case "UPDATEACCOUNTINFOR":
-                    {
-                        AccountInfoVM account = (AccountInfoVM)taskSession.Data;
-                        ap.UpdateAccountInfor(account);
-                    }
-                    break;
-                default:
-                    break;
+                        break;
+                    case "GETLISTSHAREDFILE":
+                        {
+                            GetListFileRequest request = new GetListFileRequest()
+                            {
+                                IdParent = (string)taskSession.Data ?? "",
+                                IdAccess = IdAccess.Shared
+                            };
+                            FileInforPackage fileInfors = fcp.GetFileInforPackage(request);
+                            ChangeFolderAndFileHandler(fileInfors);
+                        }
+                        break;
+                    case "GETLISTDELETEDFILE":
+                        {
+                            GetListFileRequest request = new GetListFileRequest()
+                            {
+                                IdParent = (string)taskSession.Data ?? "",
+                                IdAccess = IdAccess.Deleted
+                            };
+                            FileInforPackage fileInfors = fcp.GetFileInforPackage(request);
+                            ChangeFolderAndFileHandler(fileInfors);
+                        }
+                        break;
+                    case "LIST":
+                        {
+                            GetListFileRequest request = new GetListFileRequest()
+                            {
+                                IdParent = (string)taskSession.Data ?? "",
+                                IdAccess = IdAccess.Owner
+                            };
+                            FileInforPackage fileInfors = fcp.GetFileInforPackage(request);
+                            ChangeFolderAndFileHandler(fileInfors);
+                        }
+                        break;
+                    case "DOWNLOADFOLDER":
+                        {
+                            fcp.DownloadFolder(taskSession.RemotePath, taskSession.LocalPath);
+                        }
+                        break;
+                    case "UPLOADFOLDER":
+                        {
+                            UploadFolderRequest uploadFolderRequest = (UploadFolderRequest)taskSession.Data;
+                            if (fcp.CheckCanUpload(uploadFolderRequest.ParentFolderId) == true)
+                            {
+                                fcp.UploadFolder(uploadFolderRequest.FolderName, uploadFolderRequest.FullLocalPath);
+                            }
+                        }
+                        break;
+                    case "GETACCOUNTINFOR":
+                        {
+                            AccountInfoVM accountInfoVM = ap.GetAccountInfor();
+                            GetAccountInforHandler(accountInfoVM);
+                        }
+                        break;
+                    case "UPDATEACCOUNTINFOR":
+                        {
+                            AccountInfoVM account = (AccountInfoVM)taskSession.Data;
+                            ap.UpdateAccountInfor(account);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            } catch (Exception ex)
+            {
+                if (ex.Message == "Disconnected")
+                {
+                    _mainTcpSession.Disconnect();
+                    logout();
+                }
             }
         }
 
         private async Task ExecuteSubTaskSession(FileTransferProcessing request, TcpClient tcpSessionClient)
         {
-            FtpClientProcessing fcp = new FtpClientProcessing(tcpSessionClient, TransferProgressHandler, TransferRequestHandler);
-            string command = request.Type;
-            switch (command)
+            try
             {
-                case "STOR":
-                    if (await fcp.CheckCanUploadAsync(request.RemotePath) == true)
-                    {
-                        await fcp.SendFileAsync(request, tcpSessionClient);
-                    }
-                    else
-                    {
-                        request.Status = FileTransferProcessingStatus.Failed;
-                        TransferProgressHandler(request);
-                    }
-                    break;
-                case "EXPRESSUPLOAD":
-                    //await fcp.ExpressSendFile(request, tcpSessionClient);
-                    break;
-                case "RETR":
-                    await fcp.ReceiveFileAsync(request, tcpSessionClient);
-                    break;
-                case "EXPRESSDOWNLOAD":
-                    //await fcp.ExpressReceiveFile(request, tcpSessionClient);
-                    break;
-                default:
-                    break;
+                FtpClientProcessing fcp = new FtpClientProcessing(tcpSessionClient, TransferProgressHandler, TransferRequestHandler);
+                string command = request.Type;
+                switch (command)
+                {
+                    case "STOR":
+                        if (await fcp.CheckCanUploadAsync(request.RemotePath) == true)
+                        {
+                            await fcp.SendFileAsync(request, tcpSessionClient);
+                        }
+                        else
+                        {
+                            request.Status = FileTransferProcessingStatus.Failed;
+                            TransferProgressHandler(request);
+                        }
+                        break;
+                    case "EXPRESSUPLOAD":
+                        //await fcp.ExpressSendFile(request, tcpSessionClient);
+                        break;
+                    case "RETR":
+                        await fcp.ReceiveFileAsync(request, tcpSessionClient);
+                        break;
+                    case "EXPRESSDOWNLOAD":
+                        //await fcp.ExpressReceiveFile(request, tcpSessionClient);
+                        break;
+                    default:
+                        break;
+                }
+            } catch (Exception ex)
+            {
+                if (ex.Message == "Disconnected")
+                {
+                    _mainTcpSession.Disconnect();
+                    logout();
+                }
             }
         }
 

@@ -79,6 +79,7 @@ namespace ServerApp
             txt_IP.Enabled = true;
             txt_Port.Enabled = true;
             txt_rootPath.Enabled = true;
+            lbl_NumConnection.Text = "0";
             flowLayoutPanel_Account.Controls.Clear();
         }
 
@@ -86,12 +87,18 @@ namespace ServerApp
         {
             if (richTextBox_Log.InvokeRequired)
             {
-                richTextBox_Log.Invoke(new Action<string>(CommandReceivedHandler), new object[] { message });
+                if (!richTextBox_Log.IsDisposed && !richTextBox_Log.Disposing)
+                {
+                    richTextBox_Log.Invoke(new Action<string>(CommandReceivedHandler), new object[] { message });
+                }
             }
             else
             {
-                richTextBox_Log.AppendText(message + "\n");
-                richTextBox_Log.ScrollToCaret();
+                if (!richTextBox_Log.IsDisposed && !richTextBox_Log.Disposing)
+                {
+                    richTextBox_Log.AppendText(message + "\n");
+                    richTextBox_Log.ScrollToCaret();
+                }
             }
         }
 
