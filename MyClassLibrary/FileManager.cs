@@ -126,17 +126,49 @@ namespace MyClassLibrary
         /// <returns>File path name is unduplicated</returns>
         public string HandleDuplicatedFileName(string fileName)
         {
-            string filePath = $"{_folderPath}{fileName}";
+            string filePath = $"{_folderPath}\\{fileName}";
+            if (!File.Exists(filePath))
+            {
+                return fileName;
+            }
             string fileNameWithoutExtension = fileName.Split('.').First();
             string fileExtension = fileName.Split('.').Last();
             int i = 1;
             while (File.Exists(filePath))
             {
                 fileName = $"{fileNameWithoutExtension} ({i}).{fileExtension}";
-                filePath = $"{_folderPath}{fileName}";
+                filePath = $"{_folderPath}\\{fileName}";
                 i++;
             }
-            return filePath;
+            return fileName;
+        }
+
+        public string HandleDuplicateFilePath(string fullPath)
+        {
+            if (!File.Exists(fullPath))
+            {
+                return fullPath;
+            }
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullPath);
+            string fileExtension = Path.GetExtension(fullPath);
+            string folderPath = Path.GetDirectoryName(fullPath);
+            int i = 1;
+            while (File.Exists(fullPath))
+            {
+                fullPath = $"{folderPath}\\{fileNameWithoutExtension} ({i}){fileExtension}";
+                i++;
+            }
+            return fullPath;
+        }
+
+        public static string GetFileName(string fullPath)
+        {
+            return Path.GetFileName(fullPath);
+        }
+
+        public static string GetFileNameWithoutExtension(string fullPath)
+        {
+            return Path.GetFileNameWithoutExtension(fullPath);
         }
     }
 }

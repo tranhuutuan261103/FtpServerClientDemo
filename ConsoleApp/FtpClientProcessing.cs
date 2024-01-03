@@ -1,4 +1,5 @@
-﻿using MyClassLibrary.Bean.File;
+﻿using MyClassLibrary;
+using MyClassLibrary.Bean.File;
 using MyClassLibrary.Common;
 using Newtonsoft.Json;
 using System;
@@ -315,6 +316,10 @@ namespace MyFtpClient
                         IPEndPoint serverDataEndpoint = GetServerEndpoint(response);
                         TcpClient dataChannel = new TcpClient();
                         await dataChannel.ConnectAsync(serverDataEndpoint.Address, serverDataEndpoint.Port);
+                        
+                        // Handle duplicate file name
+                        FileManager fileManager1 = new FileManager(processing.LocalPath);
+                        processing.FileName = fileManager1.HandleDuplicatedFileName(processing.FileName);
 
                         command = string.Format("RETR {0}", processing.FileName);
                         await streamWriter.WriteLineAsync(command);
@@ -416,6 +421,10 @@ namespace MyFtpClient
                         if (response.StartsWith("226 "))
                         {
                             request.Status = FileTransferProcessingStatus.Completed;
+                            TransferProgressHandler(request);
+                        } else
+                        {
+                            request.Status = FileTransferProcessingStatus.Failed;
                             TransferProgressHandler(request);
                         }
                     }
