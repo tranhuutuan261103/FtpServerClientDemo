@@ -563,8 +563,11 @@ namespace UserApp.UI
                 // Nén ảnh và giữ dung lượng dưới 500 KB
                 byte[] compressedImageData = ImageHelper.CompressImage(pic_Avatar.Image, 50);
 
-                // Gán ảnh nén vào thông tin tài khoản
-                accountInfo.Avatar = compressedImageData.ToList();
+                if (compressedImageData != null && compressedImageData.Length != 0)
+                {
+                    // Gán ảnh nén vào thông tin tài khoản
+                    accountInfo.Avatar = compressedImageData.ToList();
+                }
             }
 
             MainForm_BLL.UpdateAccountInfor(accountInfo);
