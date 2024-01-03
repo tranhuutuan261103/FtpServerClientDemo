@@ -70,6 +70,7 @@ namespace UserApp.UI
             panel_Container.Controls.Clear();
             panel_Container.Controls.Add(registerControl);
             registerControl.Show();
+            registerControl.ResetUI();
         }
 
         public delegate void SetFormResetPasswordDelegate();
@@ -90,6 +91,7 @@ namespace UserApp.UI
             panel_Container.Controls.Clear();
             panel_Container.Controls.Add(resetPasswordControl);
             resetPasswordControl.Show();
+            resetPasswordControl.ResetUI();
         }
 
         private void AccountForm_Load(object sender, EventArgs e)
@@ -131,6 +133,7 @@ namespace UserApp.UI
             if (ftpClient.Register(request) == true)
             {
                 MessageBox.Show("Register successfully");
+                registerControl.ResetUI();
                 SetFormLoginInvoke();
                 loginControl.SetUsername(request.Email);
                 loginControl.SetPassword("");
@@ -147,6 +150,7 @@ namespace UserApp.UI
             if (ftpClient.ResetPassword(request) == true)
             {
                 MessageBox.Show("Reset password successfully");
+                resetPasswordControl.ResetUI();
                 SetFormLoginInvoke();
                 loginControl.SetUsername(request.Email);
                 loginControl.SetPassword("");

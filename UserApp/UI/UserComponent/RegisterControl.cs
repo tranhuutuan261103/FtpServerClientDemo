@@ -29,11 +29,32 @@ namespace UserApp.UI.UserComponent
             countdownTimer.Tick += CountdownTimer_Tick;
         }
 
+        internal void ResetUI()
+        {
+            txt_Email.Text = "";
+            txt_Password.Text = "";
+            txt_ConfirmPassword.Text = "";
+            txt_FirstName.Text = "";
+            txt_FirstName.Focus();
+            txt_LastName.Text = "";
+            txt_OTP.Text = "";
+            btn_OTP.Text = "Send OTP";
+            btn_OTP.Enabled = true;
+            btn_Submit.Enabled = true;
+            countdownTimer.Stop();
+        }
+
         private void SubmitForm()
         {
             if (txt_Email.Text == "" || txt_Password.Text == "")
             {
                 MessageBox.Show("Username or password is empty!");
+                return;
+            }
+
+            if (txt_Password.Text.Length < 6)
+            {
+                MessageBox.Show("Password must be at least 6 characters!");
                 return;
             }
 
@@ -68,14 +89,6 @@ namespace UserApp.UI.UserComponent
         private void label_GoToLogin_Click(object sender, EventArgs e)
         {
             SetFormLoginInvoke();
-        }
-
-        private void txt_OTP_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if ((!char.IsDigit(e.KeyChar) || txt_OTP.Text.Length >= 6) && e.KeyChar != 8)
-            {
-                e.Handled = true;
-            }
         }
 
         // Handle OTP
@@ -142,10 +155,19 @@ namespace UserApp.UI.UserComponent
         private void RegisterControl_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
-            { 
+            {
                 e.Handled = true;
                 SubmitForm();
-            }  
+            }
+
+            if (sender == txt_OTP)
+            {
+                if ((!char.IsDigit(e.KeyChar) || txt_OTP.Text.Length >= 6) && e.KeyChar != 8)
+                {
+                    e.Handled = true;
+                }
+                return;
+            }
         }
     }
 }
