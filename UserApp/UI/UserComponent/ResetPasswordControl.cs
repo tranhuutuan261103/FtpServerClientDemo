@@ -33,7 +33,7 @@ namespace UserApp.UI.UserComponent
             SetFormLoginInvoke();
         }
 
-        private void btb_Submit_Click(object sender, EventArgs e)
+        private void SubmitForm()
         {
             if (txt_Email.Text == "" || txt_NewPassword.Text == "")
             {
@@ -60,6 +60,11 @@ namespace UserApp.UI.UserComponent
             };
 
             ResetPasswordInvoke(request);
+        }
+
+        private void btb_Submit_Click(object sender, EventArgs e)
+        {
+            SubmitForm();
         }
 
         private void txt_OTP_KeyPress(object sender, KeyPressEventArgs e)
@@ -128,6 +133,15 @@ namespace UserApp.UI.UserComponent
             else
             {
                 btn_OTP.Text = $"Resend ({remainingSeconds} s)";
+            }
+        }
+
+        private void ResetPasswordControl_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                e.Handled = true;
+                SubmitForm();
             }
         }
     }

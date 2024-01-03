@@ -71,6 +71,7 @@
             txt_Email.ShadowDecoration.CustomizableEdges = customizableEdges2;
             txt_Email.Size = new Size(280, 40);
             txt_Email.TabIndex = 0;
+            txt_Email.KeyPress += ResetPasswordControl_KeyPress;
             // 
             // txt_OTP
             // 
@@ -93,7 +94,7 @@
             txt_OTP.ShadowDecoration.CustomizableEdges = customizableEdges4;
             txt_OTP.Size = new Size(140, 40);
             txt_OTP.TabIndex = 1;
-            txt_OTP.KeyPress += txt_OTP_KeyPress;
+            txt_OTP.KeyPress += ResetPasswordControl_KeyPress;
             // 
             // btn_OTP
             // 
@@ -134,6 +135,7 @@
             txt_NewPassword.Size = new Size(280, 40);
             txt_NewPassword.TabIndex = 3;
             txt_NewPassword.UseSystemPasswordChar = true;
+            txt_NewPassword.KeyPress += ResetPasswordControl_KeyPress;
             // 
             // txt_ConfirmNewPassword
             // 
@@ -157,6 +159,7 @@
             txt_ConfirmNewPassword.Size = new Size(280, 40);
             txt_ConfirmNewPassword.TabIndex = 4;
             txt_ConfirmNewPassword.UseSystemPasswordChar = true;
+            txt_ConfirmNewPassword.KeyPress += ResetPasswordControl_KeyPress;
             // 
             // btb_Submit
             // 

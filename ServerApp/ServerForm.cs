@@ -116,7 +116,8 @@ namespace ServerApp
                     }
                     Thread.Sleep(2000);
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
@@ -150,7 +151,8 @@ namespace ServerApp
                         }
                     }
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -176,7 +178,7 @@ namespace ServerApp
         {
             AccountDAL accountDAL = new AccountDAL();
             List<AccountInfoVM> accountInfoVMs = accountDAL.GetAccounts(_rootPath);
-            lock(_lock)
+            lock (_lock)
             {
                 flowLayoutPanel_Account.Controls.Clear();
                 foreach (AccountInfoVM accountInfoVM in accountInfoVMs)
@@ -292,7 +294,7 @@ namespace ServerApp
                 return;
             }
             AccountDAL dal = new AccountDAL();
-            foreach(var item in list)
+            foreach (var item in list)
             {
                 if (dal.DeleteAccount(item.Id) == true)
                 {

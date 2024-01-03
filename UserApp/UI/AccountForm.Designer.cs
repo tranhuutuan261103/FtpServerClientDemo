@@ -127,7 +127,7 @@
             txt_IPAddress.PlaceholderText = "IP Address";
             txt_IPAddress.SelectedText = "";
             txt_IPAddress.ShadowDecoration.CustomizableEdges = customizableEdges6;
-            txt_IPAddress.Size = new Size(120, 50);
+            txt_IPAddress.Size = new Size(150, 50);
             txt_IPAddress.TabIndex = 3;
             // 
             // txt_Port

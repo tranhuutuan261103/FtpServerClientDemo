@@ -49,12 +49,18 @@ namespace MyFtpServer
         {
             if (IsExistFilePath(filePath) == true)
             {
-                filePath = HandleDuplicatedFileName(filePath);
+                throw new Exception("File is exist");
             }
 
-            if (Directory.Exists(Path.GetDirectoryName(filePath)) == false)
+            try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                if (Directory.Exists(Path.GetDirectoryName(filePath)) == false)
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                }
+            } catch (Exception)
+            {
+                throw new Exception("Can't create path");
             }
 
             NetworkStream ns = _socket.GetStream();
@@ -80,9 +86,9 @@ namespace MyFtpServer
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"An error occurred: {ex.Message}");
+                throw new Exception("Can't transfer data");
             }
         }
 

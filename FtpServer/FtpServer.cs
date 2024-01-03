@@ -13,6 +13,7 @@ using System.Reflection.PortableExecutable;
 using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
+using File = MyFtpServer.DAL.Entities.File;
 
 namespace MyFtpServer
 {
@@ -345,7 +346,7 @@ namespace MyFtpServer
                         FileStorageDAL dal = new FileStorageDAL();
                         string fullPath = _rootPath + dal.GetFilePath(remoteFolderPath);
 
-                        if (!File.Exists(fullPath))
+                        if (!System.IO.File.Exists(fullPath))
                         {
                             writer.WriteLine("550 File not exist");
                             ResponseStatus(sessionID, "550 File not exist");
@@ -403,7 +404,14 @@ namespace MyFtpServer
                         }
 
                         string fileName = string.Join(" ", parts, 1, parts.Length - 1);
-                        string fullPath = _rootPath + dal.CreateNewFile(idAccount, remoteFolderPath, fileName);
+                        File? createFile = dal.CreateNewFile(idAccount, remoteFolderPath, fileName);
+                        if (createFile == null)
+                        {
+                            writer.WriteLine("550 Couldn't create the file or directory");
+                            ResponseStatus(sessionID, $"550 Couldn't create the file or directory");
+                            continue;
+                        }
+                        string fullPath = _rootPath + createFile.FilePath;
 
                         if (tcpListener == null)
                             continue;
@@ -420,10 +428,32 @@ namespace MyFtpServer
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, $"150 Opening data connection");
 
-                        processing.ReceiveFile(fullPath);
+                        try
+                        {
+                            processing.ReceiveFile(fullPath);
+                        } catch (Exception ex)
+                        {
+                            if (ex.Message == "File is exist")
+                            {
+                                writer.WriteLine("550 File is exist");
+                                ResponseStatus(sessionID, $"550 File is exist");
+                            } else if (ex.Message == "Can't create path")
+                            {
+                                writer.WriteLine("Can't create path");
+                                ResponseStatus(sessionID, $"Can't create path");
+                            }
+                            else if (ex.Message == "Can't transfer data")
+                            {
+                                writer.WriteLine("Can't transfer data");
+                                ResponseStatus(sessionID, $"Can't transfer data");
+                            }
+                            dal.TruncateFile(idAccount, createFile.Id, _rootPath);
+                            continue;
+                        }
 
                         writer.WriteLine("226 Transfer complete");
                         ResponseStatus(sessionID, $"226 Transfer complete");
+
                         if (tcpListener != null)
                             tcpListener.Stop();
                     }
@@ -452,7 +482,7 @@ namespace MyFtpServer
                     {
                         string filePath = string.Join(" ", parts, 1, parts.Length - 1);
                         string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
-                        if (!File.Exists(fullPath))
+                        if (!System.IO.File.Exists(fullPath))
                         {
                             writer.WriteLine("550 File not exist");
                             ResponseStatus(sessionID, "550 File not exist");

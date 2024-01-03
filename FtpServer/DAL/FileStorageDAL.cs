@@ -297,7 +297,30 @@ namespace MyFtpServer.DAL
             }
         }
 
-        public string CreateNewFile(int idAccount, string idParent, string name)
+        public void TruncateFile(int idAccount, string id, string _rootPath)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                var file = db.Files.FirstOrDefault(f => f.Id == id);
+                if(file != null)
+                {
+                    db.Remove(file);
+                    if (db.SaveChanges() == 0)
+                    {
+                        try
+                        {
+                            System.IO.File.Delete(_rootPath + file.FilePath);
+                        }
+                        catch(Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
+                    }
+                }
+            }
+        }
+
+        public File? CreateNewFile(int idAccount, string idParent, string name)
         {
             int realIdAccount = idAccount;
             if (idParent != null && idParent != "")
@@ -319,7 +342,7 @@ namespace MyFtpServer.DAL
                 db.Files.Add(file);
                 if( db.SaveChanges() == 0)
                 {
-                    return "";
+                    return null;
                 }
                 var fileAccess = new FileAccess()
                 {
@@ -330,9 +353,16 @@ namespace MyFtpServer.DAL
                 db.FileAccesses.Add(fileAccess);
                 if(db.SaveChanges() == 0)
                 {
-                    return "";
+                    return null;
                 }
-                return filePath;
+                return new File()
+                {
+                    Id = id,
+                    IdParent = idParent,
+                    Name = name,
+                    FilePath = filePath,
+                    CreationDate = DateTime.Now,
+                };
             }
         }
 
