@@ -13,7 +13,7 @@ namespace MyFtpServer
         private readonly TcpListener _tcpListener;
         private string _fullPath;
         private long _length;
-        private int _maxBufferSize = (int)Math.Pow(2, 20) * 256;
+        private long _maxBufferSize = (long)Math.Pow(2, 20) * 1024;
         private int _totalThread;
         private int _currentSuccessThreadCount = 0;
         List<string> partFilePaths = new List<string>();
