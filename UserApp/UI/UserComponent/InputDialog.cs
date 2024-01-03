@@ -53,17 +53,31 @@ namespace UserApp.UI.UserComponent
             }
         }
 
-        private void btn_Oke_Click(object sender, EventArgs e)
+        private void SubmitForm()
         {
             _inputText = txt_InputText.Text;
             DialogResult = DialogResult.OK;
             this.Close();
         }
 
+        private void btn_Oke_Click(object sender, EventArgs e)
+        {
+            SubmitForm();
+        }
+
         private void btn_Cancel_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             this.Close();
+        }
+
+        private void InputDialog_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                e.Handled = true;
+                SubmitForm();
+            }
         }
     }
 }

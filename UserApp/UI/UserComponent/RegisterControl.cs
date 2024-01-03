@@ -29,7 +29,7 @@ namespace UserApp.UI.UserComponent
             countdownTimer.Tick += CountdownTimer_Tick;
         }
 
-        private void btn_Submit_Click(object sender, EventArgs e)
+        private void SubmitForm()
         {
             if (txt_Email.Text == "" || txt_Password.Text == "")
             {
@@ -58,6 +58,11 @@ namespace UserApp.UI.UserComponent
             };
 
             RegisterInvoke(request);
+        }
+
+        private void btn_Submit_Click(object sender, EventArgs e)
+        {
+            SubmitForm();
         }
 
         private void label_GoToLogin_Click(object sender, EventArgs e)
@@ -132,6 +137,15 @@ namespace UserApp.UI.UserComponent
             {
                 btn_OTP.Text = $"Resend ({remainingSeconds} s)";
             }
+        }
+
+        private void RegisterControl_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+            { 
+                e.Handled = true;
+                SubmitForm();
+            }  
         }
     }
 }

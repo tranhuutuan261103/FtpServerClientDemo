@@ -51,7 +51,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point);
-            label1.Location = new Point(144, 30);
+            label1.Location = new Point(167, 30);
             label1.Name = "label1";
             label1.Size = new Size(17, 28);
             label1.TabIndex = 1;
@@ -63,14 +63,14 @@
             txt_IP.Location = new Point(14, 24);
             txt_IP.Name = "txt_IP";
             txt_IP.PlaceholderText = "IP Address";
-            txt_IP.Size = new Size(125, 34);
+            txt_IP.Size = new Size(150, 34);
             txt_IP.TabIndex = 2;
             txt_IP.Text = "127.0.0.1";
             // 
             // txt_Port
             // 
             txt_Port.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            txt_Port.Location = new Point(167, 24);
+            txt_Port.Location = new Point(186, 24);
             txt_Port.Name = "txt_Port";
             txt_Port.PlaceholderText = "Port";
             txt_Port.Size = new Size(75, 34);
@@ -82,7 +82,7 @@
             // btn_Start
             // 
             btn_Start.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
-            btn_Start.Location = new Point(562, 24);
+            btn_Start.Location = new Point(581, 24);
             btn_Start.Name = "btn_Start";
             btn_Start.Size = new Size(94, 34);
             btn_Start.TabIndex = 4;
@@ -170,7 +170,7 @@
             // txt_rootPath
             // 
             txt_rootPath.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            txt_rootPath.Location = new Point(264, 24);
+            txt_rootPath.Location = new Point(283, 24);
             txt_rootPath.Name = "txt_rootPath";
             txt_rootPath.PlaceholderText = "Enter root path";
             txt_rootPath.Size = new Size(277, 34);

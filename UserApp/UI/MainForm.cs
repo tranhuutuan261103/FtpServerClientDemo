@@ -270,11 +270,28 @@ namespace UserApp.UI
                 if (request.fileInfor.IsDirectory == false)
                 {
                     MainForm_BLL.Download(request.fileInfor);
+                    TryShowTransferProgressContainer();
                 }
                 else if (request.fileInfor.IsDirectory == true)
                 {
                     MainForm_BLL.DownloadFolder(request.fileInfor);
+                    TryShowTransferProgressContainer();
                 }
+            }
+        }
+
+        private void TryShowTransferProgressContainer()
+        {
+            try
+            {
+                if (flowLayoutPanel_ListProcessing != null && flowLayoutPanel_ListProcessing.Visible == false)
+                {
+                    flowLayoutPanel_ListProcessing.Visible = true;
+                }
+            } 
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
 
@@ -408,6 +425,7 @@ namespace UserApp.UI
             if (oFD.ShowDialog() == DialogResult.OK)
             {
                 MainForm_BLL.Upload(oFD.FileName);
+                TryShowTransferProgressContainer();
             }
         }
 
@@ -417,6 +435,7 @@ namespace UserApp.UI
             if (fBD.ShowDialog() == DialogResult.OK)
             {
                 MainForm_BLL.UploadFolder(fBD.SelectedPath);
+                TryShowTransferProgressContainer();
             }
         }
 

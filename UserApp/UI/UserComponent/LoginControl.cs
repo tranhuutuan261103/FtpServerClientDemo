@@ -50,5 +50,11 @@ namespace UserApp.UI.UserComponent
         {
             SetFormResetPasswordInvoke();
         }
+
+        private void LoginControl_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = true;
+            LoginInvoke?.Invoke(txt_Email.Text, txt_Password.Text);
+        }
     }
 }
