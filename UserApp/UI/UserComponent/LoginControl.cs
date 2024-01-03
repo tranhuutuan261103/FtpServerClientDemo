@@ -53,8 +53,11 @@ namespace UserApp.UI.UserComponent
 
         private void LoginControl_KeyPress(object sender, KeyPressEventArgs e)
         {
-            e.Handled = true;
-            LoginInvoke?.Invoke(txt_Email.Text, txt_Password.Text);
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                e.Handled = true;
+                LoginInvoke?.Invoke(txt_Email.Text, txt_Password.Text);
+            }
         }
     }
 }

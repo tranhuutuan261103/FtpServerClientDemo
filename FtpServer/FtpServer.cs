@@ -98,7 +98,7 @@ namespace MyFtpServer
             }
         }
 
-        private void HandleClient(object? clientConnectionPar)
+        private async void HandleClient(object? clientConnectionPar)
         {
             if (clientConnectionPar == null)
                 return;
@@ -255,6 +255,20 @@ namespace MyFtpServer
                         }
                         writer.WriteLine($"250 {id}");
                         ResponseStatus(sessionID, $"250 File deleted");
+                    } else if (command == "TRUNCATEFILE")
+                    {
+                        string idFile = string.Join(" ", parts, 1, parts.Length - 1);
+                        FileStorageDAL dal = new FileStorageDAL();
+                        if (await dal.TruncateFile(idAccount, idFile, _rootPath) == true)
+                        {
+                            writer.WriteLine($"250 {idFile}");
+                            ResponseStatus(sessionID, $"250 File truncated");
+                        }
+                        else
+                        {
+                            writer.WriteLine("550 File not found");
+                            ResponseStatus(sessionID, $"550 File not found");
+                        }
                     }
                     else if (command == "RESTOREFILE")
                     {
@@ -284,6 +298,15 @@ namespace MyFtpServer
                             continue;
                         }
                         writer.WriteLine($"250 {id}");
+                    } else if (command == "TRUNCATEFOLDER")
+                    {
+                        string idFolder = string.Join(" ", parts, 1, parts.Length - 1);
+
+                        FileStorageDAL dal = new FileStorageDAL();
+                        await dal.TruncateFolder(idAccount, idFolder, _rootPath);
+                        
+                        writer.WriteLine("250 Delete successful");
+                        ResponseStatus(sessionID, $"250 Delete successful");
                     }
                     else if (command == "GETLISTFILEACCESS")
                     {
@@ -454,7 +477,7 @@ namespace MyFtpServer
                             processing.ReceiveFile(fullPath);
                         } catch (Exception ex)
                         {
-                            dal.TruncateFile(idAccount, createFile.Id, _rootPath);
+                            await dal.TruncateFile(idAccount, createFile.Id, _rootPath);
                             if (ex.Message == "File is exist")
                             {
                                 writer.WriteLine("550 File is exist");

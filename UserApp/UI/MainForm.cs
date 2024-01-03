@@ -168,7 +168,7 @@ namespace UserApp.UI
                     {
                         grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
                         {
-                            grid_FileAndFolder.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, RestoreFileHandler));
+                            grid_FileAndFolder.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, TruncateFileHandler , RestoreFileHandler));
                         });
                     }
                 }
@@ -216,7 +216,7 @@ namespace UserApp.UI
                     {
                         grid_ListFileAndFolderShared.BeginInvoke((MethodInvoker)delegate
                         {
-                            grid_ListFileAndFolderShared.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, RestoreFileHandler));
+                            grid_ListFileAndFolderShared.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, TruncateFileHandler, RestoreFileHandler));
                         });
                     }
                 }
@@ -236,7 +236,7 @@ namespace UserApp.UI
                     {
                         grid_ListFileAndFolderDeleted.BeginInvoke((MethodInvoker)delegate
                         {
-                            grid_ListFileAndFolderDeleted.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, RestoreFileHandler));
+                            grid_ListFileAndFolderDeleted.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, TruncateFileHandler, RestoreFileHandler));
                         });
                     }
                 }
@@ -411,6 +411,18 @@ namespace UserApp.UI
             else if (sender.RequestType == DeleteFileRequestType.Folder)
             {
                 MainForm_BLL.DeleteFolder(sender);
+            }
+        }
+
+        private void TruncateFileHandler(TruncateFileRequest sender)
+        {
+            if (sender.RequestType == TruncateFileRequestType.File)
+            {
+                MainForm_BLL.TruncateFile(sender);
+            }
+            else if (sender.RequestType == TruncateFileRequestType.Folder)
+            {
+                MainForm_BLL.TruncateFolder(sender);
             }
         }
 

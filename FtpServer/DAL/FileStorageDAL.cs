@@ -273,14 +273,14 @@ namespace MyFtpServer.DAL
                 var file = db.Files.FirstOrDefault(f => f.Id == id);
                 if(file != null)
                 {
-                    return file.IdParent;
+                    return file.IdParent ?? "";
                 }
                 var folder = db.Folders.FirstOrDefault(f => f.Id == id);
                 if(folder != null)
                 {
-                    return folder.IdParent;
+                    return folder.IdParent ?? "";
                 }
-                return null;
+                return "";
             }
         }
 
@@ -297,39 +297,95 @@ namespace MyFtpServer.DAL
             }
         }
 
-        public void TruncateFile(int idAccount, string idFile, string _rootPath)
+        public async Task TruncateFolder(int idAccount, string idFolder, string _rootPath)
         {
             using(var db = new FileStorageDBContext())
             {
-                var fileAccess = db.FileAccesses.FirstOrDefault(fa => fa.IdAccount == idAccount 
-                && fa.IdFile == idFile 
-                && (fa.IdAccess == 1 || fa.IdAccess == 2) );
-
-                int effect = 0;
-                if (fileAccess != null)
-                {
-                    db.RemoveRange(db.FileAccesses.Where(fa => fa.IdFile == idFile));
-                    effect = db.SaveChanges();
-                }
-
-                if (effect > 0)
-                {
-                    var file = db.Files.FirstOrDefault(f => f.Id == idFile);
-                    if (file != null)
+                try {
+                    var files = db.Files.Where(f => f.IdParent == idFolder);
+                    if (files != null)
                     {
-                        db.Remove(file);
-                        if (db.SaveChanges() != 0)
+                        foreach (var file in files)
                         {
-                            try
-                            {
-                                System.IO.File.Delete(_rootPath + file.FilePath);
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(e.Message);
-                            }
+                            await TruncateFile(idAccount, file.Id, _rootPath);
                         }
                     }
+
+                    var folders = db.Folders.Where(f => f.IdParent == idFolder);
+                    if (folders != null)
+                    {
+                        foreach (var folder in folders)
+                        {
+                            await TruncateFolder(idAccount, folder.Id, _rootPath);
+                        }
+                    }
+
+                    var folderAccess = db.FolderAccesses.Where(fa => fa.IdFolder == idFolder);
+                    foreach (var fa in folderAccess)
+                    {
+                        db.Remove(fa);
+                    }
+                    await db.SaveChangesAsync();
+                    var folder2 = db.Folders.FirstOrDefault(f => f.Id == idFolder);
+                    if (folder2 != null)
+                    {
+                        db.Remove(folder2);
+                        await db.SaveChangesAsync();
+                    }
+                } catch(Exception e)
+                {
+
+                }
+            }
+        }
+
+        public async Task<bool> TruncateFile(int idAccount, string idFile, string _rootPath)
+        {
+            using(var db = new FileStorageDBContext())
+            {
+                try
+                {
+                    var fileAccess = db.FileAccesses.FirstOrDefault(fa => fa.IdAccount == idAccount
+                    && fa.IdFile == idFile
+                    && (fa.IdAccess == 1 || fa.IdAccess == 2));
+
+                    int effect = 0;
+                    if (fileAccess != null)
+                    {
+                        var fs = db.FileAccesses.Where(fa => fa.IdFile == idFile);
+                        foreach (var f in fs)
+                        {
+                            db.Remove(f);
+                        }
+                    }
+                    effect = await db.SaveChangesAsync();
+
+                    if (effect > 0)
+                    {
+                        var file = db.Files.FirstOrDefault(f => f.Id == idFile);
+                        if (file != null)
+                        {
+                            string filePath = _rootPath + file.FilePath;
+                            db.Remove(file);
+                            if (await db.SaveChangesAsync() != 0)
+                            {
+                                try
+                                {
+                                    System.IO.File.Delete(filePath);
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e.Message);
+                                }
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                    return false;
+                } catch(Exception e)
+                {
+                    return false;
                 }
             }
         }
@@ -587,6 +643,21 @@ namespace MyFtpServer.DAL
         {
             using (var db = new FileStorageDBContext())
             {
+                var fileAccess = db.FileAccesses.FirstOrDefault(fa => fa.IdAccount == idAccount
+                && fa.IdFile == fileId
+                && (fa.IdAccess == 1 || fa.IdAccess == 2));
+                if (fileAccess == null)
+                {
+                    string idParent = GetIdParent(fileId);
+                    if (idParent != "")
+                    {
+                        int access = GetParentAccess(idAccount, idParent);
+                        if (access != 1 || access != 2)
+                        {
+                            return "";
+                        }
+                    }
+                }
                 var file = db.Files.FirstOrDefault(f => f.Id == fileId);
                 if (file != null)
                 {
@@ -605,6 +676,12 @@ namespace MyFtpServer.DAL
         {
             using (var db = new FileStorageDBContext())
             {
+                int access = GetParentAccess(idAccount, folderId);
+                if (access != 1 && access != 2 && access != 0)
+                {
+                    return "";
+                }
+
                 var folder = db.Folders.FirstOrDefault(f => f.Id == folderId);
                 if (folder != null)
                 {
