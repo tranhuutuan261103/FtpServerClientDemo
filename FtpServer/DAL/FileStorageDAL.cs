@@ -297,23 +297,37 @@ namespace MyFtpServer.DAL
             }
         }
 
-        public void TruncateFile(int idAccount, string id, string _rootPath)
+        public void TruncateFile(int idAccount, string idFile, string _rootPath)
         {
             using(var db = new FileStorageDBContext())
             {
-                var file = db.Files.FirstOrDefault(f => f.Id == id);
-                if(file != null)
+                var fileAccess = db.FileAccesses.FirstOrDefault(fa => fa.IdAccount == idAccount 
+                && fa.IdFile == idFile 
+                && (fa.IdAccess == 1 || fa.IdAccess == 2) );
+
+                int effect = 0;
+                if (fileAccess != null)
                 {
-                    db.Remove(file);
-                    if (db.SaveChanges() == 0)
+                    db.RemoveRange(db.FileAccesses.Where(fa => fa.IdFile == idFile));
+                    effect = db.SaveChanges();
+                }
+
+                if (effect > 0)
+                {
+                    var file = db.Files.FirstOrDefault(f => f.Id == idFile);
+                    if (file != null)
                     {
-                        try
+                        db.Remove(file);
+                        if (db.SaveChanges() != 0)
                         {
-                            System.IO.File.Delete(_rootPath + file.FilePath);
-                        }
-                        catch(Exception e)
-                        {
-                            Console.WriteLine(e.Message);
+                            try
+                            {
+                                System.IO.File.Delete(_rootPath + file.FilePath);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e.Message);
+                            }
                         }
                     }
                 }

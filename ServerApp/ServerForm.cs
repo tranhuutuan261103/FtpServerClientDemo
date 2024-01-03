@@ -54,8 +54,15 @@ namespace ServerApp
             _rootPath = txt_rootPath.Text;
             try
             {
-                _ftpServer = new FtpServer(_serverIp, _serverPort, _rootPath, CommandReceivedHandler);
-                Thread thread = new Thread(new ThreadStart(_ftpServer.Start));
+                if (_ftpServer == null)
+                {
+                    _ftpServer = new FtpServer(_serverIp, _serverPort, _rootPath, CommandReceivedHandler);
+                } else
+                {
+                    _ftpServer.SetConfiguration(_serverIp, _serverPort, _rootPath);
+                }
+                
+                Thread thread = new Thread(new ThreadStart(_ftpServer.ServerStart));
                 thread.Start();
                 Thread threadConnection = new Thread(HandleListConnections);
                 threadConnection.Start();
@@ -74,7 +81,6 @@ namespace ServerApp
         private void StopServer()
         {
             _ftpServer.Stop();
-            _ftpServer = null;
             btn_Start.Text = "Start";
             txt_IP.Enabled = true;
             txt_Port.Enabled = true;
@@ -185,6 +191,10 @@ namespace ServerApp
                 {
                     AccountControl ac = new AccountControl(accountInfoVM, 0);
                     flowLayoutPanel_Account.Controls.Add(ac);
+                    if (accountInfoVM.IsDeleted == true)
+                    {
+                        _ftpServer.Disconnect(accountInfoVM.Id);
+                    }
                 }
             }
         }
