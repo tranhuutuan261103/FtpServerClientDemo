@@ -22,12 +22,14 @@ namespace UserApp.UI.UserComponent
             ShowDetailFileHandler showDetailFileHandler,
             RenameClickHandler renameClickHandler,
             DeleteClickHandler deleteClickHandler,
+            TruncateClickHandler truncateClickHandler,
             RestoreClickHandler restoreClickHandler)
         {
             FileControlClick = fileControlClickHandler;
             ShowDetailFile = showDetailFileHandler;
             RenameClick = renameClickHandler;
             DeleteClick = deleteClickHandler;
+            TruncateClick = truncateClickHandler;
             RestoreClick = restoreClickHandler;
             infor = item;
             this.category = category;
@@ -226,6 +228,27 @@ namespace UserApp.UI.UserComponent
             {
                 FileId = infor.Id ?? "",
             });
+        }
+
+        public delegate void TruncateClickHandler(TruncateFileRequest sender);
+        public event TruncateClickHandler TruncateClick;
+
+        private void ToolStripMenuItem_Truncate_Click(object sender, EventArgs e)
+        {
+            TruncateFileRequest request = new TruncateFileRequest()
+            {
+                Id = infor.Id ?? "",
+            };
+
+            if (infor.IsDirectory == true)
+            {
+                request.RequestType = TruncateFileRequestType.Folder;
+            }
+            else
+            {
+                request.RequestType = TruncateFileRequestType.File;
+            }
+            TruncateClick(request);
         }
     }
 }

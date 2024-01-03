@@ -244,10 +244,22 @@ namespace MyFtpClient
                             fcp.DeleteFile(request);
                         }
                         break;
+                    case "TRUNCATEFILE":
+                        {
+                            TruncateFileRequest request = (TruncateFileRequest)taskSession.Data;
+                            fcp.TruncateFile(request);
+                        }
+                        break;
                     case "DELETEFOLDER":
                         {
                             DeleteFileRequest request = (DeleteFileRequest)taskSession.Data;
                             fcp.DeleteFolder(request);
+                        }
+                        break;
+                    case "TRUNCATEFOLDER":
+                        {
+                            TruncateFileRequest request = (TruncateFileRequest)taskSession.Data;
+                            fcp.TruncateFolder(request);
                         }
                         break;
                     case "RESTOREFILE":
@@ -445,9 +457,21 @@ namespace MyFtpClient
             PushMainTaskSession(taskSession);
         }
 
+        public void TruncateFile(TruncateFileRequest sender)
+        {
+            TaskSession taskSession = new TaskSession("TRUNCATEFILE", sender);
+            PushMainTaskSession(taskSession);
+        }
+
         public void DeleteFolder(DeleteFileRequest request)
         {
             TaskSession taskSession = new TaskSession("DELETEFOLDER", request);
+            PushMainTaskSession(taskSession);
+        }
+
+        public void TruncateFolder(TruncateFileRequest sender)
+        {
+            TaskSession taskSession = new TaskSession("TRUNCATEFOLDER", sender);
             PushMainTaskSession(taskSession);
         }
 
