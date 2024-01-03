@@ -22,6 +22,7 @@ namespace MyFtpClient
         private List<TaskSession> _mainTaskSessions = new List<TaskSession>();
         private TcpSession[] subTcpSession = new TcpSession[2];
         private List<FileTransferProcessing> _subTaskSessions = new List<FileTransferProcessing>();
+        private long largeFileThreshold = (long)Math.Pow(2, 20) * 1024 * 2; // 5GB
         public FtpClient(string host, int port)
         {
             _host = host;
@@ -365,7 +366,16 @@ namespace MyFtpClient
                     case "STOR":
                         if (await fcp.CheckCanUploadAsync(request.RemotePath) == true)
                         {
-                            await fcp.SendFileAsync(request, tcpSessionClient);
+                            string localPath = request.LocalPath + "\\" + request.FileName;
+                            if (new FileInfo(localPath).Length > largeFileThreshold)
+                            {
+                                request.FileSize = new FileInfo(localPath).Length;
+                                request.Type = "EXPRESSUPLOAD";
+                                PushSubTaskSession(request);
+                            }
+                            else {
+                                await fcp.SendFileAsync(request, tcpSessionClient);
+                            }
                         }
                         else
                         {
@@ -374,13 +384,13 @@ namespace MyFtpClient
                         }
                         break;
                     case "EXPRESSUPLOAD":
-                        //await fcp.ExpressSendFile(request, tcpSessionClient);
+                        await fcp.ExpressSendFile(request, tcpSessionClient);
                         break;
                     case "RETR":
                         await fcp.ReceiveFileAsync(request, tcpSessionClient);
                         break;
                     case "EXPRESSDOWNLOAD":
-                        //await fcp.ExpressReceiveFile(request, tcpSessionClient);
+                        await fcp.ExpressReceiveFile(request, tcpSessionClient);
                         break;
                     default:
                         break;

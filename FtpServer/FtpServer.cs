@@ -25,6 +25,7 @@ namespace MyFtpServer
         private bool _isRunning = false;
         private string _rootPath = @"D:\FileServer";
         int _sessionID = 2;
+        private long largeFileThreshold = (long)Math.Pow(2, 20) * 1024 * 2; // 5GB
         List<ClientConnection> _connections = new List<ClientConnection>();
 
         public FtpServer(string host, int port, string rootPath, CommandReceivedHandler commandReceived)
@@ -410,6 +411,15 @@ namespace MyFtpServer
                         clientConnection.DataClient = data_channel;
                         FileServerProcessing processing = new FileServerProcessing(data_channel);
 
+                        if (new FileInfo(fullPath).Length > largeFileThreshold)
+                        {
+                            writer.WriteLine($"213 File very large");
+                            ResponseStatus(sessionID, $"213 File very large");
+                            if (tcpListener != null)
+                                tcpListener.Stop();
+                            continue;
+                        }
+
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, $"150 Opening data connection");
 
@@ -503,8 +513,24 @@ namespace MyFtpServer
                     }
                     else if (command == "EXPRESSUPLOAD")
                     {
-                        string filePath = string.Join(" ", parts, 1, parts.Length - 1);
-                        string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
+                        FileStorageDAL dal = new FileStorageDAL();
+                        if (dal.IsDirectory(remoteFolderPath) == false)
+                        {
+                            writer.WriteLine("550 Couldn't open the file or directory");
+                            ResponseStatus(sessionID, $"550 Couldn't open the file or directory");
+                            continue;
+                        }
+
+                        string fileName = string.Join(" ", parts, 1, parts.Length - 1);
+                        File? createFile = dal.CreateNewFile(idAccount, remoteFolderPath, fileName);
+                        if (createFile == null)
+                        {
+                            writer.WriteLine("550 Couldn't create the file or directory");
+                            ResponseStatus(sessionID, $"550 Couldn't create the file or directory");
+                            continue;
+                        }
+
+                        string fullPath = _rootPath + createFile.FilePath;
 
                         if (tcpListener == null)
                             continue;
@@ -515,7 +541,29 @@ namespace MyFtpServer
                         long length = long.Parse(reader.ReadLine() ?? "0");
 
                         FileServerExpressProcessing processing = new FileServerExpressProcessing(tcpListener, fullPath, length);
-                        processing.ReceiveExpressFile();
+                        try
+                        {
+                            processing.ReceiveExpressFile();
+                        } catch (Exception ex)
+                        {
+                            await dal.TruncateFile(idAccount, createFile.Id, _rootPath);
+                            if (ex.Message == "File is exist")
+                            {
+                                writer.WriteLine("550 File is exist");
+                                ResponseStatus(sessionID, $"550 File is exist");
+                            }
+                            else if (ex.Message == "Can't create path")
+                            {
+                                writer.WriteLine("Can't create path");
+                                ResponseStatus(sessionID, $"Can't create path");
+                            }
+                            else if (ex.Message == "Can't transfer data")
+                            {
+                                writer.WriteLine("Can't transfer data");
+                                ResponseStatus(sessionID, $"Can't transfer data");
+                            }
+                            continue;
+                        }
 
                         writer.WriteLine("226 Transfer complete");
                         ResponseStatus(sessionID, $"226 Transfer complete");
@@ -524,8 +572,9 @@ namespace MyFtpServer
                     }
                     else if (command == "EXPRESSDOWNLOAD")
                     {
-                        string filePath = string.Join(" ", parts, 1, parts.Length - 1);
-                        string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
+                        FileStorageDAL dal = new FileStorageDAL();
+                        string fullPath = _rootPath + dal.GetFilePath(remoteFolderPath);
+
                         if (!System.IO.File.Exists(fullPath))
                         {
                             writer.WriteLine("550 File not exist");
@@ -546,12 +595,10 @@ namespace MyFtpServer
                         command = reader.ReadLine() ?? "550";
                         if (command.StartsWith("226"))
                         {
-                            writer.WriteLine("226 Transfer complete");
                             ResponseStatus(sessionID, $"226 Transfer complete");
                         }
                         else
                         {
-                            writer.WriteLine("550 Transfer error");
                             ResponseStatus(sessionID, $"550 Transfer error");
                         }
 
