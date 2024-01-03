@@ -333,6 +333,10 @@ namespace MyFtpClient
                             {
                                 dataChannel.Close();
                             }
+                        } else if (response.StartsWith("213 "))
+                        {
+                            processing.Type = "EXPRESSDOWNLOAD";
+                            transferRequest(processing);
                         }
                     }
                 }
@@ -343,67 +347,67 @@ namespace MyFtpClient
         }
 
 
-        public void ExpressReceiveFile(FileTransferProcessing request, TcpClient tcpSessionClient)
+        public async Task ExpressReceiveFile(FileTransferProcessing request, TcpClient tcpSessionClient)
         {
             StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
             StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
             string command, response;
             command = string.Format("CWD {0}", request.RemotePath);
-            streamWriter.WriteLine(command);
+            await streamWriter.WriteLineAsync(command);
             response = streamReader.ReadLine() ?? "";
             if (response.StartsWith("250 "))
             {
                 command = "PASV";
-                streamWriter.WriteLine(command);
-                response = streamReader.ReadLine() ?? "";
+                await streamWriter.WriteLineAsync(command);
+                response = await streamReader.ReadLineAsync() ?? "";
                 if (response.StartsWith("227 ") == true)
                 {
                     IPEndPoint server_data_endpoint = GetServerEndpoint(response);
 
                     command = string.Format("EXPRESSDOWNLOAD {0}", request.FileName);
-                    streamWriter.WriteLine(command);
+                    await streamWriter.WriteLineAsync(command);
 
                     long fileSize = long.Parse(streamReader.ReadLine() ?? "0");
 
-                    response = streamReader.ReadLine() ?? "";
+                    response = await streamReader.ReadLineAsync() ?? "";
                     if (response.StartsWith("150 "))
                     {
                         DataExpressTransferClient fileClientExpressProcessing = new DataExpressTransferClient(server_data_endpoint, request.LocalPath + "\\" + request.FileName, fileSize, TransferProgressHandler, request);
                         fileClientExpressProcessing.ExpressReceiveFile();
 
                         command = "226 Transfer complete";
-                        streamWriter.WriteLine(command);
+                        await streamWriter.WriteLineAsync(command);
                         request.Status = FileTransferProcessingStatus.Completed;
-                        progress(request);
+                        TransferProgressHandler(request);
                     }
                 }
             }
         }
 
-        public void ExpressSendFile(FileTransferProcessing request, TcpClient tcpSessionClient)
+        public async Task ExpressSendFile(FileTransferProcessing request, TcpClient tcpSessionClient)
         {
             StreamWriter streamWriter = new StreamWriter(tcpSessionClient.GetStream()) { AutoFlush = true };
             StreamReader streamReader = new StreamReader(tcpSessionClient.GetStream());
             string command, response;
             command = string.Format("CWD {0}", request.RemotePath);
-            streamWriter.WriteLine(command);
-            response = streamReader.ReadLine() ?? "";
+            await streamWriter.WriteLineAsync(command);
+            response = await streamReader.ReadLineAsync() ?? "";
             if (response.StartsWith("250 "))
             {
                 command = "PASV";
-                streamWriter.WriteLine(command);
-                response = streamReader.ReadLine() ?? "";
+                await streamWriter.WriteLineAsync(command);
+                response = await streamReader.ReadLineAsync() ?? "";
                 if (response.StartsWith("227 ") == true)
                 {
                     IPEndPoint server_data_endpoint = GetServerEndpoint(response);
 
                     command = string.Format("EXPRESSUPLOAD {0}", request.FileName);
-                    streamWriter.WriteLine(command);
-                    response = streamReader.ReadLine() ?? "";
+                    await streamWriter.WriteLineAsync(command);
+                    response = await streamReader.ReadLineAsync() ?? "";
                     if (response.StartsWith("150 "))
                     {
                         long fileSize = new FileInfo(request.LocalPath + @"\" + request.FileName).Length;
-                        streamWriter.WriteLine(fileSize);
+                        await streamWriter.WriteLineAsync(fileSize.ToString());
 
                         DataExpressTransferClient fileClientExpressProcessing = new DataExpressTransferClient(server_data_endpoint, request.LocalPath + @"\" + request.FileName, fileSize, TransferProgressHandler, request);
                         fileClientExpressProcessing.ExpressSendFile();
@@ -411,8 +415,8 @@ namespace MyFtpClient
                         response = streamReader.ReadLine() ?? "";
                         if (response.StartsWith("226 "))
                         {
-                            //Console.WriteLine("Upload file success!");
-                            //data_channel.Close();
+                            request.Status = FileTransferProcessingStatus.Completed;
+                            TransferProgressHandler(request);
                         }
                     }
                 }

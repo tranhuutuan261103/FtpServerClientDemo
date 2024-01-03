@@ -14,7 +14,7 @@ namespace MyFtpClient
     {
         private IPEndPoint server_data_endpoint;
         private string _fullPath;
-        private int _maxBufferSize = (int)Math.Pow(2, 20) * 512;
+        private long _maxBufferSize = (int)Math.Pow(2, 20) * 1024;
         private long _fileSize;
         private long totalBytesRead = 0;
 
@@ -44,6 +44,11 @@ namespace MyFtpClient
             {
                 if (Processing != null)
                 {
+                    if (Processing.Status == FileTransferProcessingStatus.Completed ||
+                    Processing.Status == FileTransferProcessingStatus.Failed)
+                    {
+                        break;
+                    }
                     FileClientProcessingEvent(Processing);
                 }
                 Thread.Sleep(500);
@@ -52,11 +57,24 @@ namespace MyFtpClient
 
         public void ExpressSendFile()
         {
+            Processing.Status = FileTransferProcessingStatus.Uploading;
+            FileClientProcessingEvent(Processing);
             for (int i = 0; i < (int)Math.Ceiling((double)_fileSize / _maxBufferSize); i++)
             {
                 long currentBlock = i;
                 Thread thread = new Thread(() => HandleSendTransfer(currentBlock * _maxBufferSize, _maxBufferSize));
                 thread.Start();
+                Thread.Sleep(100);
+            }
+
+            while (true)
+            {
+                if (totalBytesRead == _fileSize)
+                {
+                    Processing.Status = FileTransferProcessingStatus.Merging;
+                    FileClientProcessingEvent(Processing);
+                    break;
+                }
                 Thread.Sleep(100);
             }
         }
@@ -81,6 +99,12 @@ namespace MyFtpClient
                     break;
 
                 i += bytesRead;
+
+                lock (_totalBytesReadLock)
+                {
+                    totalBytesRead += bytesRead;
+                    Processing.SetFileTransferSize(totalBytesRead);
+                }
             }
             fs.Close();
             ns.Close();
@@ -111,7 +135,11 @@ namespace MyFtpClient
                     Merger();
                     break;
                 }
+                Thread.Sleep(100);
             }
+
+            Processing.Status = FileTransferProcessingStatus.Completed;
+            FileClientProcessingEvent(Processing);
         }
 
         private void HandleReceiveTransfer()
