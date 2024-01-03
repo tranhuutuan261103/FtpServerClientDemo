@@ -47,6 +47,7 @@
             guna2CMStrip_Deleted = new Guna.UI2.WinForms.Guna2ContextMenuStrip();
             informationToolStripMenuItem = new ToolStripMenuItem();
             ToolStripMenuItem_Restore = new ToolStripMenuItem();
+            ToolStripMenuItem_Truncate = new ToolStripMenuItem();
             guna2CMStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox_Folder).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox_File).BeginInit();
@@ -190,7 +191,7 @@
             // guna2CMStrip_Deleted
             // 
             guna2CMStrip_Deleted.ImageScalingSize = new Size(20, 20);
-            guna2CMStrip_Deleted.Items.AddRange(new ToolStripItem[] { informationToolStripMenuItem, ToolStripMenuItem_Restore });
+            guna2CMStrip_Deleted.Items.AddRange(new ToolStripItem[] { informationToolStripMenuItem, ToolStripMenuItem_Restore, ToolStripMenuItem_Truncate });
             guna2CMStrip_Deleted.Name = "ToolStripMenuItem_Restore";
             guna2CMStrip_Deleted.RenderStyle.ArrowColor = Color.FromArgb(151, 143, 255);
             guna2CMStrip_Deleted.RenderStyle.BorderColor = Color.Gainsboro;
@@ -201,13 +202,13 @@
             guna2CMStrip_Deleted.RenderStyle.SelectionForeColor = Color.White;
             guna2CMStrip_Deleted.RenderStyle.SeparatorColor = Color.Gainsboro;
             guna2CMStrip_Deleted.RenderStyle.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
-            guna2CMStrip_Deleted.Size = new Size(157, 88);
+            guna2CMStrip_Deleted.Size = new Size(211, 158);
             // 
             // informationToolStripMenuItem
             // 
             informationToolStripMenuItem.Name = "informationToolStripMenuItem";
             informationToolStripMenuItem.Padding = new Padding(0, 10, 0, 10);
-            informationToolStripMenuItem.Size = new Size(156, 42);
+            informationToolStripMenuItem.Size = new Size(210, 42);
             informationToolStripMenuItem.Text = "Information";
             informationToolStripMenuItem.Click += ToolStripMenuItem_Information_Click;
             // 
@@ -215,9 +216,17 @@
             // 
             ToolStripMenuItem_Restore.Name = "ToolStripMenuItem_Restore";
             ToolStripMenuItem_Restore.Padding = new Padding(0, 10, 0, 10);
-            ToolStripMenuItem_Restore.Size = new Size(156, 42);
+            ToolStripMenuItem_Restore.Size = new Size(210, 42);
             ToolStripMenuItem_Restore.Text = "Restore";
             ToolStripMenuItem_Restore.Click += ToolStripMenuItem_Restore_Click;
+            // 
+            // ToolStripMenuItem_Truncate
+            // 
+            ToolStripMenuItem_Truncate.Name = "ToolStripMenuItem_Truncate";
+            ToolStripMenuItem_Truncate.Padding = new Padding(0, 10, 0, 10);
+            ToolStripMenuItem_Truncate.Size = new Size(210, 42);
+            ToolStripMenuItem_Truncate.Text = "Truncate";
+            ToolStripMenuItem_Truncate.Click += ToolStripMenuItem_Truncate_Click;
             // 
             // FileControl
             // 
@@ -260,5 +269,6 @@
         private Guna.UI2.WinForms.Guna2ContextMenuStrip guna2CMStrip_Deleted;
         private ToolStripMenuItem informationToolStripMenuItem;
         private ToolStripMenuItem ToolStripMenuItem_Restore;
+        private ToolStripMenuItem ToolStripMenuItem_Truncate;
     }
 }

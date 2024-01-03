@@ -54,8 +54,15 @@ namespace ServerApp
             _rootPath = txt_rootPath.Text;
             try
             {
-                _ftpServer = new FtpServer(_serverIp, _serverPort, _rootPath, CommandReceivedHandler);
-                Thread thread = new Thread(new ThreadStart(_ftpServer.Start));
+                if (_ftpServer == null)
+                {
+                    _ftpServer = new FtpServer(_serverIp, _serverPort, _rootPath, CommandReceivedHandler);
+                } else
+                {
+                    _ftpServer.SetConfiguration(_serverIp, _serverPort, _rootPath);
+                }
+                
+                Thread thread = new Thread(new ThreadStart(_ftpServer.ServerStart));
                 thread.Start();
                 Thread threadConnection = new Thread(HandleListConnections);
                 threadConnection.Start();
@@ -74,7 +81,6 @@ namespace ServerApp
         private void StopServer()
         {
             _ftpServer.Stop();
-            _ftpServer = null;
             btn_Start.Text = "Start";
             txt_IP.Enabled = true;
             txt_Port.Enabled = true;
@@ -116,7 +122,8 @@ namespace ServerApp
                     }
                     Thread.Sleep(2000);
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
@@ -150,7 +157,8 @@ namespace ServerApp
                         }
                     }
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -176,13 +184,17 @@ namespace ServerApp
         {
             AccountDAL accountDAL = new AccountDAL();
             List<AccountInfoVM> accountInfoVMs = accountDAL.GetAccounts(_rootPath);
-            lock(_lock)
+            lock (_lock)
             {
                 flowLayoutPanel_Account.Controls.Clear();
                 foreach (AccountInfoVM accountInfoVM in accountInfoVMs)
                 {
                     AccountControl ac = new AccountControl(accountInfoVM, 0);
                     flowLayoutPanel_Account.Controls.Add(ac);
+                    if (accountInfoVM.IsDeleted == true)
+                    {
+                        _ftpServer.Disconnect(accountInfoVM.Id);
+                    }
                 }
             }
         }
@@ -292,7 +304,7 @@ namespace ServerApp
                 return;
             }
             AccountDAL dal = new AccountDAL();
-            foreach(var item in list)
+            foreach (var item in list)
             {
                 if (dal.DeleteAccount(item.Id) == true)
                 {

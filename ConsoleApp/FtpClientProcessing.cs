@@ -139,12 +139,48 @@ namespace MyFtpClient
             }
         }
 
+        public void TruncateFile(TruncateFileRequest request)
+        {
+            try
+            {
+                string Command, Response;
+                Command = string.Format("TRUNCATEFILE {0}", request.Id);
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("250 ") == true)
+                {
+                    return;
+                }
+            } catch (Exception)
+            {
+                throw new Exception("Disconnected");
+            }
+        }
+
         public void DeleteFolder(DeleteFileRequest request)
         {
             try
             {
                 string Command, Response;
                 Command = string.Format("RMD {0}", request.Id);
+                _writer.WriteLine(Command);
+                Response = _reader.ReadLine() ?? "";
+                if (Response.StartsWith("250 ") == true)
+                {
+                    return;
+                }
+            } catch (Exception)
+            {
+                throw new Exception("Disconnected");
+            }
+        }
+
+        public void TruncateFolder(TruncateFileRequest request)
+        {
+            try
+            {
+                string Command, Response;
+                Command = string.Format("TRUNCATEFOLDER {0}", request.Id);
                 _writer.WriteLine(Command);
                 Response = _reader.ReadLine() ?? "";
                 if (Response.StartsWith("250 ") == true)

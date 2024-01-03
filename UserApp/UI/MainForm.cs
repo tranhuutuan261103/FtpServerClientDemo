@@ -168,7 +168,7 @@ namespace UserApp.UI
                     {
                         grid_FileAndFolder.BeginInvoke((MethodInvoker)delegate
                         {
-                            grid_FileAndFolder.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, RestoreFileHandler));
+                            grid_FileAndFolder.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, TruncateFileHandler , RestoreFileHandler));
                         });
                     }
                 }
@@ -216,7 +216,7 @@ namespace UserApp.UI
                     {
                         grid_ListFileAndFolderShared.BeginInvoke((MethodInvoker)delegate
                         {
-                            grid_ListFileAndFolderShared.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, RestoreFileHandler));
+                            grid_ListFileAndFolderShared.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, TruncateFileHandler, RestoreFileHandler));
                         });
                     }
                 }
@@ -236,7 +236,7 @@ namespace UserApp.UI
                     {
                         grid_ListFileAndFolderDeleted.BeginInvoke((MethodInvoker)delegate
                         {
-                            grid_ListFileAndFolderDeleted.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, RestoreFileHandler));
+                            grid_ListFileAndFolderDeleted.Controls.Add(new FileControl(item, fileInforPackage.Category, FileControlHandle, ShowDetailFile, RenameFileHandler, DeleteFileHandler, TruncateFileHandler, RestoreFileHandler));
                         });
                     }
                 }
@@ -270,11 +270,28 @@ namespace UserApp.UI
                 if (request.fileInfor.IsDirectory == false)
                 {
                     MainForm_BLL.Download(request.fileInfor);
+                    TryShowTransferProgressContainer();
                 }
                 else if (request.fileInfor.IsDirectory == true)
                 {
                     MainForm_BLL.DownloadFolder(request.fileInfor);
+                    TryShowTransferProgressContainer();
                 }
+            }
+        }
+
+        private void TryShowTransferProgressContainer()
+        {
+            try
+            {
+                if (flowLayoutPanel_ListProcessing != null && flowLayoutPanel_ListProcessing.Visible == false)
+                {
+                    flowLayoutPanel_ListProcessing.Visible = true;
+                }
+            } 
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
 
@@ -397,6 +414,18 @@ namespace UserApp.UI
             }
         }
 
+        private void TruncateFileHandler(TruncateFileRequest sender)
+        {
+            if (sender.RequestType == TruncateFileRequestType.File)
+            {
+                MainForm_BLL.TruncateFile(sender);
+            }
+            else if (sender.RequestType == TruncateFileRequestType.Folder)
+            {
+                MainForm_BLL.TruncateFolder(sender);
+            }
+        }
+
         private void btn_Upload_Click(object sender, EventArgs e)
         {
             guna2ContextMenuStrip_btnNew.Show(this, this.PointToClient(MousePosition));
@@ -408,6 +437,7 @@ namespace UserApp.UI
             if (oFD.ShowDialog() == DialogResult.OK)
             {
                 MainForm_BLL.Upload(oFD.FileName);
+                TryShowTransferProgressContainer();
             }
         }
 
@@ -417,6 +447,7 @@ namespace UserApp.UI
             if (fBD.ShowDialog() == DialogResult.OK)
             {
                 MainForm_BLL.UploadFolder(fBD.SelectedPath);
+                TryShowTransferProgressContainer();
             }
         }
 
@@ -532,8 +563,11 @@ namespace UserApp.UI
                 // Nén ảnh và giữ dung lượng dưới 500 KB
                 byte[] compressedImageData = ImageHelper.CompressImage(pic_Avatar.Image, 50);
 
-                // Gán ảnh nén vào thông tin tài khoản
-                accountInfo.Avatar = compressedImageData.ToList();
+                if (compressedImageData != null && compressedImageData.Length != 0)
+                {
+                    // Gán ảnh nén vào thông tin tài khoản
+                    accountInfo.Avatar = compressedImageData.ToList();
+                }
             }
 
             MainForm_BLL.UpdateAccountInfor(accountInfo);

@@ -13,6 +13,7 @@ using System.Reflection.PortableExecutable;
 using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
+using File = MyFtpServer.DAL.Entities.File;
 
 namespace MyFtpServer
 {
@@ -22,7 +23,7 @@ namespace MyFtpServer
         private int _port;
         private TcpListener _controlSocket;
         private bool _isRunning = false;
-        private readonly string _rootPath = @"D:\FileServer";
+        private string _rootPath = @"D:\FileServer";
         int _sessionID = 2;
         List<ClientConnection> _connections = new List<ClientConnection>();
 
@@ -37,9 +38,20 @@ namespace MyFtpServer
                 _rootPath = rootPath;
                 CommandReceived += commandReceived;
                 _controlSocket = new TcpListener(IPAddress.Parse(_host), _port);
-                _controlSocket.Start();
-                _isRunning = true;
                 _passivePort = 30000;
+            } catch (Exception ex)
+            {
+                throw new Exception("FTP Server error: " + ex.Message);
+            }
+        }
+
+        public void SetConfiguration(string host, int port, string rootPath)
+        {
+            try {
+                _host = host;
+                _port = port;
+                _rootPath = rootPath;
+                _controlSocket = new TcpListener(IPAddress.Parse(_host), _port);
             } catch (Exception ex)
             {
                 throw new Exception("FTP Server error: " + ex.Message);
@@ -55,11 +67,21 @@ namespace MyFtpServer
             }
         }
 
-        public void Start()
+        public List<ClientConnection> GetConnectedClients(int accountId)
         {
-            ResponseStatus(0, $"FTP Server already start at {_host}:{_port}");
+            lock (_lock)
+            {
+                return new List<ClientConnection>(_connections.Where(c => c.IdAccount == accountId));
+            }
+        }
+
+        public void ServerStart()
+        {
             try
             {
+                _controlSocket.Start();
+                _isRunning = true;
+                ResponseStatus(0, $"FTP Server already start at {_host}:{_port}");
                 while (_isRunning)
                 {
                     TcpClient client = _controlSocket.AcceptTcpClient();
@@ -76,7 +98,7 @@ namespace MyFtpServer
             }
         }
 
-        private void HandleClient(object? clientConnectionPar)
+        private async void HandleClient(object? clientConnectionPar)
         {
             if (clientConnectionPar == null)
                 return;
@@ -233,6 +255,20 @@ namespace MyFtpServer
                         }
                         writer.WriteLine($"250 {id}");
                         ResponseStatus(sessionID, $"250 File deleted");
+                    } else if (command == "TRUNCATEFILE")
+                    {
+                        string idFile = string.Join(" ", parts, 1, parts.Length - 1);
+                        FileStorageDAL dal = new FileStorageDAL();
+                        if (await dal.TruncateFile(idAccount, idFile, _rootPath) == true)
+                        {
+                            writer.WriteLine($"250 {idFile}");
+                            ResponseStatus(sessionID, $"250 File truncated");
+                        }
+                        else
+                        {
+                            writer.WriteLine("550 File not found");
+                            ResponseStatus(sessionID, $"550 File not found");
+                        }
                     }
                     else if (command == "RESTOREFILE")
                     {
@@ -262,6 +298,15 @@ namespace MyFtpServer
                             continue;
                         }
                         writer.WriteLine($"250 {id}");
+                    } else if (command == "TRUNCATEFOLDER")
+                    {
+                        string idFolder = string.Join(" ", parts, 1, parts.Length - 1);
+
+                        FileStorageDAL dal = new FileStorageDAL();
+                        await dal.TruncateFolder(idAccount, idFolder, _rootPath);
+                        
+                        writer.WriteLine("250 Delete successful");
+                        ResponseStatus(sessionID, $"250 Delete successful");
                     }
                     else if (command == "GETLISTFILEACCESS")
                     {
@@ -345,7 +390,7 @@ namespace MyFtpServer
                         FileStorageDAL dal = new FileStorageDAL();
                         string fullPath = _rootPath + dal.GetFilePath(remoteFolderPath);
 
-                        if (!File.Exists(fullPath))
+                        if (!System.IO.File.Exists(fullPath))
                         {
                             writer.WriteLine("550 File not exist");
                             ResponseStatus(sessionID, "550 File not exist");
@@ -403,7 +448,14 @@ namespace MyFtpServer
                         }
 
                         string fileName = string.Join(" ", parts, 1, parts.Length - 1);
-                        string fullPath = _rootPath + dal.CreateNewFile(idAccount, remoteFolderPath, fileName);
+                        File? createFile = dal.CreateNewFile(idAccount, remoteFolderPath, fileName);
+                        if (createFile == null)
+                        {
+                            writer.WriteLine("550 Couldn't create the file or directory");
+                            ResponseStatus(sessionID, $"550 Couldn't create the file or directory");
+                            continue;
+                        }
+                        string fullPath = _rootPath + createFile.FilePath;
 
                         if (tcpListener == null)
                             continue;
@@ -420,10 +472,32 @@ namespace MyFtpServer
                         writer.WriteLine("150 Opening data connection");
                         ResponseStatus(sessionID, $"150 Opening data connection");
 
-                        processing.ReceiveFile(fullPath);
+                        try
+                        {
+                            processing.ReceiveFile(fullPath);
+                        } catch (Exception ex)
+                        {
+                            await dal.TruncateFile(idAccount, createFile.Id, _rootPath);
+                            if (ex.Message == "File is exist")
+                            {
+                                writer.WriteLine("550 File is exist");
+                                ResponseStatus(sessionID, $"550 File is exist");
+                            } else if (ex.Message == "Can't create path")
+                            {
+                                writer.WriteLine("Can't create path");
+                                ResponseStatus(sessionID, $"Can't create path");
+                            }
+                            else if (ex.Message == "Can't transfer data")
+                            {
+                                writer.WriteLine("Can't transfer data");
+                                ResponseStatus(sessionID, $"Can't transfer data");
+                            }
+                            continue;
+                        }
 
                         writer.WriteLine("226 Transfer complete");
                         ResponseStatus(sessionID, $"226 Transfer complete");
+
                         if (tcpListener != null)
                             tcpListener.Stop();
                     }
@@ -452,7 +526,7 @@ namespace MyFtpServer
                     {
                         string filePath = string.Join(" ", parts, 1, parts.Length - 1);
                         string fullPath = _rootPath + remoteFolderPath + @"\" + filePath;
-                        if (!File.Exists(fullPath))
+                        if (!System.IO.File.Exists(fullPath))
                         {
                             writer.WriteLine("550 File not exist");
                             ResponseStatus(sessionID, "550 File not exist");
@@ -702,6 +776,19 @@ namespace MyFtpServer
             _controlSocket.Stop();
             _connections.ForEach(c => c.Close());
             _connections.Clear();
+        }
+
+        public void Disconnect(int id)
+        {
+            var connections = _connections.Where(c => c.IdAccount == id);
+            if (connections != null)
+            {
+                foreach (var item in connections)
+                {
+                    item.Close();
+                    connections.ToList().Remove(item);
+                }
+            }
         }
     }
 }

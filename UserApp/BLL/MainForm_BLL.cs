@@ -66,10 +66,21 @@ namespace UserApp.BLL
             ftpClient.DeleteFile(sender);
         }
 
+        public void TruncateFile(TruncateFileRequest sender)
+        {
+            ftpClient.TruncateFile(sender);
+        }
+
         public void DeleteFolder(DeleteFileRequest sender)
         {
             ftpClient.DeleteFolder(sender);
         }
+
+        public void TruncateFolder(TruncateFileRequest sender)
+        {
+            ftpClient.TruncateFolder(sender);
+        }
+
         public void Download(FileInfor fileInfor)
         {
             ftpClient.Download(fileInfor.Id, fileManager.GetCurrentPath(), fileInfor.Name);

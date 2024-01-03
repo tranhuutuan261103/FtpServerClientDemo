@@ -178,17 +178,17 @@
             txt_Email.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
             txt_Email.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txt_Email.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
-            txt_Email.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            txt_Email.Font = new Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point);
             txt_Email.ForeColor = Color.Black;
             txt_Email.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
             txt_Email.Location = new Point(12, 42);
-            txt_Email.Margin = new Padding(4, 6, 4, 6);
+            txt_Email.Margin = new Padding(4, 7, 4, 7);
             txt_Email.Name = "txt_Email";
             txt_Email.PasswordChar = '\0';
-            txt_Email.PlaceholderText = "";
+            txt_Email.PlaceholderText = "Email infor you want to share";
             txt_Email.SelectedText = "";
             txt_Email.ShadowDecoration.CustomizableEdges = customizableEdges4;
-            txt_Email.Size = new Size(251, 41);
+            txt_Email.Size = new Size(250, 41);
             txt_Email.TabIndex = 13;
             // 
             // lbl_AccessAbility
@@ -256,6 +256,7 @@
             Controls.Add(lbl_Owner);
             Controls.Add(lbl_Name);
             Controls.Add(flowLayoutPanel_ListProfile);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "DetailFileForm";
             StartPosition = FormStartPosition.CenterParent;

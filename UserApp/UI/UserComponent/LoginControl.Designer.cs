@@ -63,6 +63,7 @@
             txt_Email.ShadowDecoration.CustomizableEdges = customizableEdges2;
             txt_Email.Size = new Size(280, 50);
             txt_Email.TabIndex = 0;
+            txt_Email.KeyPress += LoginControl_KeyPress;
             // 
             // txt_Password
             // 
@@ -86,6 +87,7 @@
             txt_Password.Size = new Size(280, 50);
             txt_Password.TabIndex = 1;
             txt_Password.UseSystemPasswordChar = true;
+            txt_Password.KeyPress += LoginControl_KeyPress;
             // 
             // btn_Submit
             // 

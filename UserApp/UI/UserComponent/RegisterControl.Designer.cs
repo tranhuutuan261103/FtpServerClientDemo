@@ -95,6 +95,7 @@
             txt_Email.ShadowDecoration.CustomizableEdges = customizableEdges4;
             txt_Email.Size = new Size(280, 40);
             txt_Email.TabIndex = 3;
+            txt_Email.KeyPress += RegisterControl_KeyPress;
             // 
             // txt_Password
             // 
@@ -118,6 +119,7 @@
             txt_Password.Size = new Size(280, 40);
             txt_Password.TabIndex = 5;
             txt_Password.UseSystemPasswordChar = true;
+            txt_Password.KeyPress += RegisterControl_KeyPress;
             // 
             // txt_ConfirmPassword
             // 
@@ -141,6 +143,7 @@
             txt_ConfirmPassword.Size = new Size(280, 40);
             txt_ConfirmPassword.TabIndex = 6;
             txt_ConfirmPassword.UseSystemPasswordChar = true;
+            txt_ConfirmPassword.KeyPress += RegisterControl_KeyPress;
             // 
             // guna2HtmlLabel1
             // 
@@ -182,6 +185,7 @@
             txt_FirstName.ShadowDecoration.CustomizableEdges = customizableEdges10;
             txt_FirstName.Size = new Size(130, 40);
             txt_FirstName.TabIndex = 1;
+            txt_FirstName.KeyPress += RegisterControl_KeyPress;
             // 
             // txt_LastName
             // 
@@ -204,6 +208,7 @@
             txt_LastName.ShadowDecoration.CustomizableEdges = customizableEdges12;
             txt_LastName.Size = new Size(130, 40);
             txt_LastName.TabIndex = 2;
+            txt_LastName.KeyPress += RegisterControl_KeyPress;
             // 
             // txt_OTP
             // 
@@ -226,7 +231,7 @@
             txt_OTP.ShadowDecoration.CustomizableEdges = customizableEdges14;
             txt_OTP.Size = new Size(140, 40);
             txt_OTP.TabIndex = 4;
-            txt_OTP.KeyPress += txt_OTP_KeyPress;
+            txt_OTP.KeyPress += RegisterControl_KeyPress;
             // 
             // btn_OTP
             // 

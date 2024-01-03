@@ -28,31 +28,31 @@
         /// </summary>
         private void InitializeComponent()
         {
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges1 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges4 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges5 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges6 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges8 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges9 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges10 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges11 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges12 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges13 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges14 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges15 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges16 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges17 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges18 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges19 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges20 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges21 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges22 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges23 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges24 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             txt_Email = new Guna.UI2.WinForms.Guna2TextBox();
             txt_OTP = new Guna.UI2.WinForms.Guna2TextBox();
             btn_OTP = new Guna.UI2.WinForms.Guna2Button();
             txt_NewPassword = new Guna.UI2.WinForms.Guna2TextBox();
             txt_ConfirmNewPassword = new Guna.UI2.WinForms.Guna2TextBox();
-            btb_Submit = new Guna.UI2.WinForms.Guna2Button();
+            btn_Submit = new Guna.UI2.WinForms.Guna2Button();
             guna2HtmlLabel1 = new Guna.UI2.WinForms.Guna2HtmlLabel();
             label_GoToLogin = new Guna.UI2.WinForms.Guna2HtmlLabel();
             SuspendLayout();
             // 
             // txt_Email
             // 
-            txt_Email.CustomizableEdges = customizableEdges1;
+            txt_Email.CustomizableEdges = customizableEdges13;
             txt_Email.DefaultText = "";
             txt_Email.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
             txt_Email.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
@@ -68,13 +68,14 @@
             txt_Email.PasswordChar = '\0';
             txt_Email.PlaceholderText = "Email";
             txt_Email.SelectedText = "";
-            txt_Email.ShadowDecoration.CustomizableEdges = customizableEdges2;
+            txt_Email.ShadowDecoration.CustomizableEdges = customizableEdges14;
             txt_Email.Size = new Size(280, 40);
             txt_Email.TabIndex = 0;
+            txt_Email.KeyPress += ResetPasswordControl_KeyPress;
             // 
             // txt_OTP
             // 
-            txt_OTP.CustomizableEdges = customizableEdges3;
+            txt_OTP.CustomizableEdges = customizableEdges15;
             txt_OTP.DefaultText = "";
             txt_OTP.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
             txt_OTP.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
@@ -88,16 +89,16 @@
             txt_OTP.Margin = new Padding(3, 4, 3, 4);
             txt_OTP.Name = "txt_OTP";
             txt_OTP.PasswordChar = '\0';
-            txt_OTP.PlaceholderText = "Mã OTP";
+            txt_OTP.PlaceholderText = "OTP code";
             txt_OTP.SelectedText = "";
-            txt_OTP.ShadowDecoration.CustomizableEdges = customizableEdges4;
+            txt_OTP.ShadowDecoration.CustomizableEdges = customizableEdges16;
             txt_OTP.Size = new Size(140, 40);
             txt_OTP.TabIndex = 1;
-            txt_OTP.KeyPress += txt_OTP_KeyPress;
+            txt_OTP.KeyPress += ResetPasswordControl_KeyPress;
             // 
             // btn_OTP
             // 
-            btn_OTP.CustomizableEdges = customizableEdges5;
+            btn_OTP.CustomizableEdges = customizableEdges17;
             btn_OTP.DisabledState.BorderColor = Color.DarkGray;
             btn_OTP.DisabledState.CustomBorderColor = Color.DarkGray;
             btn_OTP.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -106,15 +107,15 @@
             btn_OTP.ForeColor = Color.White;
             btn_OTP.Location = new Point(225, 100);
             btn_OTP.Name = "btn_OTP";
-            btn_OTP.ShadowDecoration.CustomizableEdges = customizableEdges6;
+            btn_OTP.ShadowDecoration.CustomizableEdges = customizableEdges18;
             btn_OTP.Size = new Size(125, 40);
             btn_OTP.TabIndex = 2;
-            btn_OTP.Text = "Gửi OTP";
+            btn_OTP.Text = "Send OTP";
             btn_OTP.Click += btn_OTP_Click;
             // 
             // txt_NewPassword
             // 
-            txt_NewPassword.CustomizableEdges = customizableEdges7;
+            txt_NewPassword.CustomizableEdges = customizableEdges19;
             txt_NewPassword.DefaultText = "";
             txt_NewPassword.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
             txt_NewPassword.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
@@ -130,14 +131,15 @@
             txt_NewPassword.PasswordChar = '●';
             txt_NewPassword.PlaceholderText = "New password";
             txt_NewPassword.SelectedText = "";
-            txt_NewPassword.ShadowDecoration.CustomizableEdges = customizableEdges8;
+            txt_NewPassword.ShadowDecoration.CustomizableEdges = customizableEdges20;
             txt_NewPassword.Size = new Size(280, 40);
             txt_NewPassword.TabIndex = 3;
             txt_NewPassword.UseSystemPasswordChar = true;
+            txt_NewPassword.KeyPress += ResetPasswordControl_KeyPress;
             // 
             // txt_ConfirmNewPassword
             // 
-            txt_ConfirmNewPassword.CustomizableEdges = customizableEdges9;
+            txt_ConfirmNewPassword.CustomizableEdges = customizableEdges21;
             txt_ConfirmNewPassword.DefaultText = "";
             txt_ConfirmNewPassword.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
             txt_ConfirmNewPassword.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
@@ -153,28 +155,29 @@
             txt_ConfirmNewPassword.PasswordChar = '●';
             txt_ConfirmNewPassword.PlaceholderText = "Confirm new password";
             txt_ConfirmNewPassword.SelectedText = "";
-            txt_ConfirmNewPassword.ShadowDecoration.CustomizableEdges = customizableEdges10;
+            txt_ConfirmNewPassword.ShadowDecoration.CustomizableEdges = customizableEdges22;
             txt_ConfirmNewPassword.Size = new Size(280, 40);
             txt_ConfirmNewPassword.TabIndex = 4;
             txt_ConfirmNewPassword.UseSystemPasswordChar = true;
+            txt_ConfirmNewPassword.KeyPress += ResetPasswordControl_KeyPress;
             // 
-            // btb_Submit
+            // btn_Submit
             // 
-            btb_Submit.BorderRadius = 25;
-            btb_Submit.CustomizableEdges = customizableEdges11;
-            btb_Submit.DisabledState.BorderColor = Color.DarkGray;
-            btb_Submit.DisabledState.CustomBorderColor = Color.DarkGray;
-            btb_Submit.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
-            btb_Submit.DisabledState.ForeColor = Color.FromArgb(141, 141, 141);
-            btb_Submit.Font = new Font("Segoe UI", 13.8F, FontStyle.Regular, GraphicsUnit.Point);
-            btb_Submit.ForeColor = Color.White;
-            btb_Submit.Location = new Point(70, 300);
-            btb_Submit.Name = "btb_Submit";
-            btb_Submit.ShadowDecoration.CustomizableEdges = customizableEdges12;
-            btb_Submit.Size = new Size(280, 50);
-            btb_Submit.TabIndex = 5;
-            btb_Submit.Text = "Reset password";
-            btb_Submit.Click += btb_Submit_Click;
+            btn_Submit.BorderRadius = 25;
+            btn_Submit.CustomizableEdges = customizableEdges23;
+            btn_Submit.DisabledState.BorderColor = Color.DarkGray;
+            btn_Submit.DisabledState.CustomBorderColor = Color.DarkGray;
+            btn_Submit.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
+            btn_Submit.DisabledState.ForeColor = Color.FromArgb(141, 141, 141);
+            btn_Submit.Font = new Font("Segoe UI", 13.8F, FontStyle.Regular, GraphicsUnit.Point);
+            btn_Submit.ForeColor = Color.White;
+            btn_Submit.Location = new Point(70, 300);
+            btn_Submit.Name = "btn_Submit";
+            btn_Submit.ShadowDecoration.CustomizableEdges = customizableEdges24;
+            btn_Submit.Size = new Size(280, 50);
+            btn_Submit.TabIndex = 5;
+            btn_Submit.Text = "Reset password";
+            btn_Submit.Click += btb_Submit_Click;
             // 
             // guna2HtmlLabel1
             // 
@@ -201,7 +204,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(label_GoToLogin);
             Controls.Add(guna2HtmlLabel1);
-            Controls.Add(btb_Submit);
+            Controls.Add(btn_Submit);
             Controls.Add(txt_ConfirmNewPassword);
             Controls.Add(txt_NewPassword);
             Controls.Add(btn_OTP);
@@ -220,7 +223,7 @@
         private Guna.UI2.WinForms.Guna2Button btn_OTP;
         private Guna.UI2.WinForms.Guna2TextBox txt_NewPassword;
         private Guna.UI2.WinForms.Guna2TextBox txt_ConfirmNewPassword;
-        private Guna.UI2.WinForms.Guna2Button btb_Submit;
+        private Guna.UI2.WinForms.Guna2Button btn_Submit;
         private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel1;
         private Guna.UI2.WinForms.Guna2HtmlLabel label_GoToLogin;
     }

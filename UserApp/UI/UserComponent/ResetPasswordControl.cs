@@ -28,16 +28,35 @@ namespace UserApp.UI.UserComponent
             countdownTimer.Tick += CountdownTimer_Tick;
         }
 
+        public void ResetUI()
+        {
+            txt_Email.Text = "";
+            txt_Email.Focus();
+            txt_NewPassword.Text = "";
+            txt_ConfirmNewPassword.Text = "";
+            txt_OTP.Text = "";
+            btn_OTP.Enabled = true;
+            btn_Submit.Enabled = true;
+            btn_OTP.Text = "Send OTP";
+            countdownTimer.Stop();
+        }
+
         private void label_GoToLogin_Click(object sender, EventArgs e)
         {
             SetFormLoginInvoke();
         }
 
-        private void btb_Submit_Click(object sender, EventArgs e)
+        private void SubmitForm()
         {
             if (txt_Email.Text == "" || txt_NewPassword.Text == "")
             {
                 MessageBox.Show("Username or password is empty!");
+                return;
+            }
+
+            if (txt_NewPassword.Text.Length < 6)
+            {
+                MessageBox.Show("Password must be at least 6 characters!");
                 return;
             }
 
@@ -62,12 +81,9 @@ namespace UserApp.UI.UserComponent
             ResetPasswordInvoke(request);
         }
 
-        private void txt_OTP_KeyPress(object sender, KeyPressEventArgs e)
+        private void btb_Submit_Click(object sender, EventArgs e)
         {
-            if ((!char.IsDigit(e.KeyChar) || txt_OTP.Text.Length >= 6) && e.KeyChar != 8)
-            {
-                e.Handled = true;
-            }
+            SubmitForm();
         }
 
         // Handle OTP
@@ -128,6 +144,24 @@ namespace UserApp.UI.UserComponent
             else
             {
                 btn_OTP.Text = $"Resend ({remainingSeconds} s)";
+            }
+        }
+
+        private void ResetPasswordControl_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                e.Handled = true;
+                SubmitForm();
+            }
+
+            if (sender == txt_OTP)
+            {
+                if ((!char.IsDigit(e.KeyChar) || txt_OTP.Text.Length >= 6) && e.KeyChar != 8)
+                {
+                    e.Handled = true;
+                }
+                return;
             }
         }
     }
