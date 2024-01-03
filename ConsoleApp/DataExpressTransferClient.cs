@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using MyClassLibrary.Common;
+using MyClassLibrary;
 
 namespace MyFtpClient
 {
@@ -214,6 +215,11 @@ namespace MyFtpClient
             FileClientProcessingEvent(Processing);
 
             const int bufferSize = 1024 * 1024; // 1 MB buffer size
+
+            // Handle duplicate file path
+            FileManager fileManager1 = new FileManager();
+            _fullPath = fileManager1.HandleDuplicateFilePath(_fullPath);
+            Processing.FileName = FileManager.GetFileName(_fullPath);
 
             using (FileStream finalFileStream = new FileStream(_fullPath, FileMode.OpenOrCreate, FileAccess.Write))
             using (BinaryWriter bw = new BinaryWriter(finalFileStream))

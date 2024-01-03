@@ -25,7 +25,7 @@ namespace MyFtpServer
         private bool _isRunning = false;
         private string _rootPath = @"D:\FileServer";
         int _sessionID = 2;
-        private long largeFileThreshold = (long)Math.Pow(2, 20) * 1024 * 5; // 5GB
+        private long largeFileThreshold = (long)Math.Pow(2, 20) * 1024 * 2; // 5GB
         List<ClientConnection> _connections = new List<ClientConnection>();
 
         public FtpServer(string host, int port, string rootPath, CommandReceivedHandler commandReceived)
@@ -595,12 +595,10 @@ namespace MyFtpServer
                         command = reader.ReadLine() ?? "550";
                         if (command.StartsWith("226"))
                         {
-                            writer.WriteLine("226 Transfer complete");
                             ResponseStatus(sessionID, $"226 Transfer complete");
                         }
                         else
                         {
-                            writer.WriteLine("550 Transfer error");
                             ResponseStatus(sessionID, $"550 Transfer error");
                         }
 

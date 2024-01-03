@@ -38,6 +38,7 @@ namespace MyFtpServer
                         Merger();
                         break;
                     }
+                    Thread.Sleep(100);
                 }
                 else
                 {
