@@ -656,6 +656,9 @@ namespace MyFtpServer.DAL
                         {
                             return "";
                         }
+                    } else
+                    {
+                        return "";
                     }
                 }
                 var file = db.Files.FirstOrDefault(f => f.Id == fileId);

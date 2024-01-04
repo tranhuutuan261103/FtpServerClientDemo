@@ -22,7 +22,7 @@ namespace MyFtpClient
         private List<TaskSession> _mainTaskSessions = new List<TaskSession>();
         private TcpSession[] subTcpSession = new TcpSession[2];
         private List<FileTransferProcessing> _subTaskSessions = new List<FileTransferProcessing>();
-        private long largeFileThreshold = (long)Math.Pow(2, 20) * 1024 * 2; // 5GB
+        private long largeFileThreshold = (long)Math.Pow(2, 20) * 1024 * 4; // 4GB
         public FtpClient(string host, int port)
         {
             _host = host;
