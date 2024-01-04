@@ -106,24 +106,5 @@ namespace MyFtpServer
         {
             return File.Exists(filePath);
         }
-
-        public string HandleDuplicatedFileName(string filePath)
-        {
-            string? folderPath = Path.GetDirectoryName(filePath);
-            if (folderPath == null)
-            {
-                throw new Exception("Folder path is null");
-            }
-            string fileName = Path.GetFileName(filePath);
-            string fileNameWithoutExtension = fileName.Split('.').First();
-            string fileExtension = fileName.Split('.').Last();
-            int i = 0;
-            while (File.Exists(filePath))
-            {
-                fileName = $"{fileNameWithoutExtension} ({i++}).{fileExtension}";
-                filePath = @$"{folderPath}{fileName}";
-            }
-            return filePath;
-        }
     }
 }
