@@ -24,7 +24,7 @@ namespace MyFtpServer
         private TcpListener _controlSocket;
         private bool _isRunning = false;
         private string _rootPath = @"D:\FileServer";
-        int _sessionID = 2;
+        int _sessionID = 0;
         private long largeFileThreshold = (long)Math.Pow(2, 20) * 1024 * 4; // 4GB
         List<ClientConnection> _connections = new List<ClientConnection>();
 
@@ -779,8 +779,8 @@ namespace MyFtpServer
             lock (lockObjectPassiveMode)
             {
                 int port = _passivePort++;
-                if (_passivePort > 30200)
-                    _passivePort = 30100;
+                if (_passivePort > 65000)
+                    _passivePort = 30000;
                 TcpListener tcpListener = new TcpListener(IPAddress.Parse(_host), port);
                 try
                 {
@@ -798,7 +798,7 @@ namespace MyFtpServer
         private int GetSessionID()
         {
             lock (lockObject) {
-                return _sessionID+=2;
+                return _sessionID+=1;
             }
         }
 
