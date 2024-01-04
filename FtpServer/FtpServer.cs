@@ -25,7 +25,7 @@ namespace MyFtpServer
         private bool _isRunning = false;
         private string _rootPath = @"D:\FileServer";
         int _sessionID = 2;
-        private long largeFileThreshold = (long)Math.Pow(2, 20) * 1024 * 2; // 5GB
+        private long largeFileThreshold = (long)Math.Pow(2, 20) * 1024 * 4; // 4GB
         List<ClientConnection> _connections = new List<ClientConnection>();
 
         public FtpServer(string host, int port, string rootPath, CommandReceivedHandler commandReceived)
